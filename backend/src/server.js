@@ -36,6 +36,7 @@ import { scrapeHomeDepot } from "./scrapers/homedepot.js";
 import { scrapeBestBuy } from "./scrapers/bestbuy.js";
 import { scrapeSears } from "./scrapers/sears.js";
 import { scrapeCanadaStores } from "./scrapers/canada.js";
+import { getGoogleTrendsInterest } from "./scrapers/google-trends.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -412,6 +413,21 @@ app.post("/api/scrape/ai", async (req, res) => {
   });
 });
 
+
+app.get("/api/analytics/trends", async (req, res) => {
+  try {
+    const { keyword, country, timeframe } = req.query;
+    if (!keyword) {
+      return res.status(400).json({ error: "Missing required query parameter 'keyword'" });
+    }
+
+    const timeframeDays = timeframe ? parseInt(String(timeframe)) : 90;
+    const trendsData = await getGoogleTrendsInterest(String(keyword), String(country || "IT"), timeframeDays);
+    res.json(trendsData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`MarketInsight API running on http://localhost:${PORT}`);

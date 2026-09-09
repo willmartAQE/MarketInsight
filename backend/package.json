@@ -13,6 +13,7 @@
     "duckdb": "^1.4.4",
     "ebay-oauth-nodejs-client": "^1.2.2",
     "express": "^4.21.0",
+    "google-trends-api": "^4.9.2",
     "got-scraping": "^4.2.1",
     "jsdom": "^25.0.0",
     "nwsapi": "^2.2.27",

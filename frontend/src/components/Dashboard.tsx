@@ -17,8 +17,9 @@ import { SourceComparison } from "./SourceComparison";
 import { DuckDBPlotlyAnalytics } from "./DuckDBPlotlyAnalytics";
 import { FilterBar } from "./FilterBar";
 import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
+import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import { ProductGroup } from "@/lib/grouping";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp } from "lucide-react";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -306,7 +307,7 @@ export function Dashboard() {
     : ["walmart", "amazon"];
   const categories = stats?.categories.map((c) => c.name) || [];
 
-  const [activeTab, setActiveTab] = useState<"overview" | "duckdb">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "duckdb" | "trends">("overview");
 
   return (
     <div className="min-h-screen bg-gray-50 relative pb-20">
@@ -391,6 +392,17 @@ export function Dashboard() {
               <Database className="h-4 w-4 text-indigo-600" />
               High-Speed Analytics Engine
             </button>
+            <button
+              onClick={() => setActiveTab("trends")}
+              className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
+                activeTab === "trends"
+                  ? "bg-orange-50 text-orange-700 border border-orange-200 shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <TrendingUp className="h-4 w-4 text-orange-600" />
+              Market Demand & Google Trends
+            </button>
           </div>
         </div>
       </header>
@@ -432,6 +444,8 @@ export function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {activeTab === "duckdb" ? (
           <DuckDBPlotlyAnalytics />
+        ) : activeTab === "trends" ? (
+          <GoogleTrendsWidget initialKeyword={products[0]?.name ? products[0].name.split(" ")[0] : "DeLonghi"} countryCode={filters.country?.toUpperCase() || "IT"} />
         ) : (
           <>
             <StatsCards stats={stats} />

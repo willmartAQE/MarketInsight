@@ -106,3 +106,24 @@ export async function getDuckDBQuantiles(): Promise<any[]> {
   return fetchJSON<any[]>("/api/analytics/duckdb/quantiles");
 }
 
+export interface GoogleTrendsResult {
+  status: string;
+  keyword: string;
+  geo: string;
+  timeframeDays: number;
+  averageScore: number;
+  recentScore: number;
+  momentumPct: number;
+  demandStatus: string;
+  timeline: { date: string; timestamp: number; value: number }[];
+}
+
+export async function getGoogleTrendsData(keyword: string, country: string = "IT", timeframe: number = 90): Promise<GoogleTrendsResult> {
+  const params = new URLSearchParams({
+    keyword,
+    country,
+    timeframe: String(timeframe),
+  });
+  return fetchJSON<GoogleTrendsResult>(`/api/analytics/trends?${params.toString()}`);
+}
+

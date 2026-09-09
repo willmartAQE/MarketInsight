@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Product } from "@/types";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
 import { getCountryFlag, getCountryName, groupCrossCountryProducts, ProductGroup } from "@/lib/grouping";
+import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import {
   ArrowLeft,
   ExternalLink,
@@ -490,6 +491,12 @@ export function ProductComparison({
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Real Consumer Demand & Google Trends Search Validation */}
+        <GoogleTrendsWidget
+          initialKeyword={lowestPriceProduct?.name ? lowestPriceProduct.name.split(" ")[0] + " " + (lowestPriceProduct.name.split(" ")[1] || "") : "DeLonghi"}
+          countryCode={lowestPriceProduct?.country || "IT"}
+        />
       </main>
     </div>
   );
