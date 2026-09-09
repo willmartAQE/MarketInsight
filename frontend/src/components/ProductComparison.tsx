@@ -501,6 +501,7 @@ export function ProductComparison({
 
         {/* Real Consumer Demand & Google Trends Search Validation */}
         <GoogleTrendsWidget
+          key={lowestPriceProduct?.id || "compare-trends"}
           initialKeyword={lowestPriceProduct?.name ? lowestPriceProduct.name.split(" ")[0] + " " + (lowestPriceProduct.name.split(" ")[1] || "") : "DeLonghi"}
           countryCode={lowestPriceProduct?.country || "IT"}
         />

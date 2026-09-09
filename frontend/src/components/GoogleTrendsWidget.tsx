@@ -18,9 +18,9 @@ interface GoogleTrendsWidgetProps {
   countryCode?: string;
 }
 
-export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = "IT font-bold" }: GoogleTrendsWidgetProps) {
+export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = "IT" }: GoogleTrendsWidgetProps) {
   const [keyword, setKeyword] = useState(initialKeyword);
-  const [geo, setGeo] = useState("IT");
+  const [geo, setGeo] = useState(countryCode || "IT");
   const [timeframe, setTimeframe] = useState(90);
   const [data, setData] = useState<GoogleTrendsResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,8 +42,12 @@ export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = 
   };
 
   useEffect(() => {
-    fetchTrends(keyword, geo, timeframe);
-  }, []);
+    const targetGeo = countryCode || "IT";
+    const targetKw = initialKeyword || "DeLonghi";
+    setKeyword(targetKw);
+    setGeo(targetGeo);
+    fetchTrends(targetKw, targetGeo, timeframe);
+  }, [initialKeyword, countryCode]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -460,7 +460,7 @@ export function Dashboard() {
         {activeTab === "duckdb" ? (
           <DuckDBPlotlyAnalytics />
         ) : activeTab === "trends" ? (
-          <GoogleTrendsWidget initialKeyword={trendsKeyword} countryCode={filters.country?.toUpperCase() || "IT"} />
+          <GoogleTrendsWidget key={`${trendsKeyword}-${filters.country}`} initialKeyword={trendsKeyword} countryCode={filters.country?.toUpperCase() || "IT"} />
         ) : (
           <>
             <StatsCards stats={stats} />
