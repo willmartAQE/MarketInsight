@@ -1,0 +1,21 @@
+{
+  "name": "marketinsight-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "scrape": "node src/scrape.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "got-scraping": "^4.2.1",
+    "jsdom": "^25.0.0",
+    "nwsapi": "^2.2.27",
+    "puppeteer-core": "^24.43.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
