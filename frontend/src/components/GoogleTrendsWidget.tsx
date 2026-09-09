@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getGoogleTrendsData, GoogleTrendsResult } from "@/lib/api";
-import { TrendingUp, Search, Globe, Flame, AlertCircle, RefreshCw, Activity } from "lucide-react";
+import { TrendingUp, Search, Globe, Flame, AlertCircle, RefreshCw, Activity, ArrowLeft } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -16,6 +16,7 @@ import {
 interface GoogleTrendsWidgetProps {
   initialKeyword?: string;
   countryCode?: string;
+  onReturnToOverview?: () => void;
 }
 
 function generateClientFallbackTrends(rawKw: string, geo: string, timeframeDays: number): GoogleTrendsResult {
@@ -65,7 +66,7 @@ function generateClientFallbackTrends(rawKw: string, geo: string, timeframeDays:
   };
 }
 
-export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = "IT" }: GoogleTrendsWidgetProps) {
+export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = "IT", onReturnToOverview }: GoogleTrendsWidgetProps) {
   const [keyword, setKeyword] = useState(initialKeyword);
   const [geo, setGeo] = useState(countryCode || "IT");
   const [timeframe, setTimeframe] = useState(90);
@@ -109,7 +110,16 @@ export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = 
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
       {/* Widget Header & Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-100 pb-5">
-        <div>
+        <div className="space-y-3">
+          {onReturnToOverview && (
+            <button
+              onClick={onReturnToOverview}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg transition-colors shadow-xs"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to Products & Reset Selection
+            </button>
+          )}
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-orange-100 text-orange-600 font-bold">
               <TrendingUp className="h-5 w-5" />

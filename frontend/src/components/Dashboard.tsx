@@ -269,11 +269,11 @@ export function Dashboard() {
     });
   };
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedIds([]);
     localStorage.removeItem("selectedProductIds");
     localStorage.removeItem("selectedProductsData");
-  };
+  }, []);
 
   const handleNavigateToCompare = () => {
     if (selectedIds.length === 0) return;
@@ -310,6 +310,22 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<"overview" | "duckdb" | "trends">("overview");
   const [trendsKeyword, setTrendsKeyword] = useState<string>("DeLonghi");
   const [trendsTriggerToken, setTrendsTriggerToken] = useState<number>(Date.now());
+  const prevTabRef = useRef<string>("overview");
+
+  useEffect(() => {
+    const prevTab = prevTabRef.current;
+    if (prevTab === "trends" && activeTab !== "trends") {
+      handleClearSelection();
+    }
+    prevTabRef.current = activeTab;
+  }, [activeTab, handleClearSelection]);
+
+  const handleTabChange = (newTab: "overview" | "duckdb" | "trends") => {
+    if (activeTab === "trends" && newTab !== "trends") {
+      handleClearSelection();
+    }
+    setActiveTab(newTab);
+  };
 
   const handleOpenTrendsForSelected = () => {
     const selectedProds = (allProducts.length > 0 ? allProducts : products).filter((p) => selectedIds.includes(p.id));
@@ -392,7 +408,7 @@ export function Dashboard() {
 
           <div className="flex items-center gap-2 pt-4 border-t border-gray-100 mt-4">
             <button
-              onClick={() => setActiveTab("overview")}
+              onClick={() => handleTabChange("overview")}
               className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeTab === "overview"
                   ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm"
@@ -403,7 +419,7 @@ export function Dashboard() {
               Overview Analytics
             </button>
             <button
-              onClick={() => setActiveTab("duckdb")}
+              onClick={() => handleTabChange("duckdb")}
               className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeTab === "duckdb"
                   ? "bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm"
@@ -414,7 +430,7 @@ export function Dashboard() {
               High-Speed Analytics Engine
             </button>
             <button
-              onClick={() => setActiveTab("trends")}
+              onClick={() => handleTabChange("trends")}
               className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeTab === "trends"
                   ? "bg-orange-50 text-orange-700 border border-orange-200 shadow-sm"
@@ -466,7 +482,12 @@ export function Dashboard() {
         {activeTab === "duckdb" ? (
           <DuckDBPlotlyAnalytics />
         ) : activeTab === "trends" ? (
-          <GoogleTrendsWidget key={`${trendsKeyword}-${trendsTriggerToken}-${filters.country}`} initialKeyword={trendsKeyword} countryCode={filters.country?.toUpperCase() || "IT"} />
+          <GoogleTrendsWidget
+            key={`${trendsKeyword}-${trendsTriggerToken}-${filters.country}`}
+            initialKeyword={trendsKeyword}
+            countryCode={filters.country?.toUpperCase() || "IT"}
+            onReturnToOverview={() => handleTabChange("overview")}
+          />
         ) : (
           <>
             <StatsCards stats={stats} />
