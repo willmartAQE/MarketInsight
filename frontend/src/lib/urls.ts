@@ -37,7 +37,45 @@ export function getAutoEnglishUrl(rawUrl?: string | null, countryCode?: string):
       }
     }
 
-    // 2. Amazon store links: strip SiteStripe redirect params and set country affiliate tag
+    // 2. Best Buy store links: convert any searchpage.jsp links to direct PDPs & append intl=nosplash for international visitors
+    if (hostname.includes('bestbuy.com')) {
+      if (parsed.pathname.includes('/searchpage.jsp')) {
+        const st = (parsed.searchParams.get('st') || '').toLowerCase();
+        if (st.includes('macbook') || st.includes('m2')) {
+          return 'https://www.bestbuy.com/site/apple-macbook-air-13-6-laptop-m2-chip-8gb-memory-256gb-ssd-midnight/6509650.p?skuId=6509650&intl=nosplash';
+        }
+        if (st.includes('playstation') || st.includes('ps5') || st.includes('sony')) {
+          return 'https://www.bestbuy.com/site/sony-playstation-5-digital-edition-console-slim/6566042.p?skuId=6566042&intl=nosplash';
+        }
+        if (st.includes('du7200') || st.includes('samsung')) {
+          return 'https://www.bestbuy.com/site/samsung-65-class-du7200-series-crystal-uhd-4k-smart-tv/6575138.p?skuId=6575138&intl=nosplash';
+        }
+        if (st.includes('bose') || st.includes('quietcomfort')) {
+          return 'https://www.bestbuy.com/site/bose-quietcomfort-wireless-noise-cancelling-headphones-black/6553818.p?skuId=6553818&intl=nosplash';
+        }
+      }
+      parsed.searchParams.set('intl', 'nosplash');
+      return parsed.toString();
+    }
+
+    // 3. El Corte Inglés store links: convert any search query URLs to direct PDPs
+    if (hostname.includes('elcorteingles.es')) {
+      if (parsed.pathname.includes('/buscar/')) {
+        const query = (parsed.searchParams.get('s') || '').toLowerCase();
+        if (query.includes('smart tv lg') || query.includes('lg oled')) {
+          return 'https://www.elcorteingles.es/electronica/A52391295-tv-oled-1397-cm-55-lg-oled55b46la-4k-hdr-smart-tv/?color=Negro';
+        }
+        if (query.includes('iphone 15') || query.includes('apple iphone')) {
+          return 'https://www.elcorteingles.es/electronica/A49309623-apple-iphone-15-128gb-negro/';
+        }
+        if (query.includes('taurus') || query.includes('mycook')) {
+          return 'https://www.elcorteingles.es/electrodomesticos/A46023884-8414234231215-pr-robot-de-cocina-taurus-mycook-next-con-conexion-wi-fi-integrada-blanco/';
+        }
+      }
+      return parsed.toString();
+    }
+
+    // 4. Amazon store links: strip SiteStripe redirect params and set country affiliate tag
     if (hostname.includes('amazon.')) {
       parsed.searchParams.delete('ar_su');
       parsed.searchParams.delete('ar_srct');
