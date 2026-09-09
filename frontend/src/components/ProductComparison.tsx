@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { Product } from "@/types";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
-import { getCountryFlag, getCountryName } from "@/lib/grouping";
+import { getCountryFlag, getCountryName, groupCrossCountryProducts, ProductGroup } from "@/lib/grouping";
 import {
   ArrowLeft,
   ExternalLink,
@@ -15,7 +16,9 @@ import {
   TrendingUp,
   Scale,
   Globe,
-  Sparkles
+  Sparkles,
+  Layers,
+  Info
 } from "lucide-react";
 import {
   BarChart,
@@ -67,6 +70,21 @@ export function ProductComparison({
   onBack,
   currencyMode
 }: ProductComparisonProps) {
+  const productGroups = useMemo(() => {
+    return groupCrossCountryProducts(products, false);
+  }, [products]);
+
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
+  const activeGroup = useMemo(() => {
+    if (!productGroups || productGroups.length === 0) return null;
+    if (selectedGroupId) {
+      const found = productGroups.find((g) => g.id === selectedGroupId);
+      if (found) return found;
+    }
+    return productGroups[0];
+  }, [productGroups, selectedGroupId]);
+
   if (!products || products.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-center">
@@ -88,12 +106,14 @@ export function ProductComparison({
     );
   }
 
-  // Calculate best metrics
-  const lowestPriceProduct = [...products].sort((a, b) => a.price - b.price)[0];
-  const highestRatingProduct = [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
-  const highestDiscountProduct = [...products].sort((a, b) => (b.discount_pct || 0) - (a.discount_pct || 0))[0];
+  const activeProducts = activeGroup ? activeGroup.products : products;
 
-  const chartData = products.map((p) => ({
+  // Calculate best metrics for active group
+  const lowestPriceProduct = [...activeProducts].sort((a, b) => a.price - b.price)[0];
+  const highestRatingProduct = [...activeProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+  const highestDiscountProduct = [...activeProducts].sort((a, b) => (b.discount_pct || 0) - (a.discount_pct || 0))[0];
+
+  const chartData = activeProducts.map((p) => ({
     name: p.name.length > 20 ? p.name.slice(0, 20) + "..." : p.name,
     fullTitle: p.name,
     price: p.price,
@@ -136,6 +156,59 @@ export function ProductComparison({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Product Group Selector Tabs */}
+        {productGroups.length > 1 && (
+          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-blue-600" />
+                <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                  Product Group Tabs ({productGroups.length})
+                </span>
+                <span className="text-[11px] text-gray-500">
+                  — Select a product group to compare its identical cross-country items
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {productGroups.map((group) => {
+                const isActive = activeGroup?.id === group.id;
+                return (
+                  <button
+                    key={group.id}
+                    onClick={() => setSelectedGroupId(group.id)}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                      isActive
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                        : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span>{group.countries.map((c) => getCountryFlag(c)).join(" ")}</span>
+                    <span className="line-clamp-1 max-w-[220px]">{group.name}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                        isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {group.products.length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Single Item Warning Banner if group has only 1 product */}
+        {activeProducts.length === 1 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 text-xs text-amber-800">
+            <Info className="h-5 w-5 text-amber-600 shrink-0" />
+            <div>
+              <strong>Single Product Group:</strong> Showing 1 product in this group (<em>{activeProducts[0].name}</em>). Select matching items from other countries or run scraping to compare cross-country prices side-by-side.
+            </div>
+          </div>
+        )}
+
         {/* Highlights Banner */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Lowest Price */}
@@ -192,7 +265,7 @@ export function ProductComparison({
                   <th className="p-4 text-left font-medium text-gray-500 w-48 shrink-0 bg-gray-50/80 sticky left-0 z-10 border-r border-gray-200">
                     Feature / Product
                   </th>
-                  {products.map((product) => {
+                  {activeProducts.map((product) => {
                     const isLowest = product.id === lowestPriceProduct.id;
                     const srcInfo = formatSource(product.source);
 
@@ -233,7 +306,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Price
                   </td>
-                  {products.map((p) => {
+                  {activeProducts.map((p) => {
                     const isLowest = p.id === lowestPriceProduct.id;
                     const formatted = formatPrice(p.price, p.country, currencyMode);
 
@@ -257,7 +330,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Original Price
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 text-gray-500 border-r border-gray-100 last:border-r-0">
                       {p.original_price ? (
                         <span className="line-through">{formatPrice(p.original_price, p.country, currencyMode)}</span>
@@ -273,7 +346,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Discount
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0">
                       {p.discount_pct ? (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
@@ -291,7 +364,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Rating & Reviews
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0">
                       {p.rating ? (
                         <div className="space-y-1">
@@ -315,7 +388,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Country / Origin
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0 font-medium text-gray-900">
                       <span className="inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg text-xs">
                         <span>{getCountryFlag(p.country)}</span>
@@ -330,7 +403,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Marketplace
                   </td>
-                  {products.map((p) => {
+                  {activeProducts.map((p) => {
                     const srcInfo = formatSource(p.source);
                     return (
                       <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0 font-medium text-gray-800">
@@ -348,7 +421,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Seller
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0 text-gray-600">
                       {p.seller || "N/A"}
                     </td>
@@ -360,7 +433,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Availability
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0 text-gray-600">
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">
                         <Check className="h-3.5 w-3.5" />
@@ -375,7 +448,7 @@ export function ProductComparison({
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
                     Action
                   </td>
-                  {products.map((p) => (
+                  {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0">
                       <a
                         href={p.url}
