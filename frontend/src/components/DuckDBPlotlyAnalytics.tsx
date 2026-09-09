@@ -309,7 +309,7 @@ export function DuckDBPlotlyAnalytics() {
             </span>
           </div>
           <p className="text-xs text-gray-500 mb-4">
-            Matches products across international stores where price spreads exceed 15%. Click to view the bargain store page (auto-translated).
+            Matches products across international stores where price spreads exceed 15%. Click to view the bargain store page.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

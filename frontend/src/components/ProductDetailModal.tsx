@@ -255,7 +255,7 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
               className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm shrink-0"
             >
               <ExternalLink className="h-4 w-4" />
-              Open Store Page (English)
+              Open Store Page
             </a>
           </div>
 
