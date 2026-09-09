@@ -25,6 +25,8 @@ import {
   getDuckDBCrossBorderArbitrage,
   getDuckDBMarketAttractiveness
 } from "./duckdb.js";
+import { analyzeProductSentiment } from "./nlp.js";
+import { computePriceForecast, computeOHLCData } from "./forecasting.js";
 import { STORES, AMAZON_EU } from "./stores.js";
 import { scrapeWalmart } from "./scrapers/walmart.js";
 import { scrapeAmazon } from "./scrapers/amazon.js";
@@ -390,6 +392,50 @@ app.get("/api/analytics/duckdb/attractiveness", async (_req, res) => {
   try {
     const data = await getDuckDBMarketAttractiveness();
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/sentiment/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const db = getDb();
+    const product = db.prepare("SELECT * FROM products WHERE id = ?").get(id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const result = analyzeProductSentiment(product.name, product.reviews_count, product.rating);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/forecast/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const db = getDb();
+    const product = db.prepare("SELECT * FROM products WHERE id = ?").get(id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const history = getPriceHistory(id);
+    const forecast = computePriceForecast(product, history);
+    res.json(forecast);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/ohlc/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const db = getDb();
+    const product = db.prepare("SELECT * FROM products WHERE id = ?").get(id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const history = getPriceHistory(id);
+    const ohlc = computeOHLCData(product, history);
+    res.json(ohlc);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

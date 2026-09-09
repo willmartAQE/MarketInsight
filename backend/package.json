@@ -16,9 +16,11 @@
     "google-trends-api": "^4.9.2",
     "got-scraping": "^4.2.1",
     "jsdom": "^25.0.0",
+    "natural": "^8.1.1",
     "nwsapi": "^2.2.27",
     "puppeteer-core": "^24.43.1",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "simple-statistics": "^7.12.0"
   }
 }

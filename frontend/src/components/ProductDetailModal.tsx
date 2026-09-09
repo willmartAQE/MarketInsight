@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Product, PricePoint } from "@/types";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
 import { getCountryFlag, getCountryName } from "@/lib/grouping";
 import { getAutoEnglishUrl } from "@/lib/urls";
-import { getPriceHistory } from "@/lib/api";
+import {
+  getPriceHistory,
+  getProductSentiment,
+  getProductForecast,
+  getProductOHLC,
+  SentimentResult,
+  ForecastResult,
+  OHLCPoint
+} from "@/lib/api";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import {
   X,
@@ -20,7 +29,11 @@ import {
   Zap,
   Layers,
   TrendingUp,
-  BarChart2
+  BarChart2,
+  MessageSquare,
+  TrendingDown,
+  CheckCircle2,
+  AlertTriangle
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -37,6 +50,9 @@ import {
   Tooltip
 } from "recharts";
 
+// Dynamically import Plotly with SSR disabled for Next.js compatibility
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
 interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
@@ -45,21 +61,30 @@ interface ProductDetailModalProps {
 
 export function ProductDetailModal({ product, onClose, currencyMode }: ProductDetailModalProps) {
   const [history, setHistory] = useState<PricePoint[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
+  const [forecast, setForecast] = useState<ForecastResult | null>(null);
+  const [ohlc, setOhlc] = useState<OHLCPoint[]>([]);
+  const [loading, setLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     if (!product) return;
     setImgError(false);
 
-    async function loadHistory() {
-      setLoadingHistory(true);
+    async function loadAllAnalytics() {
+      setLoading(true);
       try {
-        const data = await getPriceHistory(product!.id);
-        if (data && data.length > 0) {
-          setHistory(data);
+        const [histData, sentData, fcData, ohlcData] = await Promise.all([
+          getPriceHistory(product!.id).catch(() => []),
+          getProductSentiment(product!.id).catch(() => null),
+          getProductForecast(product!.id).catch(() => null),
+          getProductOHLC(product!.id).catch(() => [])
+        ]);
+
+        if (histData && histData.length > 0) {
+          setHistory(histData);
         } else {
-          // Synthetic price history fallback for visual demo
+          // Synthetic price history fallback
           const now = new Date();
           const orig = product!.original_price || Math.round(product!.price * 1.25);
           const points: PricePoint[] = [
@@ -70,14 +95,18 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
           ];
           setHistory(points);
         }
+
+        setSentiment(sentData);
+        setForecast(fcData);
+        setOhlc(ohlcData || []);
       } catch (err) {
-        console.warn("Failed to load price history:", err);
+        console.warn("Failed to load product intelligence analytics:", err);
       } finally {
-        setLoadingHistory(false);
+        setLoading(false);
       }
     }
 
-    loadHistory();
+    loadAllAnalytics();
   }, [product]);
 
   if (!product) return null;
@@ -117,6 +146,28 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
 
   const storeLabel = (product.source || "").toUpperCase();
 
+  // Plotly Candlestick Data
+  const ohlcDates = ohlc.map((d) => d.date);
+  const ohlcOpen = ohlc.map((d) => d.open);
+  const ohlcHigh = ohlc.map((d) => d.high);
+  const ohlcLow = ohlc.map((d) => d.low);
+  const ohlcClose = ohlc.map((d) => d.close);
+
+  const candlestickPlotData: any = [
+    {
+      x: ohlcDates,
+      open: ohlcOpen,
+      high: ohlcHigh,
+      low: ohlcLow,
+      close: ohlcClose,
+      type: "candlestick",
+      xaxis: "x",
+      yaxis: "y",
+      increasing: { line: { color: "#10b981" } },
+      decreasing: { line: { color: "#ef4444" } }
+    }
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col my-8">
@@ -129,7 +180,7 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
             </span>
             <div>
               <h2 className="text-lg font-bold text-gray-900 line-clamp-1">Product Intelligence Card</h2>
-              <p className="text-xs text-gray-500">Comprehensive single-product open analytics & market validation</p>
+              <p className="text-xs text-gray-500">Comprehensive single-product open analytics, sentiment & predictive forecasting</p>
             </div>
           </div>
 
@@ -248,7 +299,94 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
             </div>
           </div>
 
-          {/* Grid 2: Radar Spider Chart + Price History Line Chart */}
+          {/* Module 1: Natural JS Sentiment Analysis Card */}
+          {sentiment && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-indigo-600" />
+                  <h4 className="text-sm font-bold text-gray-900">NLP Review Sentiment Analysis (Natural JS)</h4>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full border ${
+                    sentiment.label === "Positive"
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : sentiment.label === "Critical"
+                      ? "bg-rose-100 text-rose-800 border-rose-200"
+                      : "bg-amber-100 text-amber-800 border-amber-200"
+                  }`}>
+                    {sentiment.label} ({sentiment.scorePct}%)
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+                <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3">
+                  <span className="font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Positive Feature Highlights
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sentiment.highlights.map((h, i) => (
+                      <span key={i} className="bg-white text-emerald-700 font-semibold px-2 py-0.5 rounded-md border border-emerald-200">
+                        #{h}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3">
+                  <span className="font-bold text-amber-900 flex items-center gap-1.5 mb-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Critical Feature Warnings
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sentiment.warnings.map((w, i) => (
+                      <span key={i} className="bg-white text-amber-800 font-semibold px-2 py-0.5 rounded-md border border-amber-200">
+                        #{w}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Module 3: Predictive Price Forecast & Recommendation Engine */}
+          {forecast && (
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white rounded-xl p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-emerald-400" />
+                  <h4 className="text-sm font-bold text-white">30-Day Predictive Price Forecast (Simple-Statistics)</h4>
+                </div>
+                <span className={`text-xs font-black px-2.5 py-0.5 rounded-full border ${forecast.recBadge}`}>
+                  {forecast.recommendation}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1 text-slate-200">
+                <div className="bg-white/10 rounded-lg p-2.5 border border-white/10">
+                  <span className="text-[11px] text-slate-400 uppercase font-semibold">Current Price</span>
+                  <p className="text-base font-bold text-white">${forecast.currentPrice}</p>
+                </div>
+
+                <div className="bg-white/10 rounded-lg p-2.5 border border-white/10">
+                  <span className="text-[11px] text-slate-400 uppercase font-semibold">30-Day Target Forecast</span>
+                  <p className="text-base font-bold text-emerald-400">${forecast.projectedPrice}</p>
+                </div>
+
+                <div className="bg-white/10 rounded-lg p-2.5 border border-white/10">
+                  <span className="text-[11px] text-slate-400 uppercase font-semibold">Forecast Confidence</span>
+                  <p className="text-base font-bold text-amber-300">{forecast.confidencePct}%</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-300 italic pt-1">
+                💡 <strong>Actionable Advice:</strong> {forecast.advice}
+              </p>
+            </div>
+          )}
+
+          {/* Grid 2: Radar Spider Chart + Plotly Candlestick OHLC Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Single Product Radar Analysis */}
@@ -287,43 +425,37 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
               </div>
             </div>
 
-            {/* Historical Price Trend Line Chart */}
+            {/* Module 2: Plotly Candlestick OHLC Chart */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-blue-600" />
-                    Historical Price Trend Tracker
+                    <TrendingDown className="h-4 w-4 text-emerald-600" />
+                    Candlestick (OHLC) Price Volatility Chart
                   </h4>
-                  <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                    Price History
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Candlestick Bar
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 mb-3">
-                  Historical price tracking over time for price stability analysis.
+                  Open, High, Low, and Close price movement analysis over time.
                 </p>
               </div>
 
-              <div className="w-full h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={history} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "11px" }}
-                      formatter={(value: any) => [`${value} ${currencyMode === "usd" ? "$" : "€"}`, "Price"]}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="price"
-                      stroke="#2563eb"
-                      strokeWidth={2.5}
-                      dot={{ r: 4, fill: "#2563eb" }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="w-full h-[260px] flex items-center justify-center">
+                <Plot
+                  data={candlestickPlotData}
+                  layout={{
+                    autosize: true,
+                    margin: { l: 40, r: 30, t: 20, b: 40 },
+                    xaxis: { showgrid: false, tickfont: { size: 10 } },
+                    yaxis: { title: { text: "Price ($)", font: { size: 10 } } },
+                    paper_bgcolor: "transparent",
+                    plot_bgcolor: "transparent"
+                  }}
+                  useResizeHandler={true}
+                  className="w-full h-full"
+                />
               </div>
             </div>
           </div>

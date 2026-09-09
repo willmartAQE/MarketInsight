@@ -140,3 +140,43 @@ export async function getGoogleTrendsData(keyword: string, country: string = "IT
   return fetchJSON<GoogleTrendsResult>(`/api/analytics/trends?${params.toString()}`);
 }
 
+export interface SentimentResult {
+  score: number;
+  scorePct: number;
+  label: "Positive" | "Neutral" | "Critical";
+  color: "emerald" | "amber" | "rose";
+  highlights: string[];
+  warnings: string[];
+  reviewsAnalyzed: number;
+}
+
+export interface ForecastResult {
+  currentPrice: number;
+  projectedPrice: number;
+  dailySlope: number;
+  recommendation: string;
+  recBadge: string;
+  advice: string;
+  confidencePct: number;
+}
+
+export interface OHLCPoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
+export async function getProductSentiment(productId: number): Promise<SentimentResult> {
+  return fetchJSON<SentimentResult>(`/api/analytics/sentiment/${productId}`);
+}
+
+export async function getProductForecast(productId: number): Promise<ForecastResult> {
+  return fetchJSON<ForecastResult>(`/api/analytics/forecast/${productId}`);
+}
+
+export async function getProductOHLC(productId: number): Promise<OHLCPoint[]> {
+  return fetchJSON<OHLCPoint[]>(`/api/analytics/ohlc/${productId}`);
+}
+
