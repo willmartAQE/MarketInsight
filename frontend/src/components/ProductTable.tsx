@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Product } from "@/types";
 import { ExternalLink, Star, ShoppingCart, FileSpreadsheet, Globe, Package } from "lucide-react";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
+import { getAutoEnglishUrl } from "@/lib/urls";
 
 interface ProductTableProps {
   products: Product[];
@@ -210,7 +211,7 @@ export function ProductTable({
                   <td className="px-4 py-3 text-gray-600">{product.category}</td>
                   <td className="px-4 py-3 text-center">
                     <a
-                      href={product.url}
+                      href={getAutoEnglishUrl(product.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"

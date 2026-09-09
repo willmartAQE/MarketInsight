@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Product } from "@/types";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
+import { getAutoEnglishUrl } from "@/lib/urls";
 import { getCountryFlag, getCountryName, groupCrossCountryProducts, ProductGroup } from "@/lib/grouping";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import {
@@ -459,7 +460,7 @@ export function ProductComparison({
                   {activeProducts.map((p) => (
                     <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0">
                       <a
-                        href={p.url}
+                        href={getAutoEnglishUrl(p.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-lg transition-colors shadow-sm"

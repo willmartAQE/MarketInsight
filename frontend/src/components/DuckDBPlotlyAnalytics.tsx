@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { getDuckDBHeatmap, getDuckDBOutliers, getDuckDBQuantiles } from "@/lib/api";
 import { Database, Zap, Sparkles, TrendingDown, Layers, Loader2, ExternalLink, Tag, Star, Package } from "lucide-react";
+import { getAutoEnglishUrl } from "@/lib/urls";
 
 // Dynamically import Plotly with SSR disabled for Next.js compatibility
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -141,7 +142,7 @@ export function DuckDBPlotlyAnalytics() {
       if (deal) {
         setSelectedDeal(deal);
         if (deal.url) {
-          window.open(deal.url, "_blank");
+          window.open(getAutoEnglishUrl(deal.url), "_blank");
         }
       }
     }
@@ -246,7 +247,7 @@ export function DuckDBPlotlyAnalytics() {
             {outliersData.slice(0, 6).map((deal) => (
               <a
                 key={deal.id}
-                href={deal.url}
+                href={getAutoEnglishUrl(deal.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all group"
