@@ -136,7 +136,13 @@ export function getProducts({ source, category, country, sort_by = "price", orde
   let where = [];
   let params = [];
 
-  if (source) { where.push("source = ?"); params.push(source); }
+  if (source) {
+    where.push("source = ?");
+    params.push(source);
+  } else {
+    where.push("source NOT LIKE 'ebay%'");
+  }
+
   if (category) { where.push("category = ?"); params.push(category); }
   if (country) {
     const norm = normalizeCountryCode(country);
@@ -159,7 +165,13 @@ export function getStats(source = null, country = null) {
   let where = [];
   let params = [];
 
-  if (source) { where.push("source = ?"); params.push(source); }
+  if (source) {
+    where.push("source = ?");
+    params.push(source);
+  } else {
+    where.push("source NOT LIKE 'ebay%'");
+  }
+
   if (country) {
     const norm = normalizeCountryCode(country);
     where.push("UPPER(country) = ?");
@@ -204,7 +216,13 @@ export function getTopProducts(source = null, country = null, limit = 10) {
   let where = ["reviews_count IS NOT NULL"];
   let params = [];
 
-  if (source) { where.push("source = ?"); params.push(source); }
+  if (source) {
+    where.push("source = ?");
+    params.push(source);
+  } else {
+    where.push("source NOT LIKE 'ebay%'");
+  }
+
   if (country) {
     const norm = normalizeCountryCode(country);
     where.push("UPPER(country) = ?");

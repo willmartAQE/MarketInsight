@@ -8,6 +8,7 @@ interface ProductTableProps {
   products: Product[];
   loading: boolean;
   currencyMode: CurrencyMode;
+  onExportCSV?: () => void;
 }
 
 function formatSource(source: string): { label: string; style: string } {
@@ -38,7 +39,7 @@ function formatSource(source: string): { label: string; style: string } {
 }
 
 
-export function ProductTable({ products, loading, currencyMode }: ProductTableProps) {
+export function ProductTable({ products, loading, currencyMode, onExportCSV }: ProductTableProps) {
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">

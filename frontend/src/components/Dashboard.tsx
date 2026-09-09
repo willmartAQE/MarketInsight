@@ -14,8 +14,7 @@ import { CategoryPieChart } from "./CategoryPieChart";
 import { PriceDistribution } from "./PriceDistribution";
 import { SourceComparison } from "./SourceComparison";
 import { FilterBar } from "./FilterBar";
-import { AIScrapeModal } from "./AIScrapeModal";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -26,6 +25,58 @@ const DEFAULT_FILTERS: Filters = {
   min_price: null,
   max_price: null,
 };
+
+export function exportToCSV(products: Product[], filename: string = "marketinsight_export.csv") {
+  if (!products || products.length === 0) return;
+
+  const headers = [
+    "ID",
+    "Product Name",
+    "Price",
+    "Original Price",
+    "Discount %",
+    "Rating",
+    "Reviews Count",
+    "Source",
+    "Category",
+    "Country",
+    "Seller",
+    "Availability",
+    "URL"
+  ];
+
+  const escapeCSV = (val: any) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = products.map((p) => [
+    escapeCSV(p.id),
+    escapeCSV(p.name),
+    escapeCSV(p.price),
+    escapeCSV(p.original_price || ""),
+    escapeCSV(p.discount_pct || ""),
+    escapeCSV(p.rating || ""),
+    escapeCSV(p.reviews_count || ""),
+    escapeCSV(p.source),
+    escapeCSV(p.category),
+    escapeCSV(p.country),
+    escapeCSV(p.seller || ""),
+    escapeCSV(p.availability || ""),
+    escapeCSV(p.url)
+  ]);
+
+  const csvContent = "\uFEFF" + [headers.map(escapeCSV).join(","), ...rows.map((r) => r.join(","))].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 export function Dashboard() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -38,7 +89,6 @@ export function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [scrapeStatus, setScrapeStatus] = useState<ScrapeStatus | null>(null);
   const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const prevCountryRef = useRef<string | null>(null);
 
@@ -161,11 +211,12 @@ export function Dashboard() {
                 </span>
               )}
               <button
-                onClick={() => setIsAIModalOpen(true)}
-                className="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3.5 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors shadow-sm"
+                onClick={() => exportToCSV(products)}
+                disabled={products.length === 0}
+                className="flex items-center gap-2 rounded-lg border border-green-300 bg-green-50 px-3.5 py-2 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-50 transition-colors shadow-sm"
               >
-                <Sparkles className="h-4 w-4 text-purple-600" />
-                Scraper AI (Ollama)
+                <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                Esporta CSV ({products.length})
               </button>
               <button
                 onClick={fetchData}
@@ -237,14 +288,8 @@ export function Dashboard() {
           <SourceComparison stats={stats} />
         </div>
 
-        <ProductTable products={products} loading={loading} currencyMode={currencyMode} />
+        <ProductTable products={products} loading={loading} currencyMode={currencyMode} onExportCSV={() => exportToCSV(products)} />
       </main>
-
-      <AIScrapeModal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        onSuccess={fetchData}
-      />
     </div>
   );
 }
