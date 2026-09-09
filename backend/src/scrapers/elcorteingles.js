@@ -1,17 +1,14 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { JSDOM } from "jsdom";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { safeLaunchBrowser } from "../browserHelper.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = join(__dirname, "..", "..", ".env");
 if (existsSync(envPath)) {
   try { process.loadEnvFile(envPath); } catch {}
 }
-
-puppeteer.use(StealthPlugin());
 
 const ELCORTEINGLES_URLS = [
   { url: "https://www.elcorteingles.es/electronica/telefonia/", category: "Electronics" },
@@ -173,72 +170,46 @@ function extractProductsFromHtml(html, defaultCategory) {
   return products;
 }
 
-async function launchBrowser() {
-  const proxy = process.env.ELCORTEINGLES_PROXY || process.env.PROXY_URL || process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
-  const args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled", "--lang=es-ES,es"];
-  
-  let auth = null;
-  if (proxy) {
-    try {
-      const parsed = new URL(proxy);
-      if (parsed.username || parsed.password) {
-        auth = { username: decodeURIComponent(parsed.username), password: decodeURIComponent(parsed.password) };
-        args.push(`--proxy-server=${parsed.protocol}//${parsed.host}`);
-      } else {
-        args.push(`--proxy-server=${proxy}`);
-      }
-    } catch {
-      args.push(`--proxy-server=${proxy}`);
-    }
-  }
-
-  const browser = await puppeteer.launch({
-    headless: "new",
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    args,
-  });
-
-  return { browser, auth };
-}
-
 export async function scrapeElCorteIngles() {
   const allProducts = [];
   const seenUrls = new Set();
 
   let browserObj;
   try {
-    browserObj = await launchBrowser();
-    const { browser, auth } = browserObj;
-    const page = await browser.newPage();
-    if (auth) await page.authenticate(auth);
+    browserObj = await safeLaunchBrowser();
+    if (browserObj?.browser) {
+      const { browser, auth } = browserObj;
+      const page = await browser.newPage();
+      if (auth) await page.authenticate(auth);
 
-    await page.setExtraHTTPHeaders({
-      "Accept-Language": "es-ES,es;q=0.9,en-US;q=0.8,en;q=0.7",
-    });
+      await page.setExtraHTTPHeaders({
+        "Accept-Language": "es-ES,es;q=0.9,en-US;q=0.8,en;q=0.7",
+      });
 
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-    );
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      );
 
-    for (const { url, category } of ELCORTEINGLES_URLS) {
-      try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
-        await new Promise((r) => setTimeout(r, 2000));
-        const html = await page.content();
-        const extracted = extractProductsFromHtml(html, category);
+      for (const { url, category } of ELCORTEINGLES_URLS) {
+        try {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
+          await new Promise((r) => setTimeout(r, 2000));
+          const html = await page.content();
+          const extracted = extractProductsFromHtml(html, category);
 
-        for (const p of extracted) {
-          if (!seenUrls.has(p.url)) {
-            seenUrls.add(p.url);
-            allProducts.push(p);
+          for (const p of extracted) {
+            if (!seenUrls.has(p.url)) {
+              seenUrls.add(p.url);
+              allProducts.push(p);
+            }
           }
+        } catch (err) {
+          console.error(`[elcorteingles] Error scraping ${url}: ${err.message}`);
         }
-      } catch (err) {
-        console.error(`[elcorteingles] Error scraping ${url}: ${err.message}`);
       }
     }
   } catch (err) {
-    console.error(`[elcorteingles] Browser launch error: ${err.message}`);
+    console.error(`[elcorteingles] Browser error: ${err.message}`);
   } finally {
     if (browserObj?.browser) await browserObj.browser.close();
   }

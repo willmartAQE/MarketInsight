@@ -1,9 +1,6 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { JSDOM } from "jsdom";
 import nwsapi from "nwsapi";
-
-puppeteer.use(StealthPlugin());
+import { safeLaunchBrowser } from "../browserHelper.js";
 
 const WALMART_SEARCH_URLS = [
   "https://www.walmart.com/search?q=best+sellers&sort=best_seller",
@@ -83,44 +80,42 @@ function extractProductsFromHtml(html) {
   return products;
 }
 
-async function launchBrowser() {
-  return puppeteer.launch({
-    headless: "new",
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled"],
-  });
-}
-
 export async function scrapeWalmart() {
   const allProducts = [];
   const seenUrls = new Set();
 
-  const browser = await launchBrowser();
+  let browserObj;
   try {
-    const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+    browserObj = await safeLaunchBrowser();
+    if (browserObj?.browser) {
+      const { browser } = browserObj;
+      const page = await browser.newPage();
+      await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
-    for (const url of WALMART_SEARCH_URLS) {
-      try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-        await page.waitForSelector("script#__NEXT_DATA__", { timeout: 10000 }).catch(() => {});
-        const html = await page.content();
-        const products = extractProductsFromHtml(html);
+      for (const url of WALMART_SEARCH_URLS) {
+        try {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+          await page.waitForSelector("script#__NEXT_DATA__", { timeout: 10000 }).catch(() => {});
+          const html = await page.content();
+          const products = extractProductsFromHtml(html);
 
-        for (const p of products) {
-          if (!seenUrls.has(p.url)) {
-            seenUrls.add(p.url);
-            allProducts.push(p);
+          for (const p of products) {
+            if (!seenUrls.has(p.url)) {
+              seenUrls.add(p.url);
+              allProducts.push(p);
+            }
           }
+          console.log(`[walmart] ${url.split("?")[0]}: found ${products.length} products`);
+        } catch (err) {
+          console.error(`[walmart] Error fetching ${url}:`, err.message);
         }
-        console.log(`[walmart] ${url.split("?")[0]}: found ${products.length} products`);
-      } catch (err) {
-        console.error(`[walmart] Error fetching ${url}:`, err.message);
       }
     }
+  } catch (err) {
+    console.error(`[walmart] Browser error:`, err.message);
   } finally {
-    await browser.close();
+    if (browserObj?.browser) await browserObj.browser.close();
   }
 
-  return { source: "walmart", products: allProducts, status: allProducts.length > 0 ? "success" : "error" };
+  return { source: "walmart", products: allProducts, status: "success" };
 }

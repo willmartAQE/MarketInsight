@@ -1,9 +1,6 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { JSDOM } from "jsdom";
 import nwsapi from "nwsapi";
-
-puppeteer.use(StealthPlugin());
+import { safeLaunchBrowser } from "../browserHelper.js";
 
 const OTTO_URLS = [
   { url: "https://www.otto.de/technologie/multimedia/", category: "Electronics" },
@@ -163,47 +160,42 @@ function extractProductsFromHtml(html, defaultCategory) {
   return products;
 }
 
-async function launchBrowser() {
-  return puppeteer.launch({
-    headless: "new",
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled"],
-  });
-}
-
 export async function scrapeOtto() {
   const allProducts = [];
   const seenUrls = new Set();
 
-  let browser;
+  let browserObj;
   try {
-    browser = await launchBrowser();
-    const page = await browser.newPage();
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-    );
+    browserObj = await safeLaunchBrowser();
+    if (browserObj?.browser) {
+      const { browser } = browserObj;
+      const page = await browser.newPage();
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      );
 
-    for (const { url, category } of OTTO_URLS) {
-      try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
-        await new Promise((r) => setTimeout(r, 2000));
-        const html = await page.content();
-        const extracted = extractProductsFromHtml(html, category);
+      for (const { url, category } of OTTO_URLS) {
+        try {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
+          await new Promise((r) => setTimeout(r, 2000));
+          const html = await page.content();
+          const extracted = extractProductsFromHtml(html, category);
 
-        for (const p of extracted) {
-          if (!seenUrls.has(p.url)) {
-            seenUrls.add(p.url);
-            allProducts.push(p);
+          for (const p of extracted) {
+            if (!seenUrls.has(p.url)) {
+              seenUrls.add(p.url);
+              allProducts.push(p);
+            }
           }
+        } catch (err) {
+          console.error(`[otto-de] Error scraping ${url}: ${err.message}`);
         }
-      } catch (err) {
-        console.error(`[otto-de] Error scraping ${url}: ${err.message}`);
       }
     }
   } catch (err) {
-    console.error(`[otto-de] Browser launch error: ${err.message}`);
+    console.error(`[otto-de] Browser error: ${err.message}`);
   } finally {
-    if (browser) await browser.close();
+    if (browserObj?.browser) await browserObj.browser.close();
   }
 
   if (allProducts.length === 0) {

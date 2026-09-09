@@ -1,5 +1,3 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { JSDOM } from "jsdom";
 import nwsapi from "nwsapi";
 import { existsSync } from "fs";
@@ -7,14 +5,13 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { getTopAmazonProducts } from "../db.js";
 import { searchEbayAPI } from "./ebay-api.js";
+import { safeLaunchBrowser } from "../browserHelper.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = join(__dirname, "..", "..", ".env");
 if (existsSync(envPath)) {
   try { process.loadEnvFile(envPath); } catch {}
 }
-
-puppeteer.use(StealthPlugin());
 
 export function cleanSearchQuery(title) {
   if (!title) return "";
@@ -566,57 +563,61 @@ export async function scrapeEbayEU(countries = null) {
 
   let browserObj;
   try {
-    browserObj = await launchBrowser();
-    const { browser, auth } = browserObj;
-    const page = await browser.newPage();
-    if (auth) await page.authenticate(auth);
+    browserObj = await safeLaunchBrowser();
+    if (browserObj?.browser) {
+      const { browser, auth } = browserObj;
+      const page = await browser.newPage();
+      if (auth) await page.authenticate(auth);
 
-    await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      );
 
-    for (const storeId of targetStores) {
-      const countryCode = storeId.replace("ebay-", "").toUpperCase();
+      for (const storeId of targetStores) {
+        const countryCode = storeId.replace("ebay-", "").toUpperCase();
 
-      // Retrieve top Amazon products to guide search
-      let amazonProds = [];
-      try {
-        amazonProds = getTopAmazonProducts(countryCode, 5);
-      } catch (e) {
-        console.warn(`[${storeId}] Could not get Amazon products from DB:`, e.message);
-      }
+        // Retrieve top Amazon products to guide search
+        let amazonProds = [];
+        try {
+          amazonProds = getTopAmazonProducts(countryCode, 5);
+        } catch (e) {
+          console.warn(`[${storeId}] Could not get Amazon products from DB:`, e.message);
+        }
 
-      const storeProducts = [];
-      const seenUrls = new Set();
+        const storeProducts = [];
+        const seenUrls = new Set();
 
-      if (amazonProds && amazonProds.length > 0) {
-        for (const amzProd of amazonProds) {
-          const query = cleanSearchQuery(amzProd.name);
-          if (!query) continue;
-          const searchUrl = buildEbaySearchUrl(query, countryCode);
+        if (amazonProds && amazonProds.length > 0) {
+          for (const amzProd of amazonProds) {
+            const query = cleanSearchQuery(amzProd.name);
+            if (!query) continue;
+            const searchUrl = buildEbaySearchUrl(query, countryCode);
 
-          try {
-            await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 20000 });
-            await new Promise((r) => setTimeout(r, 1500));
-            const html = await page.content();
-            const extracted = extractProductsFromHtml(html, amzProd.category || "General", storeId, query);
+            try {
+              await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 20000 });
+              await new Promise((r) => setTimeout(r, 1500));
+              const html = await page.content();
+              const extracted = extractProductsFromHtml(html, amzProd.category || "General", storeId, query);
 
-            for (const p of extracted) {
-              if (!seenUrls.has(p.url)) {
-                seenUrls.add(p.url);
-                storeProducts.push(p);
+              for (const p of extracted) {
+                if (!seenUrls.has(p.url)) {
+                  seenUrls.add(p.url);
+                  storeProducts.push(p);
+                }
               }
+            } catch (err) {
+              console.error(`[${storeId}] Search error for query '${query}': ${err.message}`);
             }
-          } catch (err) {
-            console.error(`[${storeId}] Search error for query '${query}': ${err.message}`);
           }
         }
-      }
 
-      if (storeProducts.length === 0 && FALLBACK_EBAY_PRODUCTS[storeId]) {
-        storeProducts.push(...FALLBACK_EBAY_PRODUCTS[storeId]);
-      }
+        if (storeProducts.length === 0 && FALLBACK_EBAY_PRODUCTS[storeId]) {
+          storeProducts.push(...FALLBACK_EBAY_PRODUCTS[storeId]);
+        }
 
-      results[storeId] = storeProducts.length;
-      allProducts.push(...storeProducts);
+        results[storeId] = storeProducts.length;
+        allProducts.push(...storeProducts);
+      }
     }
   } catch (err) {
     console.error(`[ebay-eu] Browser launch error: ${err.message}`);

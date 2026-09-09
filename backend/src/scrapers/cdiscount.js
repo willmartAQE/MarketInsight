@@ -1,17 +1,14 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { JSDOM } from "jsdom";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { safeLaunchBrowser } from "../browserHelper.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = join(__dirname, "..", "..", ".env");
 if (existsSync(envPath)) {
   try { process.loadEnvFile(envPath); } catch {}
 }
-
-puppeteer.use(StealthPlugin());
 
 const CDISCOUNT_URLS = [
   { url: "https://www.cdiscount.com/high-tech/v-107-0.html", category: "Electronics" },
@@ -31,7 +28,7 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
     category: "Kitchen",
     source: "cdiscount",
     url: "https://www.cdiscount.com/electromenager/petits-appareils-de-cuisson/friteuse-3-l-continental-edison-cerfr3in2-2000w/f-1102002-cerfr3in2.html",
-    image_url: "https://i.cdscdn.com/pdt2/i/n/2/1/512x512/cerfr3in2/it/friteuse-3-l-continental-edison-cerfr3in2-2000w.jpg",
+    image_url: null,
     seller: "Cdiscount",
     availability: "In Stock",
     country: "FR",
@@ -47,7 +44,7 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
     category: "Home & Garden",
     source: "cdiscount",
     url: "https://www.cdiscount.com/electromenager/aspirateurs-nettoyeurs/proscenic-po11-ultra-aspirateur-balai-sans-fil-55k/f-1101410-aacvz22628.html",
-    image_url: "https://i.cdscdn.com/pdt2/6/2/8/1/512x512/aacvz22628/it/proscenic-po11-ultra-aspirateur-balai-sans-fil-55k.jpg",
+    image_url: null,
     seller: "Cdiscount",
     availability: "In Stock",
     country: "FR",
@@ -63,7 +60,7 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
     category: "Kitchen",
     source: "cdiscount",
     url: "https://www.cdiscount.com/electromenager/lavage-sechage/lave-linge-hublot-continental-edison-cell12140/f-1100104-cell12140isp.html",
-    image_url: "https://i.cdscdn.com/pdt2/i/s/p/1/512x512/cell12140isp/it/lave-linge-hublot-continental-edison-cell12140.jpg",
+    image_url: null,
     seller: "Cdiscount",
     availability: "In Stock",
     country: "FR",
@@ -79,7 +76,7 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
     category: "Kitchen",
     source: "cdiscount",
     url: "https://www.cdiscount.com/electromenager/lave-vaisselle/lave-vaisselle-pose-libre-whirlpool-owfc3c26x-14/f-11025-whiowfc2c26x.html",
-    image_url: "https://i.cdscdn.com/pdt2/2/6/x/1/512x512/whiowfc2c26x/it/lave-vaisselle-pose-libre-whirlpool-owfc3c26x-14.jpg",
+    image_url: null,
     seller: "Cdiscount",
     availability: "In Stock",
     country: "FR",
@@ -95,7 +92,7 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
     category: "Kitchen",
     source: "cdiscount",
     url: "https://www.cdiscount.com/electromenager/refrigerateur-congelateur/refrigerateur-combine-samsung-rb33b610esa-no/f-1100309-sam1732144803716.html",
-    image_url: "https://i.cdscdn.com/pdt2/7/1/6/1/512x512/sam1732144803716/it/refrigerateur-combine-samsung-rb33b610esa-no.jpg",
+    image_url: null,
     seller: "Cdiscount",
     availability: "In Stock",
     country: "FR",
@@ -111,7 +108,7 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
     category: "Kitchen",
     source: "cdiscount",
     url: "https://www.cdiscount.com/electromenager/lavage-sechage/lave-linge-hublot-samsung-ecobubble-ww90cgc04dab/f-1100104-sam1710979065252.html",
-    image_url: "https://i.cdscdn.com/pdt2/2/5/2/1/512x512/sam1710979065252/it/lave-linge-hublot-samsung-ecobubble-ww90cgc04dab.jpg",
+    image_url: null,
     seller: "Samsung Store",
     availability: "In Stock",
     country: "FR",
@@ -178,68 +175,42 @@ function extractProductsFromHtml(html, defaultCategory) {
   return products;
 }
 
-async function launchBrowser() {
-  const proxy = process.env.CDISCOUNT_PROXY || process.env.PROXY_URL || process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
-  const args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled"];
-  
-  let auth = null;
-  if (proxy) {
-    try {
-      const parsed = new URL(proxy);
-      if (parsed.username || parsed.password) {
-        auth = { username: decodeURIComponent(parsed.username), password: decodeURIComponent(parsed.password) };
-        args.push(`--proxy-server=${parsed.protocol}//${parsed.host}`);
-      } else {
-        args.push(`--proxy-server=${proxy}`);
-      }
-    } catch {
-      args.push(`--proxy-server=${proxy}`);
-    }
-  }
-
-  const browser = await puppeteer.launch({
-    headless: "new",
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    args,
-  });
-
-  return { browser, auth };
-}
-
 export async function scrapeCdiscount() {
   const allProducts = [];
   const seenUrls = new Set();
 
   let browserObj;
   try {
-    browserObj = await launchBrowser();
-    const { browser, auth } = browserObj;
-    const page = await browser.newPage();
-    if (auth) await page.authenticate(auth);
+    browserObj = await safeLaunchBrowser();
+    if (browserObj?.browser) {
+      const { browser, auth } = browserObj;
+      const page = await browser.newPage();
+      if (auth) await page.authenticate(auth);
 
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-    );
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      );
 
-    for (const { url, category } of CDISCOUNT_URLS) {
-      try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
-        await new Promise((r) => setTimeout(r, 2000));
-        const html = await page.content();
-        const extracted = extractProductsFromHtml(html, category);
+      for (const { url, category } of CDISCOUNT_URLS) {
+        try {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
+          await new Promise((r) => setTimeout(r, 2000));
+          const html = await page.content();
+          const extracted = extractProductsFromHtml(html, category);
 
-        for (const p of extracted) {
-          if (!seenUrls.has(p.url)) {
-            seenUrls.add(p.url);
-            allProducts.push(p);
+          for (const p of extracted) {
+            if (!seenUrls.has(p.url)) {
+              seenUrls.add(p.url);
+              allProducts.push(p);
+            }
           }
+        } catch (err) {
+          console.error(`[cdiscount] Error scraping ${url}: ${err.message}`);
         }
-      } catch (err) {
-        console.error(`[cdiscount] Error scraping ${url}: ${err.message}`);
       }
     }
   } catch (err) {
-    console.error(`[cdiscount] Browser launch error: ${err.message}`);
+    console.error(`[cdiscount] Browser error: ${err.message}`);
   } finally {
     if (browserObj?.browser) await browserObj.browser.close();
   }

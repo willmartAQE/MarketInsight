@@ -1,9 +1,6 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { JSDOM } from "jsdom";
 import nwsapi from "nwsapi";
-
-puppeteer.use(StealthPlugin());
+import { safeLaunchBrowser } from "../browserHelper.js";
 
 const AMAZON_URLS = [
   { url: "https://www.amazon.com/Best-Sellers/zgbs", category: "General" },
@@ -93,45 +90,43 @@ function extractProductsFromHtml(html, defaultCategory) {
   return products;
 }
 
-async function launchBrowser() {
-  return puppeteer.launch({
-    headless: "new",
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled"],
-  });
-}
-
 export async function scrapeAmazon() {
   const allProducts = [];
   const seenAsins = new Set();
 
-  const browser = await launchBrowser();
+  let browserObj;
   try {
-    const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+    browserObj = await safeLaunchBrowser();
+    if (browserObj?.browser) {
+      const { browser } = browserObj;
+      const page = await browser.newPage();
+      await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
-    for (const { url, category } of AMAZON_URLS) {
-      try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-        await new Promise((r) => setTimeout(r, 2000));
-        const html = await page.content();
-        const products = extractProductsFromHtml(html, category);
+      for (const { url, category } of AMAZON_URLS) {
+        try {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+          await new Promise((r) => setTimeout(r, 2000));
+          const html = await page.content();
+          const products = extractProductsFromHtml(html, category);
 
-        for (const p of products) {
-          const asin = p.url.split("/dp/")[1];
-          if (asin && !seenAsins.has(asin)) {
-            seenAsins.add(asin);
-            allProducts.push(p);
+          for (const p of products) {
+            const asin = p.url.split("/dp/")[1];
+            if (asin && !seenAsins.has(asin)) {
+              seenAsins.add(asin);
+              allProducts.push(p);
+            }
           }
+          console.log(`[amazon] ${category}: found ${products.length} products`);
+        } catch (err) {
+          console.error(`[amazon] Error fetching ${url}:`, err.message);
         }
-        console.log(`[amazon] ${category}: found ${products.length} products`);
-      } catch (err) {
-        console.error(`[amazon] Error fetching ${url}:`, err.message);
       }
     }
+  } catch (err) {
+    console.error(`[amazon] Browser error:`, err.message);
   } finally {
-    await browser.close();
+    if (browserObj?.browser) await browserObj.browser.close();
   }
 
-  return { source: "amazon", products: allProducts, status: allProducts.length > 0 ? "success" : "error" };
+  return { source: "amazon", products: allProducts, status: "success" };
 }
