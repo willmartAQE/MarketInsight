@@ -14,8 +14,9 @@ import { TopProductsChart } from "./TopProductsChart";
 import { CategoryPieChart } from "./CategoryPieChart";
 import { PriceDistribution } from "./PriceDistribution";
 import { SourceComparison } from "./SourceComparison";
+import { DuckDBPlotlyAnalytics } from "./DuckDBPlotlyAnalytics";
 import { FilterBar } from "./FilterBar";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid } from "lucide-react";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -282,6 +283,8 @@ export function Dashboard() {
     : ["walmart", "amazon"];
   const categories = stats?.categories.map((c) => c.name) || [];
 
+  const [activeTab, setActiveTab] = useState<"overview" | "duckdb">("overview");
+
   return (
     <div className="min-h-screen bg-gray-50 relative pb-20">
       <header className="border-b border-gray-200 bg-white">
@@ -334,6 +337,31 @@ export function Dashboard() {
               </button>
             </div>
           </div>
+
+          <div className="flex items-center gap-2 pt-4 border-t border-gray-100 mt-4">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
+                activeTab === "overview"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4 text-blue-600" />
+              Overview Analytics
+            </button>
+            <button
+              onClick={() => setActiveTab("duckdb")}
+              className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
+                activeTab === "duckdb"
+                  ? "bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <Database className="h-4 w-4 text-indigo-600" />
+              DuckDB OLAP Insights (Plotly.js)
+            </button>
+          </div>
         </div>
       </header>
 
@@ -372,37 +400,43 @@ export function Dashboard() {
       )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <StatsCards stats={stats} />
+        {activeTab === "duckdb" ? (
+          <DuckDBPlotlyAnalytics />
+        ) : (
+          <>
+            <StatsCards stats={stats} />
 
-        <FilterBar
-          filters={filters}
-          onChange={handleFilterChange}
-          sources={sources}
-          categories={categories}
-          stores={stores}
-          currencyMode={currencyMode}
-          onCurrencyModeChange={setCurrencyMode}
-        />
+            <FilterBar
+              filters={filters}
+              onChange={handleFilterChange}
+              sources={sources}
+              categories={categories}
+              stores={stores}
+              currencyMode={currencyMode}
+              onCurrencyModeChange={setCurrencyMode}
+            />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TopProductsChart products={topProducts} />
-          <CategoryPieChart stats={stats} />
-        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TopProductsChart products={topProducts} />
+              <CategoryPieChart stats={stats} />
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PriceDistribution stats={stats} />
-          <SourceComparison stats={stats} />
-        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PriceDistribution stats={stats} />
+              <SourceComparison stats={stats} />
+            </div>
 
-        <ProductTable
-          products={products}
-          loading={loading}
-          currencyMode={currencyMode}
-          onExportCSV={() => exportToCSV(products, currencyMode)}
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onToggleSelectAll={handleToggleSelectAll}
-        />
+            <ProductTable
+              products={products}
+              loading={loading}
+              currencyMode={currencyMode}
+              onExportCSV={() => exportToCSV(products, currencyMode)}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onToggleSelectAll={handleToggleSelectAll}
+            />
+          </>
+        )}
       </main>
 
       {/* Floating Comparison Toolbar */}

@@ -3,18 +3,25 @@ import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import {
+  getDb,
+  normalizeCountryCode,
+  upsertProduct,
   getProducts,
   getStats,
   getTopProducts,
-  getPriceHistory,
   getCategories,
   getSources,
   getCountries,
+  getPriceHistory,
   getScrapeLogs,
-  upsertProduct,
   addPriceHistory,
   logScrape,
 } from "./db.js";
+import {
+  getDuckDBMarketplaceHeatmap,
+  getDuckDBOutlierDeals,
+  getDuckDBCategoryQuantiles
+} from "./duckdb.js";
 import { STORES, AMAZON_EU } from "./stores.js";
 import { scrapeWalmart } from "./scrapers/walmart.js";
 import { scrapeAmazon } from "./scrapers/amazon.js";
@@ -327,6 +334,34 @@ app.get("/api/stores", (_req, res) => {
 
 app.get("/api/scrape-logs", (req, res) => {
   res.json(getScrapeLogs(parseInt(req.query.limit) || 10));
+});
+
+// DuckDB OLAP Analytics Endpoints
+app.get("/api/analytics/duckdb/heatmap", async (_req, res) => {
+  try {
+    const data = await getDuckDBMarketplaceHeatmap();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/duckdb/outliers", async (_req, res) => {
+  try {
+    const data = await getDuckDBOutlierDeals();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/duckdb/quantiles", async (_req, res) => {
+  try {
+    const data = await getDuckDBCategoryQuantiles();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/api/scrape", (req, res) => {

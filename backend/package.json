@@ -10,6 +10,7 @@
   "dependencies": {
     "better-sqlite3": "^11.0.0",
     "cors": "^2.8.5",
+    "duckdb": "^1.4.4",
     "express": "^4.21.0",
     "got-scraping": "^4.2.1",
     "jsdom": "^25.0.0",

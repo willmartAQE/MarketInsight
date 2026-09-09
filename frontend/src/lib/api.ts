@@ -94,3 +94,15 @@ export async function startAIScrape(url: string, model: string = "ollama/llama3.
   return res.json();
 }
 
+export async function getDuckDBHeatmap(): Promise<any[]> {
+  return fetchJSON<any[]>("/api/analytics/duckdb/heatmap");
+}
+
+export async function getDuckDBOutliers(): Promise<any[]> {
+  return fetchJSON<any[]>("/api/analytics/duckdb/outliers");
+}
+
+export async function getDuckDBQuantiles(): Promise<any[]> {
+  return fetchJSON<any[]>("/api/analytics/duckdb/quantiles");
+}
+
