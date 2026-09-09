@@ -1,15 +1,9 @@
-const AMAZON_AFFILIATE_TAGS: Record<string, string> = {
-  'amazon.co.uk': 'ukbestdeal02-21',
-  'amazon.it': 'srzone00-21',
-  'amazon.com': 'dealscoutus02-20',
-  'amazon.de': 'dealscoutde-21',
-  'amazon.fr': 'dealscoutus02-20',
-  'amazon.es': 'dealscoutus02-20',
-  'amazon.ca': 'dealscoutus02-20',
-};
-
 /**
  * Returns the product store URL with country-specific Amazon affiliate tag automatically appended.
+ * Also strips Amazon Creator SiteStripe redirect parameters (ar_su, creatorsDisableRedirect, etc.)
+ * that previously forced cross-country redirects.
+ *
+ * Mappings:
  * - UK: tag=ukbestdeal02-21
  * - IT: tag=srzone00-21
  * - US: tag=dealscoutus02-20
@@ -18,7 +12,7 @@ const AMAZON_AFFILIATE_TAGS: Record<string, string> = {
  * - ES: tag=dealscoutus02-20
  * - CA: tag=dealscoutus02-20
  */
-export function getAutoEnglishUrl(rawUrl?: string | null): string {
+export function getAutoEnglishUrl(rawUrl?: string | null, countryCode?: string): string {
   if (!rawUrl || typeof rawUrl !== 'string') return '#';
   let url = rawUrl.trim();
   if (!url || url === '#') return '#';
@@ -32,17 +26,34 @@ export function getAutoEnglishUrl(rawUrl?: string | null): string {
       parsed = new URL(url);
     }
 
-    const hostname = parsed.hostname.toLowerCase();
+    // Strip Amazon SiteStripe/Creator redirect parameters that cause forced cross-country redirects
+    parsed.searchParams.delete('ar_su');
+    parsed.searchParams.delete('ar_srct');
+    parsed.searchParams.delete('creatorsDisableRedirect');
+    parsed.searchParams.delete('ar_mt');
+    parsed.searchParams.delete('linkCode');
 
-    // Append Amazon Affiliate Tag based on domain
+    const hostname = parsed.hostname.toLowerCase();
+    const upperCountry = (countryCode || '').toUpperCase();
+
+    // Append Amazon Affiliate Tag based on domain / country code
     if (hostname.includes('amazon.')) {
       let affiliateTag = 'dealscoutus02-20'; // default fallback
 
-      for (const [domain, tag] of Object.entries(AMAZON_AFFILIATE_TAGS)) {
-        if (hostname === domain || hostname.endsWith('.' + domain)) {
-          affiliateTag = tag;
-          break;
-        }
+      if (hostname.endsWith('.co.uk') || hostname.endsWith('.uk') || upperCountry === 'UK' || upperCountry === 'GB') {
+        affiliateTag = 'ukbestdeal02-21';
+      } else if (hostname.endsWith('.it') || upperCountry === 'IT') {
+        affiliateTag = 'srzone00-21';
+      } else if (hostname.endsWith('.de') || upperCountry === 'DE') {
+        affiliateTag = 'dealscoutde-21';
+      } else if (hostname.endsWith('.fr') || upperCountry === 'FR') {
+        affiliateTag = 'dealscoutus02-20';
+      } else if (hostname.endsWith('.es') || upperCountry === 'ES') {
+        affiliateTag = 'dealscoutus02-20';
+      } else if (hostname.endsWith('.ca') || upperCountry === 'CA') {
+        affiliateTag = 'dealscoutus02-20';
+      } else if (hostname.endsWith('.com') || upperCountry === 'US') {
+        affiliateTag = 'dealscoutus02-20';
       }
 
       parsed.searchParams.set('tag', affiliateTag);
