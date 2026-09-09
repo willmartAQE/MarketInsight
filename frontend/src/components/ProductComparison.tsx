@@ -19,7 +19,8 @@ import {
   Globe,
   Sparkles,
   Layers,
-  Info
+  Info,
+  Package
 } from "lucide-react";
 import {
   BarChart,
@@ -76,6 +77,7 @@ export function ProductComparison({
   }, [products]);
 
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   const activeGroup = useMemo(() => {
     if (!productGroups || productGroups.length === 0) return null;
@@ -281,12 +283,17 @@ export function ProductComparison({
                         </button>
 
                         <div className="pr-6">
-                          {product.image_url && (
+                          {product.image_url && !imgErrors[product.id] ? (
                             <img
                               src={product.image_url}
                               alt={product.name}
                               className="h-28 w-28 object-contain bg-gray-50 rounded-lg p-2 border border-gray-200 mb-3 mx-auto"
+                              onError={() => setImgErrors(prev => ({ ...prev, [product.id]: true }))}
                             />
+                          ) : (
+                            <div className="h-28 w-28 bg-gray-50 rounded-lg border border-gray-200 mb-3 mx-auto flex items-center justify-center text-gray-400">
+                              <Package className="h-10 w-10 text-gray-300" />
+                            </div>
                           )}
                           <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium mb-2 ${srcInfo.style}`}>
                             {srcInfo.label}

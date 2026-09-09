@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Product } from "@/types";
-import { ExternalLink, Star, ShoppingCart, FileSpreadsheet, Globe } from "lucide-react";
+import { ExternalLink, Star, ShoppingCart, FileSpreadsheet, Globe, Package } from "lucide-react";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
 
 interface ProductTableProps {
@@ -53,6 +54,7 @@ export function ProductTable({
   onToggleSelect,
   onToggleSelectAll
 }: ProductTableProps) {
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
@@ -155,12 +157,17 @@ export function ProductTable({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      {product.image_url && (
+                      {product.image_url && !imgErrors[product.id] ? (
                         <img
                           src={product.image_url}
                           alt={product.name}
-                          className="h-10 w-10 rounded-lg object-cover bg-gray-100 shrink-0"
+                          className="h-10 w-10 rounded-lg object-contain bg-gray-50 shrink-0 border border-gray-100 p-0.5"
+                          onError={() => setImgErrors(prev => ({ ...prev, [product.id]: true }))}
                         />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 text-gray-400">
+                          <Package className="h-5 w-5" />
+                        </div>
                       )}
                       <span className="font-medium text-gray-900 line-clamp-2 max-w-[300px]">
                         {product.name}

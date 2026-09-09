@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { getDuckDBHeatmap, getDuckDBOutliers, getDuckDBQuantiles } from "@/lib/api";
-import { Database, Zap, Sparkles, TrendingDown, Layers, Loader2, ExternalLink, Tag, Star } from "lucide-react";
+import { Database, Zap, Sparkles, TrendingDown, Layers, Loader2, ExternalLink, Tag, Star, Package } from "lucide-react";
 
 // Dynamically import Plotly with SSR disabled for Next.js compatibility
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -15,6 +15,7 @@ export function DuckDBPlotlyAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<any | null>(null);
+  const [imgErrors, setImgErrors] = useState<Record<string | number, boolean>>({});
 
   useEffect(() => {
     async function loadAnalytics() {
@@ -250,12 +251,17 @@ export function DuckDBPlotlyAnalytics() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all group"
               >
-                {deal.image_url && (
+                {deal.image_url && !imgErrors[deal.id] ? (
                   <img
                     src={deal.image_url}
                     alt={deal.name}
                     className="h-12 w-12 rounded-md object-contain bg-gray-50 p-1 border border-gray-100 shrink-0"
+                    onError={() => setImgErrors(prev => ({ ...prev, [deal.id]: true }))}
                   />
+                ) : (
+                  <div className="h-12 w-12 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 text-gray-400">
+                    <Package className="h-6 w-6 text-gray-400" />
+                  </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-semibold text-gray-900 truncate group-hover:text-emerald-700">

@@ -29,8 +29,8 @@ const FALLBACK_ELCORTEINGLES_PRODUCTS = [
     reviews_count: 840,
     category: "Electronics",
     source: "elcorteingles",
-    url: "https://www.elcorteingles.es/electronica/A202047813-8806097821250-pr-movil-samsung-galaxy-s26-ultra-69-qualcomm-snapdragon-8-elite-negro-256-gb-12-gb-ram/",
-    image_url: "https://sgfm.elcorteingles.es/SGFM/01/15/2/01152843000508/01152843000508_00_512x512.jpg",
+    url: "https://www.elcorteingles.es/buscar/?s=Samsung+Galaxy+S26+Ultra",
+    image_url: "https://dam.elcorteingles.es/producto/www-001057063614564-00.jpg",
     seller: "El Corte Inglés",
     availability: "In Stock",
     country: "ES",
@@ -45,8 +45,8 @@ const FALLBACK_ELCORTEINGLES_PRODUCTS = [
     reviews_count: 340,
     category: "Electronics",
     source: "elcorteingles",
-    url: "https://www.elcorteingles.es/electronica/A49503412-apple-iphone-15-128-gb-negro-telefono-movil/",
-    image_url: "https://sgfm.elcorteingles.es/SGFM/01/15/2/01152843000508/01152843000508_00_512x512.jpg",
+    url: "https://www.elcorteingles.es/buscar/?s=Apple+iPhone+15",
+    image_url: "https://dam.elcorteingles.es/producto/www-001057063613186-00.jpg",
     seller: "El Corte Inglés",
     availability: "In Stock",
     country: "ES",
@@ -61,8 +61,8 @@ const FALLBACK_ELCORTEINGLES_PRODUCTS = [
     reviews_count: 520,
     category: "Kitchen",
     source: "elcorteingles",
-    url: "https://www.elcorteingles.es/electrodomesticos/A41209876-freidora-de-aire-moulinex-ez505810-easy-fry-and-grill/",
-    image_url: "https://sgfm.elcorteingles.es/SGFM/01/15/3/01153843000102/01153843000102_00_512x512.jpg",
+    url: "https://www.elcorteingles.es/buscar/?s=Moulinex+Easy+Fry",
+    image_url: "https://dam.elcorteingles.es/producto/www-001007742521342-00.jpg",
     seller: "El Corte Inglés",
     availability: "In Stock",
     country: "ES",
@@ -77,8 +77,8 @@ const FALLBACK_ELCORTEINGLES_PRODUCTS = [
     reviews_count: 280,
     category: "Kitchen",
     source: "elcorteingles",
-    url: "https://www.elcorteingles.es/electrodomesticos/A38901234-robot-de-cocina-taurus-mycook-touch/",
-    image_url: "https://sgfm.elcorteingles.es/SGFM/01/15/4/01154843000201/01154843000201_00_512x512.jpg",
+    url: "https://www.elcorteingles.es/buscar/?s=Taurus+Mycook+Touch",
+    image_url: "https://dam.elcorteingles.es/producto/www-001007740756726-00.jpg",
     seller: "El Corte Inglés",
     availability: "In Stock",
     country: "ES",
@@ -93,8 +93,8 @@ const FALLBACK_ELCORTEINGLES_PRODUCTS = [
     reviews_count: 810,
     category: "Electronics",
     source: "elcorteingles",
-    url: "https://www.elcorteingles.es/electronica/A47601234-smart-tv-lg-oled55c34la-55-4k-uhd-hdr/",
-    image_url: "https://sgfm.elcorteingles.es/SGFM/01/15/5/01155843000304/01155843000304_00_512x512.jpg",
+    url: "https://www.elcorteingles.es/buscar/?s=Smart+TV+LG+OLED+55",
+    image_url: "https://dam.elcorteingles.es/producto/www-001094612301070-00.jpg",
     seller: "El Corte Inglés",
     availability: "In Stock",
     country: "ES",
@@ -109,8 +109,8 @@ const FALLBACK_ELCORTEINGLES_PRODUCTS = [
     reviews_count: 650,
     category: "Home & Garden",
     source: "elcorteingles",
-    url: "https://www.elcorteingles.es/electrodomesticos/A45209876-aspirador-escoba-sin-cable-dyson-v15-detect-extra/",
-    image_url: "https://sgfm.elcorteingles.es/SGFM/01/15/6/01156843000405/01156843000405_00_512x512.jpg",
+    url: "https://www.elcorteingles.es/buscar/?s=Dyson+V15+Detect",
+    image_url: "https://dam.elcorteingles.es/producto/www-001007746289938-00.jpg",
     seller: "El Corte Inglés",
     availability: "In Stock",
     country: "ES",
@@ -146,9 +146,7 @@ function extractProductsFromHtml(html, defaultCategory) {
     if (link && !link.startsWith("http")) link = `https://www.elcorteingles.es${link}`;
 
     if (!link) {
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      const hash = Math.abs(name.split("").reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)).toString(16);
-      link = `https://www.elcorteingles.es/electronica/A${hash}-${slug}/`;
+      link = `https://www.elcorteingles.es/buscar/?s=${encodeURIComponent(name)}`;
     }
 
     let imageUrl = item.querySelector("img")?.getAttribute("src") || item.querySelector("img")?.getAttribute("data-src");
