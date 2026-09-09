@@ -134,8 +134,26 @@ export function exportToCSV(
 }
 
 export function Dashboard() {
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [currencyMode, setCurrencyMode] = useState<CurrencyMode>("local");
+  const [filters, setFilters] = useState<Filters>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("marketinsight_active_filters");
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to load saved filters:", e);
+      }
+    }
+    return DEFAULT_FILTERS;
+  });
+
+  const [currencyMode, setCurrencyMode] = useState<CurrencyMode>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("marketinsight_currency_mode");
+      if (saved === "usd" || saved === "local") return saved;
+    }
+    return "local";
+  });
+
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [topProducts, setTopProducts] = useState<Product[]>([]);
@@ -147,7 +165,19 @@ export function Dashboard() {
   const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
   const [isGroupingModalOpen, setIsGroupingModalOpen] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
-  const prevCountryRef = useRef<string | null>(null);
+  const prevCountryRef = useRef<string | null>(filters.country || null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("marketinsight_active_filters", JSON.stringify(filters));
+    } catch (e) {}
+  }, [filters]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("marketinsight_currency_mode", currencyMode);
+    } catch (e) {}
+  }, [currencyMode]);
 
   useEffect(() => {
     getStores().then(setStores).catch(console.error);
@@ -327,18 +357,32 @@ export function Dashboard() {
     setActiveTab(newTab);
   };
 
-  const handleOpenTrendsForSelected = () => {
-    const selectedProds = (allProducts.length > 0 ? allProducts : products).filter((p) => selectedIds.includes(p.id));
-    if (selectedProds.length === 0) return;
-
-    const keywords = selectedProds.map((p) => {
-      const cleanName = p.name
-        .replace(/^(Móvil|Aspirador|Friteuse|Lave-linge|Lave-vaisselle|Réfrigérateur|Robot|Smart TV|TV|Aspirateur|Pequeno Electrodoméstico)\s+/i, "")
-        .trim();
-      const nameToUse = cleanName.length >= 3 ? cleanName : p.name;
-      const parts = nameToUse.split(" ").filter((w) => w.length > 1);
-      return parts.slice(0, 3).join(" ");
+  const getSelectedProductObjects = (): Product[] => {
+    const map = new Map<number, Product>();
+    [...products, ...allProducts, ...topProducts].forEach((p) => {
+      if (p && p.id !== undefined && selectedIds.includes(p.id)) {
+        map.set(p.id, p);
+      }
     });
+    return Array.from(map.values());
+  };
+
+  const handleOpenTrendsForSelected = () => {
+    const selectedProds = getSelectedProductObjects();
+
+    let keywords: string[] = [];
+    if (selectedProds.length > 0) {
+      keywords = selectedProds.map((p) => {
+        const cleanName = p.name
+          .replace(/^(Móvil|Aspirador|Friteuse|Lave-linge|Lave-vaisselle|Réfrigérateur|Robot|Smart TV|TV|Aspirateur|Pequeno Electrodoméstico)\s+/i, "")
+          .trim();
+        const nameToUse = cleanName.length >= 3 ? cleanName : p.name;
+        const parts = nameToUse.split(" ").filter((w) => w.length > 1);
+        return parts.slice(0, 3).join(" ");
+      });
+    } else {
+      keywords = ["Market Demand"];
+    }
 
     setTrendsKeyword(keywords.join(", "));
     setTrendsTriggerToken(Date.now());
