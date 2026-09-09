@@ -220,13 +220,13 @@ export function DuckDBPlotlyAnalytics() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold">DuckDB Open-Source Analytical Intelligence</h2>
+              <h2 className="text-xl font-bold">Advanced Market Intelligence Engine</h2>
               <span className="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
-                <Zap className="h-3 w-3" /> Native Open Analytics
+                <Zap className="h-3 w-3" /> High-Speed Analytics
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-1">
-              Statistical clustering, cross-border price arbitrage spread detection, and composite attractiveness scoring computed via DuckDB OLAP SQL.
+              Statistical clustering, cross-border price arbitrage spread detection, and composite attractiveness scoring computed via High-Speed OLAP Data Processing.
             </p>
           </div>
         </div>

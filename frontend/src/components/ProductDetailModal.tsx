@@ -305,7 +305,7 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-indigo-600" />
-                  <h4 className="text-sm font-bold text-gray-900">NLP Review Sentiment Analysis (Natural JS)</h4>
+                  <h4 className="text-sm font-bold text-gray-900">NLP Review Sentiment Analysis</h4>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full border ${
@@ -356,7 +356,7 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-emerald-400" />
-                  <h4 className="text-sm font-bold text-white">30-Day Predictive Price Forecast (Simple-Statistics)</h4>
+                  <h4 className="text-sm font-bold text-white">30-Day Predictive Price Forecast</h4>
                 </div>
                 <span className={`text-xs font-black px-2.5 py-0.5 rounded-full border ${forecast.recBadge}`}>
                   {forecast.recommendation}

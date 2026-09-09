@@ -38,7 +38,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
         }, 1500);
       } else {
         setIsError(true);
-        setResultMessage(res.error || "Estrazione fallita. Verifica l'URL o il modello Ollama.");
+        setResultMessage(res.error || "Estrazione fallita. Verifica l'URL o il modello AI.");
       }
     } catch (err: any) {
       setIsError(true);
@@ -54,7 +54,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
         <div className="flex items-center justify-between pb-4 border-b border-gray-100">
           <div className="flex items-center gap-2 text-purple-700 font-semibold text-lg">
             <Sparkles className="h-5 w-5 text-purple-600" />
-            ScrapeGraphAI + Ollama Locale
+            Estrazione Intelligente AI
           </div>
           <button
             onClick={onClose}
@@ -81,7 +81,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Modello Ollama Locale
+              Modello AI Locale
             </label>
             <select
               value={model}
@@ -139,7 +139,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Elaborazione Ollama in corso...
+                  Elaborazione AI in corso...
                 </>
               ) : (
                 <>
