@@ -153,8 +153,9 @@ export async function scrapeElCorteIngles() {
 
             if (!price || price <= 0) return;
 
-            const linkEl = card.find("a[href*='-pr-'], a[href*='/electrodomesticos/'], a[href*='/electronica/'], a").first();
+            const linkEl = card.find("a[href*='-pr-'], a[href*='/electrodomesticos/'], a[href*='/electronica/'], a[href*='/hogar/']").first();
             let link = linkEl.attr("href");
+            if (link && (link.includes("/buscar/") || link.includes("search"))) link = null;
             if (link && !link.startsWith("http")) link = `https://www.elcorteingles.es${link}`;
 
             const imgEl = card.find("img").first();
