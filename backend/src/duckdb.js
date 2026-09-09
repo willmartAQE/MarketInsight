@@ -61,6 +61,16 @@ export async function initDuckDB() {
   }
 }
 
+export async function resetDuckDB() {
+  initialized = false;
+  if (dbInstance) {
+    try {
+      await execDuckDB(`DETACH sqlite_db;`);
+    } catch (e) {}
+  }
+  await initDuckDB();
+}
+
 // OLAP Analytics Functions
 
 export async function getDuckDBMarketplaceHeatmap() {

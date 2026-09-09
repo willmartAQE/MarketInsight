@@ -180,3 +180,12 @@ export async function getProductOHLC(productId: number): Promise<OHLCPoint[]> {
   return fetchJSON<OHLCPoint[]>(`/api/analytics/ohlc/${productId}`);
 }
 
+export async function purgeAndRescrapeAll(): Promise<{ jobId: string; status: string; message: string }> {
+  const res = await fetch(`${API_BASE}/api/scrape/purge-and-rescrape`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+

@@ -23,7 +23,8 @@ import {
   getDuckDBCategoryQuantiles,
   getDuckDBPriceClusters,
   getDuckDBCrossBorderArbitrage,
-  getDuckDBMarketAttractiveness
+  getDuckDBMarketAttractiveness,
+  resetDuckDB
 } from "./duckdb.js";
 import { analyzeProductSentiment } from "./nlp.js";
 import { computePriceForecast, computeOHLCData } from "./forecasting.js";
@@ -261,6 +262,44 @@ async function runScrapeJob(jobId, countries, sources) {
       scrapingJobs.get(jobId).progress.push({ source: "otto-de", status: "done", count: saved });
     }
 
+    if (sources.includes("bestbuy") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "bestbuy", status: "running" });
+      const result = await scrapeBestBuy();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("bestbuy", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "bestbuy", status: "done", count: saved });
+    }
+
+    if (sources.includes("sears") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "sears", status: "running" });
+      const result = await scrapeSears();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("sears", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "sears", status: "done", count: saved });
+    }
+
+    if (sources.includes("canada") || sources.includes("bestbuy-ca") || sources.includes("walmart-ca") || sources.includes("all")) {
+      const caResult = await scrapeCanadaStores();
+      let saved = 0;
+      for (const p of caResult.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("canada", caResult.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "canada", status: "done", count: saved });
+    }
+
     scrapingJobs.set(jobId, {
       ...scrapingJobs.get(jobId),
       status: "completed",
@@ -454,6 +493,34 @@ app.post("/api/scrape", (req, res) => {
   runScrapeJob(jobId, countries, scrapeSources);
 
   res.json({ jobId, status: "started" });
+});
+
+app.post("/api/scrape/purge-and-rescrape", async (req, res) => {
+  try {
+    // 1. Purge server-side job status caches & reset DuckDB OLAP connection
+    scrapingJobs.clear();
+    await resetDuckDB();
+
+    // 2. Launch full rescrape across all countries and stores
+    const allCountries = ["us", "ca", "uk", "de", "fr", "es", "it", "nl", "pl"];
+    const allSources = [
+      "walmart", "amazon", "homedepot", "allegro", "bol", "bol-nl",
+      "cdiscount", "otto", "otto-de", "elcorteingles", "bestbuy",
+      "sears", "canada", "bestbuy-ca", "walmart-ca", "all"
+    ];
+
+    const jobId = `purge-job-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    runScrapeJob(jobId, allCountries, allSources);
+
+    res.json({
+      jobId,
+      status: "started",
+      message: "Server cache successfully purged. Initiated full rescrape across all 12 global stores."
+    });
+  } catch (err) {
+    console.error("Purge and rescrape error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/scrape/status/:jobId", (req, res) => {

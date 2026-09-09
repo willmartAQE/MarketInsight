@@ -6,7 +6,7 @@ import { Filters, Product, Stats, CountryStores } from "@/types";
 import { CurrencyMode, formatPrice, getCurrencyInfo } from "@/lib/currency";
 import {
   getProducts, getStats, getTopProducts, getStores,
-  startScrape, getScrapeStatus, ScrapeStatus,
+  startScrape, getScrapeStatus, ScrapeStatus, purgeAndRescrapeAll,
 } from "@/lib/api";
 import { StatsCards } from "./StatsCards";
 import { ProductTable } from "./ProductTable";
@@ -19,7 +19,7 @@ import { FilterBar } from "./FilterBar";
 import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import { ProductGroup } from "@/lib/grouping";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap } from "lucide-react";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -243,6 +243,22 @@ export function Dashboard() {
     };
   }, []);
 
+  const [isPurging, setIsPurging] = useState(false);
+
+  const handlePurgeAndRescrape = useCallback(async () => {
+    setIsPurging(true);
+    setScrapeMessage("⚡ Svuotamento cache server in corso e avvio nuovo scraping su tutti i 12 store...");
+    try {
+      const res = await purgeAndRescrapeAll();
+      pollScrapeStatus(res.jobId);
+    } catch (err: any) {
+      console.error("Purge & Rescrape failed:", err);
+      setScrapeMessage("❌ Errore durante lo svuotamento della cache.");
+      setTimeout(() => setScrapeMessage(null), 4000);
+      setIsPurging(false);
+    }
+  }, [pollScrapeStatus]);
+
   const handleFilterChange = useCallback(async (newFilters: Filters) => {
     const prevCountry = prevCountryRef.current;
     const newCountry = newFilters.country;
@@ -415,6 +431,19 @@ export function Dashboard() {
                   Updated: {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
+              <button
+                onClick={handlePurgeAndRescrape}
+                disabled={isPurging || loading}
+                title="Svuota la cache del server e forza una nuova scansione in tempo reale su tutti gli store"
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 via-amber-600 to-red-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all duration-200 cursor-pointer"
+              >
+                {isPurging ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                ) : (
+                  <Flame className="h-4 w-4 text-amber-200 animate-pulse" />
+                )}
+                <span>{isPurging ? "Svuotamento & Scraping..." : "Svuota Cache & Scrape Completo"}</span>
+              </button>
               <button
                 onClick={() => setIsGroupingModalOpen(true)}
                 className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
