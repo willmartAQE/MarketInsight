@@ -31,7 +31,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Legend
 } from "recharts";
 
 interface ProductComparisonProps {
@@ -124,6 +130,65 @@ export function ProductComparison({
     rating: p.rating || 0,
     reviews: p.reviews_count || 0
   }));
+
+  const maxPrice = Math.max(...activeProducts.map((p) => p.price || 1));
+  const minPrice = Math.min(...activeProducts.map((p) => p.price || 1));
+  const priceRange = Math.max(maxPrice - minPrice, 1);
+
+  const radarData = [
+    {
+      subject: "Price Efficiency",
+      fullMark: 100,
+      ...Object.fromEntries(
+        activeProducts.map((p) => [
+          p.id,
+          Math.round(100 - ((p.price - minPrice) / priceRange) * 50)
+        ])
+      )
+    },
+    {
+      subject: "User Rating",
+      fullMark: 100,
+      ...Object.fromEntries(
+        activeProducts.map((p) => [
+          p.id,
+          Math.round(((p.rating || 4.0) / 5) * 100)
+        ])
+      )
+    },
+    {
+      subject: "Review Density",
+      fullMark: 100,
+      ...Object.fromEntries(
+        activeProducts.map((p) => [
+          p.id,
+          Math.min(100, Math.round(Math.log10(Math.max(p.reviews_count || 10, 1)) * 22))
+        ])
+      )
+    },
+    {
+      subject: "Discount Depth",
+      fullMark: 100,
+      ...Object.fromEntries(
+        activeProducts.map((p) => [
+          p.id,
+          Math.min(100, Math.max(35, Math.round((p.discount_pct || 10) * 1.4 + 30)))
+        ])
+      )
+    },
+    {
+      subject: "Deal Score",
+      fullMark: 100,
+      ...Object.fromEntries(
+        activeProducts.map((p) => {
+          const rScore = ((p.rating || 4.0) / 5) * 40;
+          const revScore = Math.min(30, Math.log10(Math.max(p.reviews_count || 10, 1)) * 7);
+          const pScore = 30 - ((p.price - minPrice) / priceRange) * 20;
+          return [p.id, Math.round(rScore + revScore + pScore)];
+        })
+      )
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
@@ -476,28 +541,81 @@ export function ProductComparison({
           </div>
         </div>
 
-        {/* Visual Chart Comparison */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-blue-600" />
-            Price Visual Comparison
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                formatter={(value: any) => [`${value} ${currencyMode === "usd" ? "$" : ""}`, "Price"]}
-              />
-              <Bar dataKey="price" radius={[6, 6, 0, 0]}>
-                {chartData.map((_, idx) => (
-                  <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Visual Charts Comparison: Radar & Bar Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Multi-Dimensional Radar/Spider Analysis */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-indigo-600" />
+                  Multi-Dimensional Radar Analysis (Spider Chart)
+                </h3>
+                <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                  0-100 Score Matrix
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">
+                Compares selected items across 5 core dimensions: Price Efficiency, Rating, Review Density, Discount Depth, and Overall Deal Score.
+              </p>
+            </div>
+
+            <div className="w-full h-[320px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: "#475569" }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "12px" }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
+                  {activeProducts.map((p, idx) => (
+                    <Radar
+                      key={p.id}
+                      name={p.name.length > 22 ? p.name.slice(0, 20) + "..." : p.name}
+                      dataKey={String(p.id)}
+                      stroke={COLORS[idx % COLORS.length]}
+                      fill={COLORS[idx % COLORS.length]}
+                      fillOpacity={0.25}
+                    />
+                  ))}
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Price Visual Comparison Bar Chart */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-blue-600" />
+                Direct Price Comparison
+              </h3>
+              <p className="text-xs text-gray-500 mb-4">
+                Visualizes raw price difference across selected items in {currencyMode.toUpperCase()}.
+              </p>
+            </div>
+
+            <div className="w-full h-[320px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                    formatter={(value: any) => [`${value} ${currencyMode === "usd" ? "$" : "€"}`, "Price"]}
+                  />
+                  <Bar dataKey="price" radius={[6, 6, 0, 0]}>
+                    {chartData.map((_, idx) => (
+                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
         {/* Real Consumer Demand & Google Trends Search Validation */}
