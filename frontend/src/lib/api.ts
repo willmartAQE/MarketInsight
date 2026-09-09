@@ -189,3 +189,24 @@ export async function purgeAndRescrapeAll(): Promise<{ jobId: string; status: st
   return res.json();
 }
 
+export interface KeepaData {
+  productId: number;
+  name: string;
+  asin: string;
+  domain: string;
+  domainId: number;
+  chartUrl: string;
+  keepaUrl: string;
+  rangeDays: number;
+  hasApiKey: boolean;
+  apiData?: {
+    stats?: any;
+    title?: string;
+    historyPoints?: { date: string; price: number }[];
+  } | null;
+}
+
+export async function getKeepaData(productId: number, rangeDays: number = 90): Promise<KeepaData> {
+  return fetchJSON<KeepaData>(`/api/keepa/${productId}?range=${rangeDays}`);
+}
+

@@ -43,6 +43,13 @@ import { scrapeBestBuy } from "./scrapers/bestbuy.js";
 import { scrapeSears } from "./scrapers/sears.js";
 import { scrapeCanadaStores } from "./scrapers/canada.js";
 import { getGoogleTrendsInterest } from "./scrapers/google-trends.js";
+import {
+  extractAmazonAsin,
+  getKeepaDomainInfo,
+  getKeepaChartUrl,
+  getKeepaProductUrl,
+  fetchKeepaApiData
+} from "./keepa.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -567,6 +574,42 @@ app.get("/api/analytics/trends", async (req, res) => {
     const timeframeDays = timeframe ? parseInt(String(timeframe)) : 90;
     const trendsData = await getGoogleTrendsInterest(String(keyword), String(country || "IT"), timeframeDays);
     res.json(trendsData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/keepa/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const db = getDb();
+    const product = db.prepare("SELECT * FROM products WHERE id = ?").get(productId);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const asin = extractAmazonAsin(product.url);
+    if (!asin) {
+      return res.status(400).json({ error: "Product is not an Amazon item or missing valid 10-char ASIN" });
+    }
+
+    const domainInfo = getKeepaDomainInfo(product.country, product.url);
+    const rangeDays = parseInt(req.query.range || "90", 10);
+    const chartUrl = getKeepaChartUrl(asin, domainInfo.tld, rangeDays);
+    const keepaUrl = getKeepaProductUrl(asin, domainInfo.id);
+
+    const apiData = await fetchKeepaApiData(asin, domainInfo.id);
+
+    res.json({
+      productId: product.id,
+      name: product.name,
+      asin,
+      domain: domainInfo.tld,
+      domainId: domainInfo.id,
+      chartUrl,
+      keepaUrl,
+      rangeDays,
+      hasApiKey: !!process.env.KEEPA_API_KEY,
+      apiData,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

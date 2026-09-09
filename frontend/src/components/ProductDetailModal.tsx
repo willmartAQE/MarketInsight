@@ -11,9 +11,11 @@ import {
   getProductSentiment,
   getProductForecast,
   getProductOHLC,
+  getKeepaData,
   SentimentResult,
   ForecastResult,
-  OHLCPoint
+  OHLCPoint,
+  KeepaData
 } from "@/lib/api";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import {
@@ -33,7 +35,8 @@ import {
   MessageSquare,
   TrendingDown,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -64,12 +67,30 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
   const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
   const [forecast, setForecast] = useState<ForecastResult | null>(null);
   const [ohlc, setOhlc] = useState<OHLCPoint[]>([]);
+  const [keepa, setKeepa] = useState<KeepaData | null>(null);
+  const [keepaRange, setKeepaRange] = useState<number>(90);
+  const [keepaLoading, setKeepaLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
+
+  const isAmazonProduct = !!(
+    product?.source?.toLowerCase().includes("amazon") ||
+    product?.url?.toLowerCase().includes("amazon.")
+  );
 
   useEffect(() => {
     if (!product) return;
     setImgError(false);
+
+    if (isAmazonProduct) {
+      setKeepaLoading(true);
+      getKeepaData(product.id, keepaRange)
+        .then(setKeepa)
+        .catch(() => setKeepa(null))
+        .finally(() => setKeepaLoading(false));
+    } else {
+      setKeepa(null);
+    }
 
     async function loadAllAnalytics() {
       setLoading(true);
@@ -107,7 +128,18 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
     }
 
     loadAllAnalytics();
-  }, [product]);
+  }, [product, isAmazonProduct, keepaRange]);
+
+  const handleKeepaRangeChange = (newRange: number) => {
+    setKeepaRange(newRange);
+    if (product && isAmazonProduct) {
+      setKeepaLoading(true);
+      getKeepaData(product.id, newRange)
+        .then(setKeepa)
+        .catch(() => setKeepa(null))
+        .finally(() => setKeepaLoading(false));
+    }
+  };
 
   if (!product) return null;
 
@@ -383,6 +415,107 @@ export function ProductDetailModal({ product, onClose, currencyMode }: ProductDe
               <p className="text-xs text-slate-300 italic pt-1">
                 💡 <strong>Actionable Advice:</strong> {forecast.advice}
               </p>
+            </div>
+          )}
+
+          {/* Keepa Amazon Historical Price Tracking Widget */}
+          {isAmazonProduct && (
+            <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 text-white shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-extrabold text-lg shadow-sm">
+                    K
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-white">Keepa Amazon Price History</h3>
+                      {keepa?.asin && (
+                        <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-800/60 px-2 py-0.5 rounded-full">
+                          ASIN: {keepa.asin}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Live multi-month Amazon price graph & historical tracking powered by Keepa.com
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-end">
+                  {/* Timeframe Range Selector Buttons */}
+                  <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-lg border border-slate-700">
+                    {[
+                      { label: "30D", val: 30 },
+                      { label: "90D", val: 90 },
+                      { label: "1Y", val: 365 },
+                      { label: "All", val: 1000 },
+                    ].map((btn) => (
+                      <button
+                        key={btn.val}
+                        onClick={() => handleKeepaRangeChange(btn.val)}
+                        className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                          keepaRange === btn.val
+                            ? "bg-amber-500 text-slate-950 shadow-sm"
+                            : "text-slate-400 hover:text-white hover:bg-slate-700"
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {keepa?.keepaUrl && (
+                    <a
+                      href={keepa.keepaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors"
+                    >
+                      <span>View on Keepa</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Keepa Visual Graph Container */}
+              {keepaLoading ? (
+                <div className="w-full h-64 rounded-xl bg-slate-800/50 flex items-center justify-center">
+                  <div className="flex items-center gap-3 text-slate-400 text-sm">
+                    <Loader2 className="h-5 w-5 animate-spin text-amber-400" />
+                    <span>Loading Keepa Amazon Price History...</span>
+                  </div>
+                </div>
+              ) : keepa?.chartUrl ? (
+                <div className="space-y-3">
+                  <div className="relative w-full rounded-xl overflow-hidden bg-white border border-slate-800 shadow-inner group p-2">
+                    <img
+                      src={keepa.chartUrl}
+                      alt={`Keepa Price History for ASIN ${keepa.asin}`}
+                      className="w-full h-auto min-h-[220px] object-contain transition-transform duration-300 group-hover:scale-[1.01]"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between text-xs text-slate-400 pt-1 px-1">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                      <span>
+                        Amazon Domain: <strong className="text-slate-200 font-semibold">Amazon.{keepa.domain}</strong>
+                      </span>
+                    </div>
+                    <span>
+                      Tracking Window: <strong className="text-slate-200 font-semibold">{keepaRange} Days</strong> • Source: Keepa Engine
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full p-6 rounded-xl bg-slate-800/40 border border-slate-800 text-center text-slate-400 text-xs">
+                  No ASIN found for this Amazon product URL to load Keepa history chart.
+                </div>
+              )}
             </div>
           )}
 
