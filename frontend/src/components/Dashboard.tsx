@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Filters, Product, Stats, CountryStores } from "@/types";
-import { CurrencyMode, formatPrice } from "@/lib/currency";
+import { CurrencyMode, formatPrice, getCurrencyInfo } from "@/lib/currency";
 import {
   getProducts, getStats, getTopProducts, getStores,
   startScrape, getScrapeStatus, ScrapeStatus,
@@ -60,6 +60,8 @@ export function exportToCSV(
     "Product Title",
     "Price",
     "Original Price",
+    "Currency",
+    "Formatted Price",
     "Discount %",
     "Rating",
     "Reviews Count",
@@ -72,28 +74,30 @@ export function exportToCSV(
   ];
 
   const escapeCSV = (val: any) => {
-    if (val === null || val === undefined || val === "") return '""';
+    if (val === null || val === undefined) return '""';
     const str = String(val).replace(/"/g, '""');
     return `"${str}"`;
   };
 
   const rows = products.map((p) => {
+    const currInfo = getCurrencyInfo(p.country, currencyMode);
+    const rawPrice = p.price !== null && p.price !== undefined ? p.price : "";
+    const rawOriginal = p.original_price !== null && p.original_price !== undefined ? p.original_price : "";
     const formattedPrice = formatPrice(p.price, p.country, currencyMode);
-    const formattedOriginal = p.original_price
-      ? formatPrice(p.original_price, p.country, currencyMode)
-      : "N/A";
-    const discount = p.discount_pct ? `${p.discount_pct}%` : "N/A";
-    const rating = p.rating ? `${p.rating} / 5` : "N/A";
+    const discount = p.discount_pct !== null && p.discount_pct !== undefined ? `${p.discount_pct}%` : "";
+    const rating = p.rating !== null && p.rating !== undefined ? p.rating : "";
     const reviews = p.reviews_count !== null && p.reviews_count !== undefined ? String(p.reviews_count) : "0";
     const store = getStoreLabel(p.source);
-    const seller = p.seller || "N/A";
-    const availability = p.availability || "N/A";
+    const seller = p.seller || "";
+    const availability = p.availability || "";
 
     return [
       escapeCSV(p.id),
       escapeCSV(p.name),
+      escapeCSV(rawPrice),
+      escapeCSV(rawOriginal),
+      escapeCSV(currInfo.code),
       escapeCSV(formattedPrice),
-      escapeCSV(formattedOriginal),
       escapeCSV(discount),
       escapeCSV(rating),
       escapeCSV(reviews),
