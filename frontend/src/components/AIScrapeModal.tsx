@@ -31,18 +31,18 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
     try {
       const res = await startAIScrape(url.trim(), model, customPrompt.trim() || undefined);
       if (res.status === "success") {
-        setResultMessage("Estrazione AI completata con successo! Prodotti salvati nel database.");
+        setResultMessage("AI extraction completed successfully! Products saved to database.");
         setTimeout(() => {
           onSuccess();
           onClose();
         }, 1500);
       } else {
         setIsError(true);
-        setResultMessage(res.error || "Estrazione fallita. Verifica l'URL o il modello AI.");
+        setResultMessage(res.error || "Extraction failed. Check URL or AI model.");
       }
     } catch (err: any) {
       setIsError(true);
-      setResultMessage(err.message || "Errore di connessione con il backend API.");
+      setResultMessage(err.message || "Connection error with API backend.");
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
         <div className="flex items-center justify-between pb-4 border-b border-gray-100">
           <div className="flex items-center gap-2 text-purple-700 font-semibold text-lg">
             <Sparkles className="h-5 w-5 text-purple-600" />
-            Estrazione Intelligente AI
+            AI-Powered Smart Scraper
           </div>
           <button
             onClick={onClose}
@@ -67,7 +67,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              URL Pagina Web / Marketplace
+              Web Page / Marketplace URL
             </label>
             <input
               type="url"
@@ -81,14 +81,14 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Modello AI Locale
+              Local AI Model
             </label>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
             >
-              <option value="ollama/llama3.2">ollama/llama3.2 (Raccomandato - 3B)</option>
+              <option value="ollama/llama3.2">ollama/llama3.2 (Recommended - 3B)</option>
               <option value="ollama/llama3.1:8b">ollama/llama3.1:8b (8B)</option>
               <option value="ollama/mistral:7b">ollama/mistral:7b (7B)</option>
               <option value="ollama/qwen2.5-coder">ollama/qwen2.5-coder (Coder 7B)</option>
@@ -97,11 +97,11 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Prompt Estrazione Personalizzato (Opzionale)
+              Custom Extraction Prompt (Optional)
             </label>
             <textarea
               rows={2}
-              placeholder="Estrai nome, prezzo, rating e link diretto dei prodotti..."
+              placeholder="Extract product name, price, rating, and direct product detail links..."
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
@@ -129,7 +129,7 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
               onClick={onClose}
               className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              Annulla
+              Cancel
             </button>
             <button
               type="submit"
@@ -139,12 +139,12 @@ export function AIScrapeModal({ isOpen, onClose, onSuccess }: AIScrapeModalProps
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Elaborazione AI in corso...
+                  AI processing in progress...
                 </>
               ) : (
                 <>
                   <Bot className="h-4 w-4" />
-                  Estrai con AI
+                  Extract with AI
                 </>
               )}
             </button>

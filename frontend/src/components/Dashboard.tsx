@@ -247,13 +247,13 @@ export function Dashboard() {
 
   const handlePurgeAndRescrape = useCallback(async () => {
     setIsPurging(true);
-    setScrapeMessage("⚡ Svuotamento cache server in corso e avvio nuovo scraping su tutti i 12 store...");
+    setScrapeMessage("⚡ Purging server cache and launching fresh scrape across all 12 stores...");
     try {
       const res = await purgeAndRescrapeAll();
       pollScrapeStatus(res.jobId);
     } catch (err: any) {
       console.error("Purge & Rescrape failed:", err);
-      setScrapeMessage("❌ Errore durante lo svuotamento della cache.");
+      setScrapeMessage("❌ Error purging server cache.");
       setTimeout(() => setScrapeMessage(null), 4000);
       setIsPurging(false);
     }
@@ -434,7 +434,7 @@ export function Dashboard() {
               <button
                 onClick={handlePurgeAndRescrape}
                 disabled={isPurging || loading}
-                title="Svuota la cache del server e forza una nuova scansione in tempo reale su tutti gli store"
+                title="Purge server cache and force a fresh real-time scrape across all stores"
                 className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 via-amber-600 to-red-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all duration-200 cursor-pointer"
               >
                 {isPurging ? (
@@ -442,7 +442,7 @@ export function Dashboard() {
                 ) : (
                   <Flame className="h-4 w-4 text-amber-200 animate-pulse" />
                 )}
-                <span>{isPurging ? "Svuotamento & Scraping..." : "Svuota Cache & Scrape Completo"}</span>
+                <span>{isPurging ? "Purging & Scraping..." : "Purge Cache & Full Scrape"}</span>
               </button>
               <button
                 onClick={() => setIsGroupingModalOpen(true)}
