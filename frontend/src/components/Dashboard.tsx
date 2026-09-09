@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Filters, Product, Stats, CountryStores } from "@/types";
 import { CurrencyMode, formatPrice, getCurrencyInfo } from "@/lib/currency";
 import {
@@ -14,7 +15,7 @@ import { CategoryPieChart } from "./CategoryPieChart";
 import { PriceDistribution } from "./PriceDistribution";
 import { SourceComparison } from "./SourceComparison";
 import { FilterBar } from "./FilterBar";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X } from "lucide-react";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -228,6 +229,49 @@ export function Dashboard() {
     }
   }, [stores, fetchData, pollScrapeStatus]);
 
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("selectedProductIds");
+    if (saved) {
+      try {
+        setSelectedIds(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load selectedProductIds:", e);
+      }
+    }
+  }, []);
+
+  const handleToggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+      localStorage.setItem("selectedProductIds", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      const allOnPage = products.map((p) => p.id);
+      const isAllSelected = allOnPage.length > 0 && allOnPage.every((id) => prev.includes(id));
+      const next = isAllSelected ? [] : Array.from(new Set([...prev, ...allOnPage]));
+      localStorage.setItem("selectedProductIds", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+    localStorage.removeItem("selectedProductIds");
+  };
+
+  const handleNavigateToCompare = () => {
+    if (selectedIds.length === 0) return;
+    localStorage.setItem("selectedProductIds", JSON.stringify(selectedIds));
+    router.push(`/compare?ids=${selectedIds.join(",")}`);
+  };
+
   const selectedCountry = filters.country?.toLowerCase() || "us";
   const countryData = stores[selectedCountry];
   const sources = countryData
@@ -236,7 +280,7 @@ export function Dashboard() {
   const categories = stats?.categories.map((c) => c.name) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative pb-20">
       <header className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -259,6 +303,15 @@ export function Dashboard() {
                 <span className="text-xs text-gray-400">
                   Updated: {lastUpdated.toLocaleTimeString()}
                 </span>
+              )}
+              {selectedIds.length > 0 && (
+                <button
+                  onClick={handleNavigateToCompare}
+                  className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm animate-pulse"
+                >
+                  <Scale className="h-4 w-4" />
+                  Compare ({selectedIds.length})
+                </button>
               )}
               <button
                 onClick={() => exportToCSV(products, currencyMode)}
@@ -338,8 +391,54 @@ export function Dashboard() {
           <SourceComparison stats={stats} />
         </div>
 
-        <ProductTable products={products} loading={loading} currencyMode={currencyMode} onExportCSV={() => exportToCSV(products, currencyMode)} />
+        <ProductTable
+          products={products}
+          loading={loading}
+          currencyMode={currencyMode}
+          onExportCSV={() => exportToCSV(products, currencyMode)}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onToggleSelectAll={handleToggleSelectAll}
+        />
       </main>
+
+      {/* Floating Comparison Toolbar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 text-white backdrop-blur-md px-6 py-3.5 rounded-full shadow-2xl border border-gray-700 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
+              {selectedIds.length}
+            </span>
+            <span>products selected</span>
+          </div>
+
+          <div className="h-4 w-[1px] bg-gray-700" />
+
+          <button
+            onClick={handleNavigateToCompare}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+          >
+            <Scale className="h-4 w-4" />
+            Compare Now ({selectedIds.length})
+          </button>
+
+          <button
+            onClick={() => exportToCSV(products.filter((p) => selectedIds.includes(p.id)), currencyMode, "selected_products_export.csv")}
+            className="flex items-center gap-1.5 bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" />
+            Export Selected
+          </button>
+
+          <button
+            onClick={handleClearSelection}
+            className="p-1 text-gray-400 hover:text-white rounded-full transition-colors ml-1"
+            title="Clear selection"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

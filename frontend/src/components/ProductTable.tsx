@@ -9,6 +9,9 @@ interface ProductTableProps {
   loading: boolean;
   currencyMode: CurrencyMode;
   onExportCSV?: () => void;
+  selectedIds?: number[];
+  onToggleSelect?: (id: number) => void;
+  onToggleSelectAll?: () => void;
 }
 
 function formatSource(source: string): { label: string; style: string } {
@@ -39,7 +42,15 @@ function formatSource(source: string): { label: string; style: string } {
 }
 
 
-export function ProductTable({ products, loading, currencyMode, onExportCSV }: ProductTableProps) {
+export function ProductTable({
+  products,
+  loading,
+  currencyMode,
+  onExportCSV,
+  selectedIds = [],
+  onToggleSelect,
+  onToggleSelectAll
+}: ProductTableProps) {
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
@@ -59,6 +70,8 @@ export function ProductTable({ products, loading, currencyMode, onExportCSV }: P
       </div>
     );
   }
+
+  const allSelected = products.length > 0 && products.every((p) => selectedIds.includes(p.id));
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
@@ -81,6 +94,15 @@ export function ProductTable({ products, loading, currencyMode, onExportCSV }: P
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
+              <th className="w-10 px-3 py-3 text-center">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={onToggleSelectAll}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  title="Select all products"
+                />
+              </th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Product</th>
               <th className="px-4 py-3 text-right font-medium text-gray-600">
                 Price {currencyMode === "usd" ? "(USD $)" : "(Local)"}
@@ -101,9 +123,23 @@ export function ProductTable({ products, loading, currencyMode, onExportCSV }: P
               const formattedOriginal = product.original_price
                 ? formatPrice(product.original_price, product.country, currencyMode)
                 : "-";
+              const isSelected = selectedIds.includes(product.id);
 
               return (
-                <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={product.id}
+                  className={`transition-colors ${
+                    isSelected ? "bg-blue-50/60 hover:bg-blue-50" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <td className="w-10 px-3 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => onToggleSelect?.(product.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {product.image_url && (

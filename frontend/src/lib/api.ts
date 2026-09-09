@@ -8,16 +8,16 @@ async function fetchJSON<T>(path: string): Promise<T> {
   return res.json();
 }
 
-export async function getProducts(filters: Filters): Promise<Product[]> {
+export async function getProducts(filters: Partial<Filters> = {}): Promise<Product[]> {
   const params = new URLSearchParams();
   if (filters.source) params.set("source", filters.source);
   if (filters.category) params.set("category", filters.category);
   if (filters.country) params.set("country", filters.country);
-  params.set("sort_by", filters.sort_by);
-  params.set("order", filters.order);
-  if (filters.min_price !== null) params.set("min_price", String(filters.min_price));
-  if (filters.max_price !== null) params.set("max_price", String(filters.max_price));
-  params.set("limit", "200");
+  if (filters.sort_by) params.set("sort_by", filters.sort_by);
+  if (filters.order) params.set("order", filters.order);
+  if (filters.min_price !== null && filters.min_price !== undefined) params.set("min_price", String(filters.min_price));
+  if (filters.max_price !== null && filters.max_price !== undefined) params.set("max_price", String(filters.max_price));
+  params.set("limit", "500");
   return fetchJSON<Product[]>(`/api/products?${params.toString()}`);
 }
 
