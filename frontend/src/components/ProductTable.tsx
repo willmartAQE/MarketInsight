@@ -5,6 +5,7 @@ import { Product } from "@/types";
 import { ExternalLink, Star, ShoppingCart, FileSpreadsheet, Globe, Package } from "lucide-react";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
 import { getAutoEnglishUrl } from "@/lib/urls";
+import { ProductDetailModal } from "./ProductDetailModal";
 
 interface ProductTableProps {
   products: Product[];
@@ -56,6 +57,7 @@ export function ProductTable({
   onToggleSelectAll
 }: ProductTableProps) {
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
+  const [selectedModalProduct, setSelectedModalProduct] = useState<Product | null>(null);
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
@@ -144,11 +146,12 @@ export function ProductTable({
               return (
                 <tr
                   key={product.id}
-                  className={`transition-colors ${
-                    isSelected ? "bg-blue-50/60 hover:bg-blue-50" : "hover:bg-gray-50"
+                  onClick={() => setSelectedModalProduct(product)}
+                  className={`transition-colors cursor-pointer ${
+                    isSelected ? "bg-blue-50/60 hover:bg-blue-50" : "hover:bg-blue-50/40"
                   }`}
                 >
-                  <td className="w-10 px-3 py-3 text-center">
+                  <td className="w-10 px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -209,7 +212,7 @@ export function ProductTable({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{product.category}</td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                     <a
                       href={getAutoEnglishUrl(product.url)}
                       target="_blank"
@@ -226,6 +229,13 @@ export function ProductTable({
           </tbody>
         </table>
       </div>
+
+      {/* Single Product Analytical Intelligence Pop-up Modal */}
+      <ProductDetailModal
+        product={selectedModalProduct}
+        onClose={() => setSelectedModalProduct(null)}
+        currencyMode={currencyMode}
+      />
     </div>
   );
 }
