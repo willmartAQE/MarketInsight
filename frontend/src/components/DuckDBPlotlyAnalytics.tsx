@@ -103,16 +103,35 @@ export function DuckDBPlotlyAnalytics() {
     }
   ];
 
-  // 3. Quantiles Box Plot
-  const boxPlotData: any = quantilesData.map((q) => ({
-    type: "box",
-    name: q.category,
-    q1: [q.p25_price],
-    median: [q.median_price],
-    q3: [q.p75_price],
-    mean: [q.avg_price],
-    boxpoints: false
-  }));
+  // 3. Category Price Tiers Grouped Bar Chart
+  const categoryNames = quantilesData.map((q) => q.category);
+  const p25Prices = quantilesData.map((q) => q.p25_price);
+  const medianPrices = quantilesData.map((q) => q.median_price);
+  const p75Prices = quantilesData.map((q) => q.p75_price);
+
+  const priceTiersPlotData: any = [
+    {
+      x: categoryNames,
+      y: p25Prices,
+      name: "Budget Tier (25th Percentile)",
+      type: "bar",
+      marker: { color: "#3b82f6" }
+    },
+    {
+      x: categoryNames,
+      y: medianPrices,
+      name: "Median Market Price",
+      type: "bar",
+      marker: { color: "#10b981" }
+    },
+    {
+      x: categoryNames,
+      y: p75Prices,
+      name: "Premium Tier (75th Percentile)",
+      type: "bar",
+      marker: { color: "#8b5cf6" }
+    }
+  ];
 
   const handlePlotClick = (data: any) => {
     if (data && data.points && data.points.length > 0) {
@@ -256,23 +275,25 @@ export function DuckDBPlotlyAnalytics() {
         </div>
       )}
 
-      {/* Category Price Quantiles Box Plot */}
+      {/* Category Price Tiers Bar Chart */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
           <TrendingDown className="h-5 w-5 text-blue-600" />
-          <h3 className="text-base font-bold text-gray-900">Price Quantile Distribution & Percentiles</h3>
+          <h3 className="text-base font-bold text-gray-900">Price Tiers & Market Percentiles by Category</h3>
         </div>
         <p className="text-xs text-gray-500 mb-4">
-          Shows 25th percentile, Median, 75th percentile, and Average price bands across categories.
+          Compare typical budget (25th percentile), median, and premium (75th percentile) price levels across categories.
         </p>
-        <div className="w-full h-[300px] flex items-center justify-center">
+        <div className="w-full h-[340px] flex items-center justify-center">
           <Plot
-            data={boxPlotData}
+            data={priceTiersPlotData}
             layout={{
               autosize: true,
-              margin: { l: 50, r: 40, t: 20, b: 50 },
+              barmode: "group",
+              margin: { l: 50, r: 40, t: 30, b: 70 },
+              xaxis: { title: { text: "Product Category", font: { size: 11 } }, tickangle: -15 },
               yaxis: { title: { text: "Price ($)", font: { size: 11 } } },
-              showlegend: true,
+              legend: { orientation: "h", y: 1.15, x: 0.05 },
               paper_bgcolor: "transparent",
               plot_bgcolor: "transparent"
             }}
