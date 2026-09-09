@@ -25,7 +25,6 @@ function CompareContent() {
         if (idsParam) {
           targetIds = idsParam.split(",").map((id) => Number(id.trim())).filter((id) => !isNaN(id) && id > 0);
         } else {
-          // Fallback to localStorage if no URL query params
           const saved = localStorage.getItem("selectedProductIds");
           if (saved) {
             try {
@@ -36,12 +35,35 @@ function CompareContent() {
           }
         }
 
+        let cachedProducts: Product[] = [];
+        const savedData = localStorage.getItem("selectedProductsData");
+        if (savedData) {
+          try {
+            cachedProducts = JSON.parse(savedData);
+          } catch (e) {}
+        }
+
         if (targetIds.length > 0) {
-          const allProducts = await getProducts();
-          const filtered = allProducts.filter((p) => targetIds.includes(p.id));
-          setProducts(filtered);
+          const productMap = new Map<number, Product>();
+          
+          // Load cached objects first
+          cachedProducts.forEach((p) => {
+            if (targetIds.includes(p.id)) productMap.set(p.id, p);
+          });
+
+          // Fetch exact selected products by IDs from backend
+          try {
+            const fetchedProducts = await getProducts({ ids: targetIds });
+            fetchedProducts.forEach((p) => {
+              productMap.set(p.id, p);
+            });
+          } catch (fetchErr) {
+            console.error("Failed to fetch fresh product data:", fetchErr);
+          }
+
+          setProducts(Array.from(productMap.values()));
         } else {
-          setProducts([]);
+          setProducts(cachedProducts);
         }
       } catch (err) {
         console.error("Failed to fetch comparison products:", err);

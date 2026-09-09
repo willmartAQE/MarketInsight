@@ -131,10 +131,21 @@ export function logScrape(source, status, productsFound, error = null) {
   `).run(source, status, productsFound, error);
 }
 
-export function getProducts({ source, category, country, sort_by = "price", order = "desc", min_price, max_price, limit = 50, offset = 0 } = {}) {
+export function getProducts({ source, category, country, sort_by = "price", order = "desc", min_price, max_price, limit = 200, offset = 0, ids = null } = {}) {
   const db = getDb();
   let where = [];
   let params = [];
+
+  if (ids) {
+    const idList = Array.isArray(ids)
+      ? ids
+      : String(ids).split(",").map((id) => parseInt(id.trim())).filter((id) => !isNaN(id));
+
+    if (idList.length > 0) {
+      where.push(`id IN (${idList.map(() => "?").join(",")})`);
+      params.push(...idList);
+    }
+  }
 
   if (source) {
     where.push("source = ?");

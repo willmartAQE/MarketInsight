@@ -285,13 +285,14 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/api/products", (req, res) => {
-  const { source, category, country, sort_by, order, min_price, max_price, limit, offset } = req.query;
+  const { source, category, country, sort_by, order, min_price, max_price, limit, offset, ids } = req.query;
   const products = getProducts({
     source, category, country, sort_by, order,
     min_price: min_price ? parseFloat(min_price) : null,
     max_price: max_price ? parseFloat(max_price) : null,
     limit: limit ? parseInt(limit) : 200,
     offset: offset ? parseInt(offset) : 0,
+    ids: ids || null,
   });
   res.json(products);
 });

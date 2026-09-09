@@ -8,8 +8,12 @@ async function fetchJSON<T>(path: string): Promise<T> {
   return res.json();
 }
 
-export async function getProducts(filters: Partial<Filters> = {}): Promise<Product[]> {
+export async function getProducts(filters: Partial<Filters> & { ids?: string | number[] } = {}): Promise<Product[]> {
   const params = new URLSearchParams();
+  if (filters.ids) {
+    const idsStr = Array.isArray(filters.ids) ? filters.ids.join(",") : String(filters.ids);
+    params.set("ids", idsStr);
+  }
   if (filters.source) params.set("source", filters.source);
   if (filters.category) params.set("category", filters.category);
   if (filters.country) params.set("country", filters.country);

@@ -264,11 +264,14 @@ export function Dashboard() {
   const handleClearSelection = () => {
     setSelectedIds([]);
     localStorage.removeItem("selectedProductIds");
+    localStorage.removeItem("selectedProductsData");
   };
 
   const handleNavigateToCompare = () => {
     if (selectedIds.length === 0) return;
+    const selectedObjs = products.filter((p) => selectedIds.includes(p.id));
     localStorage.setItem("selectedProductIds", JSON.stringify(selectedIds));
+    localStorage.setItem("selectedProductsData", JSON.stringify(selectedObjs));
     router.push(`/compare?ids=${selectedIds.join(",")}`);
   };
 
