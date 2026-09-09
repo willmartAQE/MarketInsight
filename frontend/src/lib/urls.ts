@@ -1,7 +1,6 @@
 /**
  * Returns the product store URL with country-specific Amazon affiliate tag automatically appended.
- * Also strips Amazon Creator SiteStripe redirect parameters (ar_su, creatorsDisableRedirect, etc.)
- * that previously forced cross-country redirects.
+ * Also transforms broken legacy URL formats (such as Sears legacy /p-0... 404 links) into active search pages.
  *
  * Mappings:
  * - UK: tag=ukbestdeal02-21
@@ -26,18 +25,27 @@ export function getAutoEnglishUrl(rawUrl?: string | null, countryCode?: string):
       parsed = new URL(url);
     }
 
-    // Strip Amazon SiteStripe/Creator redirect parameters that cause forced cross-country redirects
-    parsed.searchParams.delete('ar_su');
-    parsed.searchParams.delete('ar_srct');
-    parsed.searchParams.delete('creatorsDisableRedirect');
-    parsed.searchParams.delete('ar_mt');
-    parsed.searchParams.delete('linkCode');
-
     const hostname = parsed.hostname.toLowerCase();
-    const upperCountry = (countryCode || '').toUpperCase();
 
-    // Append Amazon Affiliate Tag based on domain / country code
+    // 1. Sears store link fix: convert legacy /p-0... 404 URLs to active Sears navigation search
+    if (hostname.includes('sears.com')) {
+      if (parsed.pathname.includes('/p-') || parsed.pathname.endsWith('P')) {
+        const pathSegments = parsed.pathname.split('/').filter(Boolean);
+        const rawTitle = pathSegments[0] || 'appliance';
+        const cleanTitle = rawTitle.replace(/-/g, ' ').replace(/p\s*0[0-9]+.*$/i, '').trim();
+        return `https://www.sears.com/nav/search?keyword=${encodeURIComponent(cleanTitle)}`;
+      }
+    }
+
+    // 2. Amazon store links: strip SiteStripe redirect params and set country affiliate tag
     if (hostname.includes('amazon.')) {
+      parsed.searchParams.delete('ar_su');
+      parsed.searchParams.delete('ar_srct');
+      parsed.searchParams.delete('creatorsDisableRedirect');
+      parsed.searchParams.delete('ar_mt');
+      parsed.searchParams.delete('linkCode');
+
+      const upperCountry = (countryCode || '').toUpperCase();
       let affiliateTag = 'dealscoutus02-20'; // default fallback
 
       if (hostname.endsWith('.co.uk') || hostname.endsWith('.uk') || upperCountry === 'UK' || upperCountry === 'GB') {
