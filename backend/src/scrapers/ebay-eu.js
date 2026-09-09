@@ -6,6 +6,7 @@ import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { getTopAmazonProducts } from "../db.js";
+import { searchEbayAPI } from "./ebay-api.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = join(__dirname, "..", "..", ".env");
@@ -521,6 +522,47 @@ export async function scrapeEbayEU(countries = null) {
 
   const allProducts = [];
   const results = {};
+
+  const hasApiCredentials = Boolean(process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET);
+
+  if (hasApiCredentials) {
+    console.log("🔑 Using official eBay OAuth API for eBay EU scraping...");
+    for (const storeId of targetStores) {
+      const countryCode = storeId.replace("ebay-", "");
+      let amazonProds = [];
+      try {
+        amazonProds = getTopAmazonProducts(countryCode.toUpperCase(), 5);
+      } catch (e) {}
+
+      const queries = amazonProds.length > 0
+        ? amazonProds.map(p => ({ query: cleanSearchQuery(p.name), category: p.category }))
+        : [{ query: "electronics", category: "Electronics" }, { query: "kitchen", category: "Kitchen" }];
+
+      const storeProducts = [];
+      const seenUrls = new Set();
+
+      for (const qObj of queries) {
+        if (!qObj.query) continue;
+        const apiRes = await searchEbayAPI(qObj.query, countryCode, qObj.category);
+        if (apiRes.status === "success" && apiRes.products.length > 0) {
+          for (const p of apiRes.products) {
+            if (!seenUrls.has(p.url)) {
+              seenUrls.add(p.url);
+              storeProducts.push(p);
+            }
+          }
+        }
+      }
+
+      if (storeProducts.length === 0 && FALLBACK_EBAY_PRODUCTS[storeId]) {
+        storeProducts.push(...FALLBACK_EBAY_PRODUCTS[storeId]);
+      }
+
+      results[storeId] = storeProducts.length;
+      allProducts.push(...storeProducts);
+    }
+    return { products: allProducts, results };
+  }
 
   let browserObj;
   try {

@@ -74,7 +74,6 @@ export async function getDuckDBMarketplaceHeatmap() {
       ROUND(MIN(price), 2) as min_price,
       ROUND(MAX(price), 2) as max_price
     FROM sqlite_db.products
-    WHERE source NOT LIKE 'ebay%'
     GROUP BY category, source
     ORDER BY category, avg_price ASC
   `;
@@ -90,7 +89,6 @@ export async function getDuckDBOutlierDeals() {
         AVG(price) OVER (PARTITION BY category) as cat_avg_price,
         STDDEV(price) OVER (PARTITION BY category) as cat_std_price
       FROM sqlite_db.products
-      WHERE source NOT LIKE 'ebay%'
     )
     SELECT
       id, name, price, original_price, discount_pct, rating, reviews_count, source, category, country, url, image_url,
@@ -115,7 +113,6 @@ export async function getDuckDBCategoryQuantiles() {
       ROUND(QUANTILE_CONT(price, 0.50), 2) as median_price,
       ROUND(QUANTILE_CONT(price, 0.75), 2) as p75_price
     FROM sqlite_db.products
-    WHERE source NOT LIKE 'ebay%'
     GROUP BY category
     ORDER BY total_count DESC
   `;

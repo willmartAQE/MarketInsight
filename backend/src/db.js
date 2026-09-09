@@ -150,8 +150,6 @@ export function getProducts({ source, category, country, sort_by = "price", orde
   if (source) {
     where.push("source = ?");
     params.push(source);
-  } else {
-    where.push("source NOT LIKE 'ebay%'");
   }
 
   if (category) { where.push("category = ?"); params.push(category); }
@@ -179,8 +177,6 @@ export function getStats(source = null, country = null) {
   if (source) {
     where.push("source = ?");
     params.push(source);
-  } else {
-    where.push("source NOT LIKE 'ebay%'");
   }
 
   if (country) {
@@ -230,8 +226,6 @@ export function getTopProducts(source = null, country = null, limit = 10) {
   if (source) {
     where.push("source = ?");
     params.push(source);
-  } else {
-    where.push("source NOT LIKE 'ebay%'");
   }
 
   if (country) {

@@ -29,7 +29,7 @@ export const STORES = {
     currency: "€",
     stores: [
       { id: "amazon-de", name: "Amazon.de", type: "amazon", enabled: true },
-      { id: "ebay-de", name: "eBay.de", type: "ebay", enabled: false },
+      { id: "ebay-de", name: "eBay.de", type: "ebay", enabled: true },
       { id: "otto-de", name: "Otto.de", type: "otto", enabled: true },
     ],
   },
@@ -40,7 +40,7 @@ export const STORES = {
     stores: [
       { id: "amazon-fr", name: "Amazon.fr", type: "amazon", enabled: true },
       { id: "cdiscount", name: "Cdiscount", type: "cdiscount", enabled: true },
-      { id: "ebay-fr", name: "eBay.fr", type: "ebay", enabled: false },
+      { id: "ebay-fr", name: "eBay.fr", type: "ebay", enabled: true },
     ],
   },
   "it": {
@@ -49,7 +49,7 @@ export const STORES = {
     currency: "€",
     stores: [
       { id: "amazon-it", name: "Amazon.it", type: "amazon", enabled: true },
-      { id: "ebay-it", name: "eBay.it", type: "ebay", enabled: false },
+      { id: "ebay-it", name: "eBay.it", type: "ebay", enabled: true },
     ],
   },
   "es": {
@@ -58,7 +58,7 @@ export const STORES = {
     currency: "€",
     stores: [
       { id: "amazon-es", name: "Amazon.es", type: "amazon", enabled: true },
-      { id: "ebay-es", name: "eBay.es", type: "ebay", enabled: false },
+      { id: "ebay-es", name: "eBay.es", type: "ebay", enabled: true },
       { id: "elcorteingles", name: "El Corte Inglés", type: "elcorteingles", enabled: true },
     ],
   },
@@ -68,7 +68,7 @@ export const STORES = {
     currency: "£",
     stores: [
       { id: "amazon-uk", name: "Amazon.co.uk", type: "amazon", enabled: true },
-      { id: "ebay-uk", name: "eBay.co.uk", type: "ebay", enabled: false },
+      { id: "ebay-uk", name: "eBay.co.uk", type: "ebay", enabled: true },
     ],
   },
   "nl": {
