@@ -1,5 +1,4 @@
-import { JSDOM } from "jsdom";
-import nwsapi from "nwsapi";
+import * as cheerio from "cheerio";
 import { safeLaunchBrowser } from "../browserHelper.js";
 
 const AMAZON_URLS = [
@@ -10,65 +9,50 @@ const AMAZON_URLS = [
 ];
 
 function extractProductsFromHtml(html, defaultCategory) {
-  const dom = new JSDOM(html);
-  const { window } = dom;
-
-  const nw = nwsapi(window);
-  nw.configure({ IDS_DUPES: false, LIVECACHE: true, LOGERRORS: false });
-
-  const doc = window.document;
+  const $ = cheerio.load(html);
   const products = [];
-  const items = nw.select("[data-asin]", doc);
 
-  for (const item of items) {
-    const asin = (item.getAttribute("data-asin") || "").trim();
-    if (!asin || asin.length < 5) continue;
+  $("[data-asin]").each((_, itemEl) => {
+    const item = $(itemEl);
+    const asin = (item.attr("data-asin") || "").trim();
+    if (!asin || asin.length < 5) return;
 
-    const nameEl =
-      nw.first("a.a-link-normal span div", item) ||
-      nw.first("div._cDEzb_p13n-sc-css-line-clamp-3_g3dy1", item) ||
-      nw.first("span.zg-text-center-align", item);
-
-    if (!nameEl) continue;
-    const name = (nameEl.textContent || "").trim();
-    if (!name) continue;
+    const nameEl = item.find("a.a-link-normal span div, div._cDEzb_p13n-sc-css-line-clamp-3_g3dy1, span.zg-text-center-align").first();
+    const name = (nameEl.text() || "").trim();
+    if (!name) return;
 
     let price = null;
-    const priceEl =
-      nw.first("span._cDEzb_p13n-sc-price_3mJ9Z", item) ||
-      nw.first("span.a-price span.a-offscreen", item);
-
-    if (priceEl) {
-      const match = (priceEl.textContent || "").match(/([\d,]+\.?\d*)/);
+    const priceEl = item.find("span._cDEzb_p13n-sc-price_3mJ9Z, span.a-price span.a-offscreen").first();
+    if (priceEl.length) {
+      const match = (priceEl.text() || "").match(/([\d,]+\.?\d*)/);
       if (match) price = parseFloat(match[1].replace(/,/g, ""));
     }
 
     if (!price || price <= 0) {
-      const allText = item.textContent || "";
+      const allText = item.text() || "";
       const priceMatch = allText.match(/\$([\d,]+\.?\d*)/);
       if (priceMatch) price = parseFloat(priceMatch[1].replace(/,/g, ""));
     }
 
-    if (!price || price <= 0) continue;
+    if (!price || price <= 0) return;
 
     let rating = null;
-    const ratingEl = nw.first("span.a-icon-alt", item);
-    if (ratingEl) {
-      const match = (ratingEl.textContent || "").match(/([\d.]+)\s+out/);
+    const ratingEl = item.find("span.a-icon-alt").first();
+    if (ratingEl.length) {
+      const match = (ratingEl.text() || "").match(/([\d.]+)\s+out/);
       if (match) rating = parseFloat(match[1]);
     }
 
     let reviews = null;
-    const reviewsEl = nw.first("span.a-size-small", item);
-    if (reviewsEl) {
-      const text = (reviewsEl.textContent || "").replace(/,/g, "").trim();
+    const reviewsEl = item.find("span.a-size-small").first();
+    if (reviewsEl.length) {
+      const text = (reviewsEl.text() || "").replace(/,/g, "").trim();
       const parsed = parseInt(text);
       if (!isNaN(parsed)) reviews = parsed;
     }
 
-    let imageUrl = null;
-    const imgEl = nw.first("img", item);
-    if (imgEl) imageUrl = imgEl.getAttribute("src");
+    const imgEl = item.find("img").first();
+    let imageUrl = imgEl.attr("src") || null;
 
     products.push({
       name,
@@ -85,7 +69,7 @@ function extractProductsFromHtml(html, defaultCategory) {
       availability: "In Stock",
       country: "USA",
     });
-  }
+  });
 
   return products;
 }

@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -117,21 +117,19 @@ const FALLBACK_CDISCOUNT_PRODUCTS = [
 ];
 
 function extractProductsFromHtml(html, defaultCategory) {
-  const dom = new JSDOM(html);
-  const doc = dom.window.document;
+  const $ = cheerio.load(html);
   const products = [];
 
-  const items = doc.querySelectorAll("article[data-e2e='offer-item'], article, .prdtBloc, li[data-sku]");
-
-  for (const item of items) {
-    const titleEl = item.querySelector("[data-e2e='lplr-title']") || item.querySelector(".prdtBTit, .prdtHTit, a[title]");
-    const name = (titleEl?.textContent || titleEl?.getAttribute("title") || "").trim();
-    if (!name || name.length < 5) continue;
+  $("article[data-e2e='offer-item'], article, .prdtBloc, li[data-sku]").each((_, itemEl) => {
+    const item = $(itemEl);
+    const titleEl = item.find("[data-e2e='lplr-title'], .prdtBTit, .prdtHTit, a[title]").first();
+    const name = (titleEl.text() || titleEl.attr("title") || "").trim();
+    if (!name || name.length < 5) return;
 
     let price = null;
-    const priceEl = item.querySelector(".price, .prdtPrice");
-    if (priceEl) {
-      const text = priceEl.textContent || "";
+    const priceEl = item.find(".price, .prdtPrice").first();
+    if (priceEl.length) {
+      const text = priceEl.text() || "";
       const match = text.match(/(\d+)€(\d*)/);
       if (match) {
         price = parseFloat(`${match[1]}.${match[2] || "00"}`);
@@ -141,17 +139,16 @@ function extractProductsFromHtml(html, defaultCategory) {
       }
     }
 
-    if (!price || price <= 0) continue;
+    if (!price || price <= 0) return;
 
-    let rawLink = item.querySelector("a[href*='/f-']")?.getAttribute("href") ||
-                  item.querySelector("a[href*='/dp/']")?.getAttribute("href");
-
-    if (!rawLink) continue;
+    let rawLink = item.find("a[href*='/f-']").first().attr("href") || item.find("a[href*='/dp/']").first().attr("href");
+    if (!rawLink) return;
 
     let link = rawLink;
     if (link && !link.startsWith("http")) link = `https://www.cdiscount.com${link}`;
 
-    let imageUrl = item.querySelector("img")?.getAttribute("src") || item.querySelector("img")?.getAttribute("data-src") || null;
+    const imgEl = item.find("img").first();
+    let imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
     if (imageUrl && imageUrl.startsWith("//")) imageUrl = `https:${imageUrl}`;
 
     products.push({
@@ -170,7 +167,7 @@ function extractProductsFromHtml(html, defaultCategory) {
       country: "FR",
       currency: "€",
     });
-  }
+  });
 
   return products;
 }

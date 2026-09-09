@@ -1,5 +1,4 @@
-import { JSDOM } from "jsdom";
-import nwsapi from "nwsapi";
+import * as cheerio from "cheerio";
 import { safeLaunchBrowser } from "../browserHelper.js";
 
 const OTTO_URLS = [
@@ -109,20 +108,18 @@ const FALLBACK_OTTO_PRODUCTS = [
 ];
 
 function extractProductsFromHtml(html, defaultCategory) {
-  const dom = new JSDOM(html);
-  const doc = dom.window.document;
+  const $ = cheerio.load(html);
   const products = [];
 
-  const items = doc.querySelectorAll("article");
-
-  for (const item of items) {
-    const imgEl = item.querySelector("img");
-    const titleEl = item.querySelector("a[aria-label]") || item.querySelector("a[title]") || item.querySelector(".product-tile__title, h2, a");
-    const name = (imgEl?.getAttribute("alt") || titleEl?.getAttribute("aria-label") || titleEl?.getAttribute("title") || titleEl?.textContent || "").trim();
-    if (!name || name.length < 5) continue;
+  $("article").each((_, itemEl) => {
+    const item = $(itemEl);
+    const imgEl = item.find("img").first();
+    const titleEl = item.find("a[aria-label], a[title], .product-tile__title, h2, a").first();
+    const name = (imgEl.attr("alt") || titleEl.attr("aria-label") || titleEl.attr("title") || titleEl.text() || "").trim();
+    if (!name || name.length < 5) return;
 
     let price = null;
-    const text = item.textContent || "";
+    const text = item.text() || "";
     const match = text.match(/(\d+[\d.,]*)\s*€/) || text.match(/€\s*(\d+[\d.,]*)/);
     if (match) {
       let numStr = match[1].replace(/\s/g, "").replace(",", ".");
@@ -132,12 +129,12 @@ function extractProductsFromHtml(html, defaultCategory) {
       price = parseFloat(numStr);
     }
 
-    if (!price || price <= 0) continue;
+    if (!price || price <= 0) return;
 
-    let link = item.querySelector("a[href*='/p/']")?.getAttribute("href") || item.querySelector("a")?.getAttribute("href");
+    let link = item.find("a[href*='/p/']").first().attr("href") || item.find("a").first().attr("href");
     if (link && !link.startsWith("http")) link = `https://www.otto.de${link}`;
 
-    let imageUrl = imgEl?.getAttribute("src") || imgEl?.getAttribute("data-src") || null;
+    let imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
 
     products.push({
       name,
@@ -155,7 +152,7 @@ function extractProductsFromHtml(html, defaultCategory) {
       country: "DE",
       currency: "€",
     });
-  }
+  });
 
   return products;
 }

@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -117,32 +117,31 @@ const FALLBACK_BOL_PRODUCTS = [
 ];
 
 function extractProductsFromHtml(html, defaultCategory) {
-  const dom = new JSDOM(html);
-  const doc = dom.window.document;
+  const $ = cheerio.load(html);
   const products = [];
 
-  const pLinks = doc.querySelectorAll("a[href*='/p/']");
   const seen = new Set();
 
-  for (const a of pLinks) {
-    let link = a.getAttribute("href");
-    if (!link || seen.has(link)) continue;
+  $("a[href*='/p/']").each((_, aEl) => {
+    const a = $(aEl);
+    let link = a.attr("href");
+    if (!link || seen.has(link)) return;
     seen.add(link);
 
-    const name = a.textContent.trim();
-    if (!name || name.length < 5 || name === "Bekijk en bestel" || name.includes("Ontdek")) continue;
+    const name = a.text().trim();
+    if (!name || name.length < 5 || name === "Bekijk en bestel" || name.includes("Ontdek")) return;
 
     if (!link.startsWith("http")) link = `https://www.bol.com${link}`;
 
-    const parent = a.closest("li, div[data-test], article") || a.parentElement;
+    const parent = a.closest("li, div[data-test], article").length ? a.closest("li, div[data-test], article") : a.parent();
     let price = 49.99;
-    const priceText = parent?.querySelector("[data-test='price'], .promo-price, .price")?.textContent || "";
+    const priceText = parent.find("[data-test='price'], .promo-price, .price").first().text() || "";
     const match = priceText.match(/(\d+)[.,]?(\d{2})?/);
     if (match) {
       price = parseFloat(`${match[1]}.${match[2] || "00"}`);
     }
 
-    let imageUrl = parent?.querySelector("img")?.getAttribute("src") || parent?.querySelector("img")?.getAttribute("data-src") || null;
+    let imageUrl = parent.find("img").first().attr("src") || parent.find("img").first().attr("data-src") || null;
 
     products.push({
       name,
@@ -160,7 +159,7 @@ function extractProductsFromHtml(html, defaultCategory) {
       country: "NL",
       currency: "€",
     });
-  }
+  });
 
   return products;
 }

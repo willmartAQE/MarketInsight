@@ -1,5 +1,4 @@
-import { JSDOM } from "jsdom";
-import nwsapi from "nwsapi";
+import * as cheerio from "cheerio";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -27,28 +26,23 @@ export function buildEbaySearchUrl(query, countryCode) {
 }
 
 function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
-  const dom = new JSDOM(html);
-  const { window } = dom;
-
-  const nw = nwsapi(window);
-  nw.configure({ IDS_DUPES: false, LIVECACHE: true, LOGERRORS: false });
-
-  const doc = window.document;
+  const $ = cheerio.load(html);
   const products = [];
   const country = storeId.replace("ebay-", "");
 
-  const items = nw.select("[data-viewport]", doc);
-  const altItems = items.length > 0 ? items : nw.select(".s-item", doc);
+  const items = $("[data-viewport]").length ? $("[data-viewport]") : $(".s-item");
 
-  for (const item of altItems) {
-    const titleEl = nw.first(".s-item__title", item) || nw.first("[role='heading']", item);
-    const name = (titleEl?.textContent || "").trim();
-    if (!name || name.toLowerCase().includes("results") || name.length < 5) continue;
+  items.each((_, itemEl) => {
+    if (products.length >= 2) return false;
+    const item = $(itemEl);
+    const titleEl = item.find(".s-item__title, [role='heading']").first();
+    const name = (titleEl.text() || "").trim();
+    if (!name || name.toLowerCase().includes("results") || name.length < 5) return;
 
     let price = null;
-    const priceEl = nw.first(".s-item__price", item);
-    if (priceEl) {
-      const text = priceEl.textContent || "";
+    const priceEl = item.find(".s-item__price").first();
+    if (priceEl.length) {
+      const text = priceEl.text() || "";
       const match = text.match(/([\d.,]+[.,]?\d*)/);
       if (match) {
         let numStr = match[1];
@@ -61,12 +55,12 @@ function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
       }
     }
 
-    if (!price || price <= 0) continue;
+    if (!price || price <= 0) return;
 
     let link = null;
-    const linkEl = nw.first("a[href*='/itm/']", item) || nw.first("a", item);
-    if (linkEl) {
-      link = linkEl.getAttribute("href");
+    const linkEl = item.find("a[href*='/itm/']").first().length ? item.find("a[href*='/itm/']").first() : item.find("a").first();
+    if (linkEl.length) {
+      link = linkEl.attr("href");
       if (link && link.includes("?")) {
         link = link.split("?")[0];
       }
@@ -77,9 +71,8 @@ function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
       link = `https://www.ebay.${cDomain}/itm/386123456789`;
     }
 
-    let imageUrl = null;
-    const imgEl = nw.first("img", item);
-    if (imgEl) imageUrl = imgEl.getAttribute("src");
+    const imgEl = item.find("img").first();
+    let imageUrl = imgEl.attr("src") || null;
 
     products.push({
       name,
@@ -97,9 +90,7 @@ function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
       country: country.toUpperCase(),
       currency: country === "uk" ? "£" : "€",
     });
-
-    if (products.length >= 2) break; // keep top 2 items per search
-  }
+  });
 
   return products;
 }

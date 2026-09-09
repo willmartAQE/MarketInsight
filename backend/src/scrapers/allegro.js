@@ -1,5 +1,4 @@
-import { JSDOM } from "jsdom";
-import nwsapi from "nwsapi";
+import * as cheerio from "cheerio";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -119,27 +118,21 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
 
 
 function extractProductsFromHtml(html, defaultCategory) {
-  const dom = new JSDOM(html);
-  const { window } = dom;
-
-  const nw = nwsapi(window);
-  nw.configure({ IDS_DUPES: false, LIVECACHE: true, LOGERRORS: false });
-
-  const doc = window.document;
+  const $ = cheerio.load(html);
   const products = [];
 
-  const articles = nw.select("article[data-analytics-view-custom-index]", doc);
-  const items = articles.length > 0 ? articles : nw.select("article", doc);
+  const articles = $("article");
 
-  for (const item of items) {
-    const titleEl = nw.first("h2", item) || nw.first("a[title]", item);
-    const name = (titleEl?.textContent || titleEl?.getAttribute("title") || "").trim();
-    if (!name || name.length < 5) continue;
+  articles.each((_, itemEl) => {
+    const item = $(itemEl);
+    const titleEl = item.find("h2").first().length ? item.find("h2").first() : item.find("a[title]").first();
+    const name = (titleEl.text() || titleEl.attr("title") || "").trim();
+    if (!name || name.length < 5) return;
 
     let price = null;
-    const priceEl = nw.first("[aria-label*='zł']", item) || nw.first("span", item);
-    if (priceEl) {
-      const text = priceEl.textContent || priceEl.getAttribute("aria-label") || "";
+    const priceEl = item.find("[aria-label*='zł']").first().length ? item.find("[aria-label*='zł']").first() : item.find("span").first();
+    if (priceEl.length) {
+      const text = priceEl.text() || priceEl.attr("aria-label") || "";
       const match = text.match(/([\d\s]+[.,]?\d*)\s*zł/i);
       if (match) {
         let numStr = match[1].replace(/\s/g, "").replace(",", ".");
@@ -147,12 +140,12 @@ function extractProductsFromHtml(html, defaultCategory) {
       }
     }
 
-    if (!price || price <= 0) continue;
+    if (!price || price <= 0) return;
 
     let link = null;
-    const linkEl = nw.first("a[href*='/oferta/']", item) || nw.first("a", item);
-    if (linkEl) {
-      link = linkEl.getAttribute("href");
+    const linkEl = item.find("a[href*='/oferta/']").first().length ? item.find("a[href*='/oferta/']").first() : item.find("a").first();
+    if (linkEl.length) {
+      link = linkEl.attr("href");
       if (link && !link.startsWith("http")) link = `https://allegro.pl${link}`;
     }
 
@@ -161,9 +154,8 @@ function extractProductsFromHtml(html, defaultCategory) {
       link = `https://allegro.pl/oferta/${slug}-14492193812`;
     }
 
-    let imageUrl = null;
-    const imgEl = nw.first("img", item);
-    if (imgEl) imageUrl = imgEl.getAttribute("src") || imgEl.getAttribute("data-src");
+    const imgEl = item.find("img").first();
+    let imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
 
     products.push({
       name,
@@ -181,7 +173,7 @@ function extractProductsFromHtml(html, defaultCategory) {
       country: "PL",
       currency: "zł",
     });
-  }
+  });
 
   return products;
 }

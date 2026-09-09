@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -135,31 +135,30 @@ export async function scrapeElCorteIngles() {
           await page.goto(config.url, { waitUntil: "domcontentloaded", timeout: 15000 });
           await new Promise((r) => setTimeout(r, 2000));
           const html = await page.content();
-          const dom = new JSDOM(html);
-          const doc = dom.window.document;
+          const $ = cheerio.load(html);
 
-          const cards = doc.querySelectorAll(".product_tile, [data-product-id], .grid-item");
-          for (const card of cards) {
-            const titleEl = card.querySelector(".product_tile-title, .title, a[title]");
-            const name = (titleEl?.textContent || titleEl?.getAttribute("title") || "").trim();
-            if (!name || name.length < 5) continue;
+          $(".product_tile, [data-product-id], .grid-item").each((_, el) => {
+            const card = $(el);
+            const titleEl = card.find(".product_tile-title, .title, a[title]").first();
+            const name = (titleEl.text() || titleEl.attr("title") || "").trim();
+            if (!name || name.length < 5) return;
 
-            const priceEl = card.querySelector(".price, .product_tile-price");
+            const priceEl = card.find(".price, .product_tile-price").first();
             let price = null;
-            if (priceEl) {
-              const text = priceEl.textContent || "";
+            if (priceEl.length) {
+              const text = priceEl.text() || "";
               const match = text.match(/([\d.,]+)/);
-              if (match) price = parseFloat(match[1].replace(".", "").replace(",", "."));
+              if (match) price = parseFloat(match[1].replace(/\./g, "").replace(",", "."));
             }
 
-            if (!price || price <= 0) continue;
+            if (!price || price <= 0) return;
 
-            const linkEl = card.querySelector("a[href*='-pr-'], a[href*='/electrodomesticos/'], a[href*='/electronica/'], a");
-            let link = linkEl?.getAttribute("href");
+            const linkEl = card.find("a[href*='-pr-'], a[href*='/electrodomesticos/'], a[href*='/electronica/'], a").first();
+            let link = linkEl.attr("href");
             if (link && !link.startsWith("http")) link = `https://www.elcorteingles.es${link}`;
 
-            const imgEl = card.querySelector("img");
-            let imageUrl = imgEl?.getAttribute("src") || imgEl?.getAttribute("data-src");
+            const imgEl = card.find("img").first();
+            let imageUrl = imgEl.attr("src") || imgEl.attr("data-src");
             if (imageUrl && imageUrl.startsWith("//")) imageUrl = `https:${imageUrl}`;
 
             allProducts.push({
@@ -178,7 +177,7 @@ export async function scrapeElCorteIngles() {
               country: "ES",
               currency: "€",
             });
-          }
+          });
         } catch (err) {
           console.warn(`[elcorteingles] Error scraping category ${config.category}:`, err.message);
         }
