@@ -359,7 +359,7 @@ export function Dashboard() {
               }`}
             >
               <Database className="h-4 w-4 text-indigo-600" />
-              DuckDB OLAP Insights (Plotly.js)
+              High-Speed Analytics Engine
             </button>
           </div>
         </div>
