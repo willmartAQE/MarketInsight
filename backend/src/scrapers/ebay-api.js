@@ -1,5 +1,5 @@
 import EbayAuthToken from "ebay-oauth-nodejs-client";
-import got from "got-scraping";
+import { gotScraping } from "got-scraping";
 
 const EBAY_MARKETPLACES = {
   it: { marketplaceId: "EBAY_IT", domain: "ebay.it", country: "IT", currency: "EUR" },
@@ -86,7 +86,7 @@ export async function searchEbayAPI(query, countryCode = "it", categoryName = "G
     const filterStr = `itemLocationCountry:${storeInfo.country},buyingOptions:{FIXED_PRICE},conditionIds:{1000}`;
     const endpoint = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&filter=${encodeURIComponent(filterStr)}&sort=price&limit=15`;
 
-    const res = await got.get(endpoint, {
+    const res = await gotScraping.get(endpoint, {
       headers: {
         Authorization: `Bearer ${token}`,
         "X-EBAY-C-MARKETPLACE-ID": storeInfo.marketplaceId,
