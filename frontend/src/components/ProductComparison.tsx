@@ -2,6 +2,7 @@
 
 import { Product } from "@/types";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
+import { getCountryFlag, getCountryName } from "@/lib/grouping";
 import {
   ArrowLeft,
   ExternalLink,
@@ -11,8 +12,10 @@ import {
   Trophy,
   Tag,
   ShoppingBag,
-  TrendingDown,
-  Scale
+  TrendingUp,
+  Scale,
+  Globe,
+  Sparkles
 } from "lucide-react";
 import {
   BarChart,
@@ -307,6 +310,21 @@ export function ProductComparison({
                   ))}
                 </tr>
 
+                {/* Country / Origin Row */}
+                <tr>
+                  <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
+                    Country / Origin
+                  </td>
+                  {products.map((p) => (
+                    <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0 font-medium text-gray-900">
+                      <span className="inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg text-xs">
+                        <span>{getCountryFlag(p.country)}</span>
+                        <strong>{getCountryName(p.country)}</strong>
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+
                 {/* Marketplace / Source Row */}
                 <tr>
                   <td className="p-4 font-semibold text-gray-700 bg-gray-50/50 sticky left-0 z-10 border-r border-gray-200">
@@ -316,7 +334,10 @@ export function ProductComparison({
                     const srcInfo = formatSource(p.source);
                     return (
                       <td key={p.id} className="p-4 border-r border-gray-100 last:border-r-0 font-medium text-gray-800">
-                        {srcInfo.label} ({p.country})
+                        <span className="inline-flex items-center gap-1.5">
+                          <span>{getCountryFlag(p.country)}</span>
+                          <span>{srcInfo.label}</span>
+                        </span>
                       </td>
                     );
                   })}

@@ -16,7 +16,9 @@ import { PriceDistribution } from "./PriceDistribution";
 import { SourceComparison } from "./SourceComparison";
 import { DuckDBPlotlyAnalytics } from "./DuckDBPlotlyAnalytics";
 import { FilterBar } from "./FilterBar";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid } from "lucide-react";
+import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
+import { ProductGroup } from "@/lib/grouping";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles } from "lucide-react";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -134,6 +136,7 @@ export function Dashboard() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [currencyMode, setCurrencyMode] = useState<CurrencyMode>("local");
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [topProducts, setTopProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [stores, setStores] = useState<Record<string, CountryStores>>({});
@@ -141,6 +144,7 @@ export function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [scrapeStatus, setScrapeStatus] = useState<ScrapeStatus | null>(null);
   const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
+  const [isGroupingModalOpen, setIsGroupingModalOpen] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const prevCountryRef = useRef<string | null>(null);
 
@@ -153,12 +157,14 @@ export function Dashboard() {
     try {
       const countryParam = filters.country || undefined;
       const sourceParam = filters.source || undefined;
-      const [productsData, statsData, topData] = await Promise.all([
+      const [productsData, statsData, topData, globalProds] = await Promise.all([
         getProducts(filters),
         getStats(sourceParam, countryParam),
         getTopProducts(sourceParam, countryParam),
+        getProducts({}),
       ]);
       setProducts(productsData);
+      setAllProducts(globalProds && globalProds.length > 0 ? globalProds : productsData);
       setStats(statsData);
       setTopProducts(topData);
       setLastUpdated(new Date());
@@ -276,6 +282,23 @@ export function Dashboard() {
     router.push(`/compare?ids=${selectedIds.join(",")}`);
   };
 
+  const handleSelectGroup = (group: ProductGroup) => {
+    const groupIds = group.products.map((p) => p.id);
+    localStorage.setItem("selectedProductIds", JSON.stringify(groupIds));
+    localStorage.setItem("selectedProductsData", JSON.stringify(group.products));
+    setIsGroupingModalOpen(false);
+    router.push(`/compare?ids=${groupIds.join(",")}`);
+  };
+
+  const handleSelectAllGroups = (groups: ProductGroup[]) => {
+    const allGroupProducts = groups.flatMap((g) => g.products);
+    const allIds = Array.from(new Set(allGroupProducts.map((p) => p.id)));
+    localStorage.setItem("selectedProductIds", JSON.stringify(allIds));
+    localStorage.setItem("selectedProductsData", JSON.stringify(allGroupProducts));
+    setIsGroupingModalOpen(false);
+    router.push(`/compare?ids=${allIds.join(",")}`);
+  };
+
   const selectedCountry = filters.country?.toLowerCase() || "us";
   const countryData = stores[selectedCountry];
   const sources = countryData
@@ -310,6 +333,13 @@ export function Dashboard() {
                   Updated: {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
+              <button
+                onClick={() => setIsGroupingModalOpen(true)}
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+              >
+                <Globe className="h-4 w-4" />
+                Group Cross-Country Matches
+              </button>
               {selectedIds.length > 0 && (
                 <button
                   onClick={handleNavigateToCompare}
@@ -431,6 +461,7 @@ export function Dashboard() {
               loading={loading}
               currencyMode={currencyMode}
               onExportCSV={() => exportToCSV(products, currencyMode)}
+              onGroupCrossCountry={() => setIsGroupingModalOpen(true)}
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
               onToggleSelectAll={handleToggleSelectAll}
@@ -438,6 +469,17 @@ export function Dashboard() {
           </>
         )}
       </main>
+
+      <CrossCountryGroupingModal
+        isOpen={isGroupingModalOpen}
+        onClose={() => setIsGroupingModalOpen(false)}
+        products={allProducts.length > 0 ? allProducts : products}
+        currencyMode={currencyMode}
+        onSelectGroup={handleSelectGroup}
+        onSelectAllGroups={handleSelectAllGroups}
+      />
+
+      {/* Floating Comparison Toolbar */}
 
       {/* Floating Comparison Toolbar */}
       {selectedIds.length > 0 && (
