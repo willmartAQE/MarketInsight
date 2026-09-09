@@ -24,7 +24,7 @@ export const FALLBACK_CANADA_PRODUCTS = [
     reviews_count: 4520,
     category: "Kitchen",
     source: "walmart-ca",
-    url: "https://www.walmart.ca/en/ip/ninja-air-fryer-xl/6000201839211",
+    url: "https://www.walmart.ca/en/ip/ninja-air-fryer-xl-52l-capacity/6000201839211",
     image_url: "https://i5.walmartimages.ca/images/Enlarge/839/211/6000201839211.jpg",
     seller: "Walmart Canada",
     availability: "In Stock",
