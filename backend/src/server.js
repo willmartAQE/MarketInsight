@@ -20,7 +20,10 @@ import {
 import {
   getDuckDBMarketplaceHeatmap,
   getDuckDBOutlierDeals,
-  getDuckDBCategoryQuantiles
+  getDuckDBCategoryQuantiles,
+  getDuckDBPriceClusters,
+  getDuckDBCrossBorderArbitrage,
+  getDuckDBMarketAttractiveness
 } from "./duckdb.js";
 import { STORES, AMAZON_EU } from "./stores.js";
 import { scrapeWalmart } from "./scrapers/walmart.js";
@@ -359,6 +362,33 @@ app.get("/api/analytics/duckdb/outliers", async (_req, res) => {
 app.get("/api/analytics/duckdb/quantiles", async (_req, res) => {
   try {
     const data = await getDuckDBCategoryQuantiles();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/duckdb/clusters", async (_req, res) => {
+  try {
+    const data = await getDuckDBPriceClusters();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/duckdb/arbitrage", async (_req, res) => {
+  try {
+    const data = await getDuckDBCrossBorderArbitrage();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/analytics/duckdb/attractiveness", async (_req, res) => {
+  try {
+    const data = await getDuckDBMarketAttractiveness();
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });

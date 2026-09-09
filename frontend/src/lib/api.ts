@@ -106,6 +106,18 @@ export async function getDuckDBQuantiles(): Promise<any[]> {
   return fetchJSON<any[]>("/api/analytics/duckdb/quantiles");
 }
 
+export async function getDuckDBClusters(): Promise<any[]> {
+  return fetchJSON<any[]>("/api/analytics/duckdb/clusters");
+}
+
+export async function getDuckDBCrossBorderArbitrage(): Promise<any[]> {
+  return fetchJSON<any[]>("/api/analytics/duckdb/arbitrage");
+}
+
+export async function getDuckDBAttractiveness(): Promise<any[]> {
+  return fetchJSON<any[]>("/api/analytics/duckdb/attractiveness");
+}
+
 export interface GoogleTrendsResult {
   status: string;
   keyword: string;

@@ -118,3 +118,116 @@ export async function getDuckDBCategoryQuantiles() {
   `;
   return queryDuckDB(sql);
 }
+
+export async function getDuckDBPriceClusters() {
+  await initDuckDB();
+  const sql = `
+    WITH quantiles AS (
+      SELECT
+        category,
+        QUANTILE_CONT(price, 0.33) as q1_3,
+        QUANTILE_CONT(price, 0.66) as q2_3
+      FROM sqlite_db.products
+      GROUP BY category
+    )
+    SELECT
+      p.id,
+      p.name,
+      p.price,
+      p.original_price,
+      p.rating,
+      p.reviews_count,
+      p.source,
+      p.category,
+      p.country,
+      p.url,
+      p.image_url,
+      CASE
+        WHEN p.price <= q.q1_3 THEN 'Budget Bargain'
+        WHEN p.price <= q.q2_3 THEN 'Sweet-Spot Value'
+        ELSE 'Premium Tier'
+      END as cluster_tier,
+      ROUND(q.q1_3, 2) as tier_low_max,
+      ROUND(q.q2_3, 2) as tier_mid_max
+    FROM sqlite_db.products p
+    JOIN quantiles q ON p.category = q.category
+    ORDER BY p.category, p.price ASC
+  `;
+  return queryDuckDB(sql);
+}
+
+export async function getDuckDBCrossBorderArbitrage() {
+  await initDuckDB();
+  const sql = `
+    WITH product_pairs AS (
+      SELECT
+        p1.id as source_id,
+        p1.name as item_name,
+        p1.category,
+        p1.price as price_low,
+        p1.country as country_low,
+        p1.source as store_low,
+        p1.url as url_low,
+        p1.image_url as image_url,
+        p2.id as target_id,
+        p2.price as price_high,
+        p2.country as country_high,
+        p2.source as store_high,
+        p2.url as url_high,
+        ROUND(p2.price - p1.price, 2) as price_diff,
+        ROUND(((p2.price - p1.price) / p2.price) * 100, 1) as spread_pct
+      FROM sqlite_db.products p1
+      JOIN sqlite_db.products p2
+        ON p1.category = p2.category
+       AND (p1.country != p2.country OR p1.source != p2.source)
+       AND p1.price < p2.price * 0.85
+    )
+    SELECT DISTINCT ON (item_name)
+      source_id, item_name, category, price_low, country_low, store_low, url_low, image_url,
+      price_high, country_high, store_high, url_high, price_diff, spread_pct
+    FROM product_pairs
+    ORDER BY item_name, spread_pct DESC
+    LIMIT 12;
+  `;
+  return queryDuckDB(sql);
+}
+
+export async function getDuckDBMarketAttractiveness() {
+  await initDuckDB();
+  const sql = `
+    WITH cat_stats AS (
+      SELECT
+        category,
+        QUANTILE_CONT(price, 0.5) as median_price
+      FROM sqlite_db.products
+      GROUP BY category
+    )
+    SELECT
+      p.id,
+      p.name,
+      p.price,
+      p.original_price,
+      p.discount_pct,
+      p.rating,
+      p.reviews_count,
+      p.source,
+      p.category,
+      p.country,
+      p.url,
+      p.image_url,
+      ROUND(
+        GREATEST(0, LEAST(100,
+          (COALESCE(p.rating, 4.0) / 5.0 * 30.0) +
+          (LOG10(GREATEST(COALESCE(p.reviews_count, 10), 1) + 1) / 4.0 * 30.0) +
+          (LEAST(COALESCE(p.discount_pct, 0), 60) / 60.0 * 20.0) +
+          (GREATEST(0, (c.median_price - p.price) / c.median_price) * 20.0)
+        )), 1
+      ) as attractiveness_score
+    FROM sqlite_db.products p
+    JOIN cat_stats c ON p.category = c.category
+    ORDER BY attractiveness_score DESC
+    LIMIT 15;
+  `;
+  return queryDuckDB(sql);
+}
+
