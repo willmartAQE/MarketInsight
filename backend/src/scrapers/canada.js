@@ -56,7 +56,7 @@ export const FALLBACK_CANADA_PRODUCTS = [
     reviews_count: 2100,
     category: "Electronics",
     source: "bestbuy-ca",
-    url: "https://www.bestbuy.ca/en-ca/search?search=LG+55+4K+UHD+HDR+LED+Smart+TV",
+    url: "https://www.bestbuy.ca/en-ca/product/lg-55-4k-uhd-hdr-led-smart-tv-55ut7580/17929450",
     image_url: "https://multimedia.bbycastatic.ca/multimedia/products/500x500/179/17929450/17929450.jpg",
     seller: "Best Buy Canada",
     availability: "In Stock",

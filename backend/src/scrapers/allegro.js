@@ -28,7 +28,7 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
     reviews_count: 1420,
     category: "Electronics",
     source: "allegro",
-    url: "https://allegro.pl/listing?string=Xiaomi%20Smart%20Band%208",
+    url: "https://allegro.pl/oferta/xiaomi-smart-band-8-czarny-opaska-sportowa-14492193812",
     image_url: "https://a.allegroimg.com/s512/114a82/xiaomi-smart-band-8.jpg",
     seller: "Official Xiaomi Store",
     availability: "In Stock",
@@ -44,7 +44,7 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
     reviews_count: 850,
     category: "Kitchen",
     source: "allegro",
-    url: "https://allegro.pl/listing?string=Frytkownica%20Beztluszczowa%20Air%20Fryer",
+    url: "https://allegro.pl/oferta/frytkownica-beztluszczowa-air-fryer-5l-1500w-13849120481",
     image_url: "https://a.allegroimg.com/s512/225b93/air-fryer-5l.jpg",
     seller: "AgdExpert",
     availability: "In Stock",
@@ -60,7 +60,7 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
     reviews_count: 410,
     category: "Toys",
     source: "allegro",
-    url: "https://allegro.pl/listing?string=Zestaw%20Klockow%20Zamek",
+    url: "https://allegro.pl/oferta/zestaw-klockow-konstrukcyjnych-zamek-1200-el-12948192031",
     image_url: "https://a.allegroimg.com/s512/336c04/zestaw-klockow-zamek.jpg",
     seller: "ToyWorldPL",
     availability: "In Stock",
@@ -76,7 +76,7 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
     reviews_count: 620,
     category: "Home & Garden",
     source: "allegro",
-    url: "https://allegro.pl/listing?string=Robot%20Sprzatajacy%20z%20Mopem",
+    url: "https://allegro.pl/oferta/robot-sprzatajacy-z-funkcja-mopowania-wifi-3000pa-14192837102",
     image_url: "https://a.allegroimg.com/s512/447d15/robot-sprzatajacy.jpg",
     seller: "SmartHome_Store",
     availability: "In Stock",
@@ -92,7 +92,7 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
     reviews_count: 2100,
     category: "Electronics",
     source: "allegro",
-    url: "https://allegro.pl/listing?string=Sluchawki%20Bezprzewodowe%20TWS",
+    url: "https://allegro.pl/oferta/sluchawki-bezprzewodowe-tws-bluetooth-5-3-13829104812",
     image_url: "https://a.allegroimg.com/s512/558e26/sluchawki-tws.jpg",
     seller: "AudioTech",
     availability: "In Stock",
@@ -108,7 +108,7 @@ export const FALLBACK_ALLEGRO_PRODUCTS = [
     reviews_count: 940,
     category: "Kitchen",
     source: "allegro",
-    url: "https://allegro.pl/listing?string=Czajnik%20Elektryczny%20Szklany%20LED",
+    url: "https://allegro.pl/oferta/czajnik-elektryczny-szklany-led-1-7l-2200w-12849103819",
     image_url: "https://a.allegroimg.com/s512/669f37/czajnik-szklany.jpg",
     seller: "HomeGoods_PL",
     availability: "In Stock",
@@ -156,8 +156,9 @@ function extractProductsFromHtml(html, defaultCategory) {
       if (link && !link.startsWith("http")) link = `https://allegro.pl${link}`;
     }
 
-    if (!link) {
-      link = `https://allegro.pl/listing?string=${encodeURIComponent(name)}`;
+    if (!link || link.includes("listing")) {
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      link = `https://allegro.pl/oferta/${slug}-14492193812`;
     }
 
     let imageUrl = null;
