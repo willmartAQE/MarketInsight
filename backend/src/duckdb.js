@@ -156,40 +156,105 @@ export async function getDuckDBPriceClusters() {
   return queryDuckDB(sql);
 }
 
+const STOP_WORDS = new Set([
+  'and', 'the', 'for', 'with', 'pack', 'of', 'in', 'to', 'a', 'set', 'by', 'on', 'is', 'or', 'at', 'from', 'an', 'are', 'pcs', 'count', 'black', 'white', 'blue', 'red', 'green', '1', '2', '3', '4', '5', '6', '8', '10', '12', 'oz', 'lb', 'mm', 'cm', 'inch', 'new'
+]);
+
+function getTokens(str) {
+  if (!str) return new Set();
+  const words = str.toLowerCase().replace(/[^a-z0-9]/g, ' ').split(/\s+/);
+  return new Set(words.filter(w => w.length > 2 && !STOP_WORDS.has(w)));
+}
+
+function computeTokenSimilarity(title1, title2) {
+  const t1 = getTokens(title1);
+  const t2 = getTokens(title2);
+  if (t1.size === 0 || t2.size === 0) return 0;
+  
+  let intersection = 0;
+  for (const token of t1) {
+    if (t2.has(token)) intersection++;
+  }
+  
+  const union = t1.size + t2.size - intersection;
+  return intersection / union;
+}
+
 export async function getDuckDBCrossBorderArbitrage() {
   await initDuckDB();
-  const sql = `
-    WITH product_pairs AS (
-      SELECT
-        p1.id as source_id,
-        p1.name as item_name,
-        p1.category,
-        p1.price as price_low,
-        p1.country as country_low,
-        p1.source as store_low,
-        p1.url as url_low,
-        p1.image_url as image_url,
-        p2.id as target_id,
-        p2.price as price_high,
-        p2.country as country_high,
-        p2.source as store_high,
-        p2.url as url_high,
-        ROUND(p2.price - p1.price, 2) as price_diff,
-        ROUND(((p2.price - p1.price) / p2.price) * 100, 1) as spread_pct
-      FROM sqlite_db.products p1
-      JOIN sqlite_db.products p2
-        ON p1.category = p2.category
-       AND (p1.country != p2.country OR p1.source != p2.source)
-       AND p1.price < p2.price * 0.85
-    )
-    SELECT DISTINCT ON (item_name)
-      source_id, item_name, category, price_low, country_low, store_low, url_low, image_url,
-      price_high, country_high, store_high, url_high, price_diff, spread_pct
-    FROM product_pairs
-    ORDER BY item_name, spread_pct DESC
-    LIMIT 12;
-  `;
-  return queryDuckDB(sql);
+  const products = await queryDuckDB(`
+    SELECT id, name, price, source, country, category, url, image_url
+    FROM sqlite_db.products
+    WHERE price > 0
+  `);
+
+  const candidates = [];
+  const seenPairs = new Set();
+
+  for (let i = 0; i < products.length; i++) {
+    for (let j = i + 1; j < products.length; j++) {
+      const p1 = products[i];
+      const p2 = products[j];
+
+      // Must be from different store or country
+      if (p1.country === p2.country && p1.source === p2.source) continue;
+
+      // Identify low vs high price product
+      const low = p1.price <= p2.price ? p1 : p2;
+      const high = p1.price <= p2.price ? p2 : p1;
+
+      // Guardrail 1: Price spread must be at least 15% and price ratio <= 3.2x
+      const ratio = high.price / Math.max(low.price, 0.01);
+      if (ratio < 1.15 || ratio > 3.2) continue;
+
+      // Guardrail 2: Token similarity check (must share significant product title keywords)
+      const sim = computeTokenSimilarity(low.name, high.name);
+      if (sim < 0.30) continue;
+
+      const pairKey = `${low.id}-${high.id}`;
+      if (seenPairs.has(pairKey)) continue;
+      seenPairs.add(pairKey);
+
+      const spreadPct = Math.round(((high.price - low.price) / high.price) * 100);
+      const priceDiff = Math.round((high.price - low.price) * 100) / 100;
+
+      candidates.push({
+        source_id: low.id,
+        item_name: low.name,
+        category: low.category,
+        price_low: low.price,
+        country_low: low.country,
+        store_low: low.source,
+        url_low: low.url,
+        image_url: low.image_url,
+        price_high: high.price,
+        country_high: high.country,
+        store_high: high.source,
+        url_high: high.url,
+        price_diff: priceDiff,
+        spread_pct: spreadPct,
+        similarity: Math.round(sim * 100) / 100
+      });
+    }
+  }
+
+  // Sort candidates by highest price spread percentage
+  candidates.sort((a, b) => b.spread_pct - a.spread_pct);
+
+  // Deduplicate by item_name prefix to avoid listing minor variants of the same product repeatedly
+  const uniqueItems = [];
+  const seenItemKeys = new Set();
+
+  for (const cand of candidates) {
+    const normKey = cand.item_name.toLowerCase().slice(0, 30);
+    if (!seenItemKeys.has(normKey)) {
+      seenItemKeys.add(normKey);
+      uniqueItems.push(cand);
+    }
+    if (uniqueItems.length >= 12) break;
+  }
+
+  return uniqueItems;
 }
 
 export async function getDuckDBMarketAttractiveness() {
