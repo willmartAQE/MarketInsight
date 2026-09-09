@@ -309,17 +309,23 @@ export function Dashboard() {
 
   const [activeTab, setActiveTab] = useState<"overview" | "duckdb" | "trends">("overview");
   const [trendsKeyword, setTrendsKeyword] = useState<string>("DeLonghi");
+  const [trendsTriggerToken, setTrendsTriggerToken] = useState<number>(Date.now());
 
   const handleOpenTrendsForSelected = () => {
     const selectedProds = (allProducts.length > 0 ? allProducts : products).filter((p) => selectedIds.includes(p.id));
     if (selectedProds.length === 0) return;
 
     const keywords = selectedProds.map((p) => {
-      const parts = p.name.split(" ");
-      return parts.slice(0, 2).join(" ");
+      const cleanName = p.name
+        .replace(/^(Móvil|Aspirador|Friteuse|Lave-linge|Lave-vaisselle|Réfrigérateur|Robot|Smart TV|TV|Aspirateur|Pequeno Electrodoméstico)\s+/i, "")
+        .trim();
+      const nameToUse = cleanName.length >= 3 ? cleanName : p.name;
+      const parts = nameToUse.split(" ").filter((w) => w.length > 1);
+      return parts.slice(0, 3).join(" ");
     });
 
     setTrendsKeyword(keywords.join(", "));
+    setTrendsTriggerToken(Date.now());
     setActiveTab("trends");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -460,7 +466,7 @@ export function Dashboard() {
         {activeTab === "duckdb" ? (
           <DuckDBPlotlyAnalytics />
         ) : activeTab === "trends" ? (
-          <GoogleTrendsWidget key={`${trendsKeyword}-${filters.country}`} initialKeyword={trendsKeyword} countryCode={filters.country?.toUpperCase() || "IT"} />
+          <GoogleTrendsWidget key={`${trendsKeyword}-${trendsTriggerToken}-${filters.country}`} initialKeyword={trendsKeyword} countryCode={filters.country?.toUpperCase() || "IT"} />
         ) : (
           <>
             <StatsCards stats={stats} />
