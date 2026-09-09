@@ -109,13 +109,14 @@ export async function getDuckDBQuantiles(): Promise<any[]> {
 export interface GoogleTrendsResult {
   status: string;
   keyword: string;
+  keywords?: string[];
   geo: string;
   timeframeDays: number;
   averageScore: number;
   recentScore: number;
   momentumPct: number;
   demandStatus: string;
-  timeline: { date: string; timestamp: number; value: number }[];
+  timeline: (Record<string, any> & { date: string; timestamp: number; value: number })[];
 }
 
 export async function getGoogleTrendsData(keyword: string, country: string = "IT", timeframe: number = 90): Promise<GoogleTrendsResult> {

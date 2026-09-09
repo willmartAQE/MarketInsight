@@ -308,6 +308,21 @@ export function Dashboard() {
   const categories = stats?.categories.map((c) => c.name) || [];
 
   const [activeTab, setActiveTab] = useState<"overview" | "duckdb" | "trends">("overview");
+  const [trendsKeyword, setTrendsKeyword] = useState<string>("DeLonghi");
+
+  const handleOpenTrendsForSelected = () => {
+    const selectedProds = (allProducts.length > 0 ? allProducts : products).filter((p) => selectedIds.includes(p.id));
+    if (selectedProds.length === 0) return;
+
+    const keywords = selectedProds.map((p) => {
+      const parts = p.name.split(" ");
+      return parts.slice(0, 2).join(" ");
+    });
+
+    setTrendsKeyword(keywords.join(", "));
+    setActiveTab("trends");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative pb-20">
@@ -445,7 +460,7 @@ export function Dashboard() {
         {activeTab === "duckdb" ? (
           <DuckDBPlotlyAnalytics />
         ) : activeTab === "trends" ? (
-          <GoogleTrendsWidget initialKeyword={products[0]?.name ? products[0].name.split(" ")[0] : "DeLonghi"} countryCode={filters.country?.toUpperCase() || "IT"} />
+          <GoogleTrendsWidget initialKeyword={trendsKeyword} countryCode={filters.country?.toUpperCase() || "IT"} />
         ) : (
           <>
             <StatsCards stats={stats} />
@@ -493,27 +508,68 @@ export function Dashboard() {
         onSelectAllGroups={handleSelectAllGroups}
       />
 
-      {/* Floating Comparison Toolbar */}
-
-      {/* Floating Comparison Toolbar */}
+      {/* Dynamic Selection Floating Toolbar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 text-white backdrop-blur-md px-6 py-3.5 rounded-full shadow-2xl border border-gray-700 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 text-white backdrop-blur-md px-6 py-3.5 rounded-full shadow-2xl border border-gray-700 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
               {selectedIds.length}
             </span>
-            <span>products selected</span>
+            <span>selected</span>
           </div>
 
           <div className="h-4 w-[1px] bg-gray-700" />
 
-          <button
-            onClick={handleNavigateToCompare}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
-          >
-            <Scale className="h-4 w-4" />
-            Compare Now ({selectedIds.length})
-          </button>
+          {/* 1 Product Selected: Show Analyze Google Trends & Compare */}
+          {selectedIds.length === 1 && (
+            <>
+              <button
+                onClick={handleOpenTrendsForSelected}
+                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Analyze Google Trends
+              </button>
+              <button
+                onClick={handleNavigateToCompare}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+              >
+                <Scale className="h-4 w-4" />
+                Compare Product
+              </button>
+            </>
+          )}
+
+          {/* 2 to 3 Products Selected: Show Cross Trends Analysis & Compare Matrix */}
+          {selectedIds.length >= 2 && selectedIds.length <= 3 && (
+            <>
+              <button
+                onClick={handleOpenTrendsForSelected}
+                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Cross Trends Analysis ({selectedIds.length})
+              </button>
+              <button
+                onClick={handleNavigateToCompare}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+              >
+                <Scale className="h-4 w-4" />
+                Compare Matrix ({selectedIds.length})
+              </button>
+            </>
+          )}
+
+          {/* > 3 Products Selected: Hide Trends, Show ONLY Compare Now */}
+          {selectedIds.length > 3 && (
+            <button
+              onClick={handleNavigateToCompare}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+            >
+              <Scale className="h-4 w-4" />
+              Compare Now ({selectedIds.length})
+            </button>
+          )}
 
           <button
             onClick={() => exportToCSV(products.filter((p) => selectedIds.includes(p.id)), currencyMode, "selected_products_export.csv")}

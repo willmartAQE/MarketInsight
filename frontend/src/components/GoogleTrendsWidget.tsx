@@ -188,21 +188,44 @@ export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = 
 
           {/* Search Interest Timeline Chart */}
           <div className="bg-gray-50/70 border border-gray-200 rounded-xl p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Flame className="h-4 w-4 text-orange-600" />
-                Google Search Volume Curve for "{data.keyword}" ({data.geo})
+                Google Search Volume Curve ({data.geo})
               </h3>
-              <span className="text-[11px] text-gray-500">Indexed from 0 (min) to 100 (peak search volume)</span>
+
+              {data.keywords && data.keywords.length > 1 ? (
+                <div className="flex items-center gap-3">
+                  {data.keywords.map((kw, idx) => {
+                    const colors = ["#ea580c", "#2563eb", "#10b981"];
+                    return (
+                      <span key={kw} className="flex items-center gap-1 text-xs font-bold" style={{ color: colors[idx % colors.length] }}>
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[idx % colors.length] }} />
+                        {kw}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <span className="text-[11px] text-gray-500">Indexed from 0 (min) to 100 (peak search volume)</span>
+              )}
             </div>
 
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data.timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ea580c" stopOpacity={0.4} />
+                    <linearGradient id="trendGradient0" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ea580c" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#ea580c" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="trendGradient1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="trendGradient2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
@@ -210,16 +233,36 @@ export function GoogleTrendsWidget({ initialKeyword = "DeLonghi", countryCode = 
                   <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6b7280" }} />
                   <Tooltip
                     contentStyle={{ borderRadius: "10px", border: "1px solid #e5e7eb", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
-                    formatter={(val: any) => [`${val} / 100`, "Search Interest Index"]}
+                    formatter={(val: any, name: any) => [`${val} / 100`, String(name)]}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#ea580c"
-                    strokeWidth={2.5}
-                    fillOpacity={1}
-                    fill="url(#trendGradient)"
-                  />
+                  {data.keywords && data.keywords.length > 1 ? (
+                    data.keywords.map((kw, idx) => {
+                      const colors = ["#ea580c", "#2563eb", "#10b981"];
+                      const c = colors[idx % colors.length];
+                      return (
+                        <Area
+                          key={kw}
+                          type="monotone"
+                          dataKey={kw}
+                          name={kw}
+                          stroke={c}
+                          strokeWidth={2.5}
+                          fillOpacity={0.7}
+                          fill={`url(#trendGradient${idx % 3})`}
+                        />
+                      );
+                    })
+                  ) : (
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      name={data.keyword}
+                      stroke="#ea580c"
+                      strokeWidth={2.5}
+                      fillOpacity={1}
+                      fill="url(#trendGradient0)"
+                    />
+                  )}
                 </AreaChart>
               </ResponsiveContainer>
             </div>

@@ -1,17 +1,24 @@
 import googleTrends from "google-trends-api";
 
 export async function getGoogleTrendsInterest(query, countryCode = "IT", timeframeDays = 90) {
-  const keyword = (query || "").trim();
-  if (!keyword) {
+  const rawInput = Array.isArray(query) ? query.join(",") : String(query || "");
+  const keywords = rawInput
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean)
+    .slice(0, 3); // Max 3 keywords for comparison
+
+  if (keywords.length === 0) {
     return { status: "error", message: "Keyword is required" };
   }
 
   const geo = (countryCode || "IT").toUpperCase();
   const startTime = new Date(Date.now() - timeframeDays * 24 * 60 * 60 * 1000);
+  const keywordParam = keywords.length === 1 ? keywords[0] : keywords;
 
   try {
     const rawRes = await googleTrends.interestOverTime({
-      keyword,
+      keyword: keywordParam,
       startTime,
       geo: geo === "UK" ? "GB" : geo,
     });
@@ -19,21 +26,30 @@ export async function getGoogleTrendsInterest(query, countryCode = "IT", timefra
     const parsed = JSON.parse(rawRes);
     const timelineData = parsed.default?.timelineData || [];
 
-    const timeline = timelineData.map((item) => ({
-      date: item.formattedAxisTime || item.formattedTime,
-      timestamp: Number(item.time) * 1000,
-      value: item.value[0] || 0,
-    }));
+    const timeline = timelineData.map((item) => {
+      const pt = {
+        date: item.formattedAxisTime || item.formattedTime,
+        timestamp: Number(item.time) * 1000,
+        value: item.value[0] || 0,
+      };
+
+      // Add individual keyword values for comparative multi-keyword charts
+      keywords.forEach((kw, idx) => {
+        pt[kw] = item.value[idx] !== undefined ? item.value[idx] : 0;
+      });
+
+      return pt;
+    });
 
     if (timeline.length === 0) {
-      return getFallbackTrends(keyword, geo, timeframeDays);
+      return getFallbackTrends(keywords, geo, timeframeDays);
     }
 
-    const values = timeline.map((t) => t.value);
-    const totalAvg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+    const primaryValues = timeline.map((t) => t.value);
+    const totalAvg = Math.round(primaryValues.reduce((a, b) => a + b, 0) / primaryValues.length);
 
-    const recentHalf = values.slice(-Math.floor(values.length / 2));
-    const priorHalf = values.slice(0, Math.floor(values.length / 2));
+    const recentHalf = primaryValues.slice(-Math.floor(primaryValues.length / 2));
+    const priorHalf = primaryValues.slice(0, Math.floor(primaryValues.length / 2));
 
     const recentAvg = recentHalf.length > 0 ? recentHalf.reduce((a, b) => a + b, 0) / recentHalf.length : totalAvg;
     const priorAvg = priorHalf.length > 0 ? priorHalf.reduce((a, b) => a + b, 0) / priorHalf.length : totalAvg;
@@ -48,7 +64,8 @@ export async function getGoogleTrendsInterest(query, countryCode = "IT", timefra
 
     return {
       status: "success",
-      keyword,
+      keyword: keywords.join(", "),
+      keywords,
       geo,
       timeframeDays,
       averageScore: totalAvg,
@@ -58,17 +75,13 @@ export async function getGoogleTrendsInterest(query, countryCode = "IT", timefra
       timeline,
     };
   } catch (err) {
-    console.warn(`[google-trends] Google Trends API request notice for '${keyword}': ${err.message}. Using fallback trend analysis.`);
-    return getFallbackTrends(keyword, geo, timeframeDays);
+    console.warn(`[google-trends] Google Trends API request notice for '${keywords.join(", ")}': ${err.message}. Using fallback trend analysis.`);
+    return getFallbackTrends(keywords, geo, timeframeDays);
   }
 }
 
-function getFallbackTrends(keyword, geo, timeframeDays) {
-  // Generate realistic demand curve based on keyword seed hash
-  let seed = 0;
-  for (let i = 0; i < keyword.length; i++) seed += keyword.charCodeAt(i);
-
-  const baseValue = 45 + (seed % 35);
+function getFallbackTrends(keywords, geo, timeframeDays) {
+  const kwList = Array.isArray(keywords) ? keywords : [keywords];
   const now = Date.now();
   const stepMs = (timeframeDays * 24 * 60 * 60 * 1000) / 30;
 
@@ -76,14 +89,23 @@ function getFallbackTrends(keyword, geo, timeframeDays) {
   for (let i = 30; i >= 0; i--) {
     const tMs = now - i * stepMs;
     const dateObj = new Date(tMs);
-    const sineVal = Math.sin((30 - i) * 0.4 + (seed % 5)) * 12;
-    const val = Math.max(10, Math.min(100, Math.round(baseValue + sineVal)));
-
-    timeline.push({
+    const pt = {
       date: `${dateObj.toLocaleString("en-US", { month: "short" })} ${dateObj.getDate()}`,
       timestamp: tMs,
-      value: val,
+      value: 0,
+    };
+
+    kwList.forEach((kw, idx) => {
+      let seed = 0;
+      for (let c = 0; c < kw.length; c++) seed += kw.charCodeAt(c);
+      const baseVal = 40 + (seed % 35) + idx * 5;
+      const sineVal = Math.sin((30 - i) * 0.4 + (seed % 5) + idx) * 12;
+      const val = Math.max(10, Math.min(100, Math.round(baseVal + sineVal)));
+      pt[kw] = val;
+      if (idx === 0) pt.value = val;
     });
+
+    timeline.push(pt);
   }
 
   const values = timeline.map((t) => t.value);
@@ -92,7 +114,8 @@ function getFallbackTrends(keyword, geo, timeframeDays) {
 
   return {
     status: "simulated",
-    keyword,
+    keyword: kwList.join(", "),
+    keywords: kwList,
     geo,
     timeframeDays,
     averageScore: totalAvg,
