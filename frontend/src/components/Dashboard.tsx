@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Filters, Product, Stats, CountryStores } from "@/types";
-import { CurrencyMode } from "@/lib/currency";
+import { CurrencyMode, formatPrice } from "@/lib/currency";
 import {
   getProducts, getStats, getTopProducts, getStores,
   startScrape, getScrapeStatus, ScrapeStatus,
@@ -26,48 +26,94 @@ const DEFAULT_FILTERS: Filters = {
   max_price: null,
 };
 
-export function exportToCSV(products: Product[], filename: string = "marketinsight_export.csv") {
+export function exportToCSV(
+  products: Product[],
+  currencyMode: CurrencyMode = "local",
+  filename: string = "marketinsight_products_export.csv"
+) {
   if (!products || products.length === 0) return;
 
+  const getStoreLabel = (src: string) => {
+    const s = (src || "").toLowerCase();
+    if (s === "walmart" || s === "walmart-us") return "Walmart US";
+    if (s === "walmart-ca") return "Walmart Canada";
+    if (s.startsWith("amazon-")) {
+      const code = s.replace("amazon-", "").toUpperCase();
+      return `Amazon ${code}`;
+    }
+    if (s === "amazon") return "Amazon US";
+    if (s === "bestbuy") return "Best Buy US";
+    if (s === "bestbuy-ca") return "Best Buy Canada";
+    if (s === "homedepot") return "The Home Depot";
+    if (s === "sears") return "Sears";
+    if (s === "canadiantire") return "Canadian Tire";
+    if (s === "elcorteingles") return "El Corte Inglés";
+    if (s === "allegro") return "Allegro";
+    if (s === "bol-nl" || s === "bol") return "Bol.com";
+    if (s === "cdiscount") return "Cdiscount";
+    if (s === "otto-de" || s === "otto") return "Otto.de";
+    return src;
+  };
+
   const headers = [
-    "ID",
-    "Product Name",
+    "Product ID",
+    "Product Title",
     "Price",
     "Original Price",
     "Discount %",
     "Rating",
     "Reviews Count",
-    "Source",
+    "Marketplace",
     "Category",
     "Country",
     "Seller",
     "Availability",
-    "URL"
+    "Product Link"
   ];
 
   const escapeCSV = (val: any) => {
-    if (val === null || val === undefined) return '""';
+    if (val === null || val === undefined || val === "") return '""';
     const str = String(val).replace(/"/g, '""');
     return `"${str}"`;
   };
 
-  const rows = products.map((p) => [
-    escapeCSV(p.id),
-    escapeCSV(p.name),
-    escapeCSV(p.price),
-    escapeCSV(p.original_price || ""),
-    escapeCSV(p.discount_pct || ""),
-    escapeCSV(p.rating || ""),
-    escapeCSV(p.reviews_count || ""),
-    escapeCSV(p.source),
-    escapeCSV(p.category),
-    escapeCSV(p.country),
-    escapeCSV(p.seller || ""),
-    escapeCSV(p.availability || ""),
-    escapeCSV(p.url)
-  ]);
+  const rows = products.map((p) => {
+    const formattedPrice = formatPrice(p.price, p.country, currencyMode);
+    const formattedOriginal = p.original_price
+      ? formatPrice(p.original_price, p.country, currencyMode)
+      : "N/A";
+    const discount = p.discount_pct ? `${p.discount_pct}%` : "N/A";
+    const rating = p.rating ? `${p.rating} / 5` : "N/A";
+    const reviews = p.reviews_count !== null && p.reviews_count !== undefined ? String(p.reviews_count) : "0";
+    const store = getStoreLabel(p.source);
+    const seller = p.seller || "N/A";
+    const availability = p.availability || "N/A";
 
-  const csvContent = "\uFEFF" + [headers.map(escapeCSV).join(","), ...rows.map((r) => r.join(","))].join("\n");
+    return [
+      escapeCSV(p.id),
+      escapeCSV(p.name),
+      escapeCSV(formattedPrice),
+      escapeCSV(formattedOriginal),
+      escapeCSV(discount),
+      escapeCSV(rating),
+      escapeCSV(reviews),
+      escapeCSV(store),
+      escapeCSV(p.category),
+      escapeCSV(p.country),
+      escapeCSV(seller),
+      escapeCSV(availability),
+      escapeCSV(p.url)
+    ];
+  });
+
+  const delimiter = ";";
+  const csvContent =
+    "\uFEFF" +
+    [
+      headers.map(escapeCSV).join(delimiter),
+      ...rows.map((r) => r.join(delimiter)),
+    ].join("\r\n");
+
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -211,12 +257,12 @@ export function Dashboard() {
                 </span>
               )}
               <button
-                onClick={() => exportToCSV(products)}
+                onClick={() => exportToCSV(products, currencyMode)}
                 disabled={products.length === 0}
                 className="flex items-center gap-2 rounded-lg border border-green-300 bg-green-50 px-3.5 py-2 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-50 transition-colors shadow-sm"
               >
                 <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                Esporta CSV ({products.length})
+                Export CSV ({products.length})
               </button>
               <button
                 onClick={fetchData}
@@ -288,7 +334,7 @@ export function Dashboard() {
           <SourceComparison stats={stats} />
         </div>
 
-        <ProductTable products={products} loading={loading} currencyMode={currencyMode} onExportCSV={() => exportToCSV(products)} />
+        <ProductTable products={products} loading={loading} currencyMode={currencyMode} onExportCSV={() => exportToCSV(products, currencyMode)} />
       </main>
     </div>
   );

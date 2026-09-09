@@ -59,8 +59,8 @@ export function FilterBar({
             onChange={(e) => onCurrencyModeChange(e.target.value as CurrencyMode)}
             className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
           >
-            <option value="local">Valuta Locale (Local Currency)</option>
-            <option value="usd">Converti in USD ($)</option>
+            <option value="local">Local Currency (Native)</option>
+            <option value="usd">Convert to USD ($)</option>
           </select>
         </div>
       </div>
