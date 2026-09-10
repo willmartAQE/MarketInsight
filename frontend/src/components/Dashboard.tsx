@@ -143,7 +143,7 @@ export function exportToOdooCSV(
 ) {
   if (!products || products.length === 0) return;
 
-  // Exact headers expected by Odoo Sales / Product import tool
+  // Full list of headers mapped for Odoo Sales / Product import
   const headers = [
     "Name",
     "Sales Price",
@@ -151,7 +151,12 @@ export function exportToOdooCSV(
     "Product Category",
     "Internal Reference",
     "Sales Description",
-    "Image"
+    "Product URL",
+    "Store",
+    "Country",
+    "Rating",
+    "Reviews Count",
+    "image_1920"
   ];
 
   const escapeCSV = (val: any) => {
@@ -164,7 +169,7 @@ export function exportToOdooCSV(
     const cost = p.original_price || (p.price ? Math.round(p.price * 0.85 * 100) / 100 : "");
     const storeLabel = (p.source || "MI").toUpperCase();
     const internalRef = `MI-${storeLabel}-${p.id}`;
-    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Page: ${p.url}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)`;
+    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${p.url}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
       escapeCSV(p.name),
@@ -173,6 +178,11 @@ export function exportToOdooCSV(
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
       escapeCSV(description),
+      escapeCSV(p.url || ""),
+      escapeCSV(p.source || ""),
+      escapeCSV(p.country || ""),
+      escapeCSV(p.rating || ""),
+      escapeCSV(p.reviews_count || 0),
       escapeCSV(p.image_url || ""),
     ];
   });

@@ -87,6 +87,16 @@ export async function syncProductsToOdoo(products, config) {
       const searchBody = searchRes.body;
       const existing = searchBody.result?.[0];
 
+      let imageBase64 = null;
+      if (prod.image_url) {
+        try {
+          const imgRes = await gotScraping.get(prod.image_url, { responseType: "buffer", timeout: { request: 5000 } });
+          if (imgRes.body && imgRes.body.length > 0) {
+            imageBase64 = imgRes.body.toString("base64");
+          }
+        } catch {}
+      }
+
       const productPayload = {
         name: prod.name,
         list_price: parseFloat(prod.price) || 0,
@@ -94,6 +104,10 @@ export async function syncProductsToOdoo(products, config) {
         description_sale: description,
         default_code: defaultCode,
       };
+
+      if (imageBase64) {
+        productPayload.image_1920 = imageBase64;
+      }
 
       if (existing && existing.id) {
         // Update existing product in Odoo
