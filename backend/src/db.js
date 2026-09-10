@@ -84,10 +84,24 @@ function initTables() {
     UPDATE products SET country = 'UK' WHERE UPPER(country) IN ('GB', 'UNITED KINGDOM', 'GREAT BRITAIN');
     UPDATE products SET country = 'NL' WHERE UPPER(country) IN ('NETHERLANDS', 'HOLLAND');
     UPDATE products SET country = 'PL' WHERE UPPER(country) IN ('POLAND', 'POLSKA');
+
+    -- Purge any mismatched legacy asset records or invalid entries
+    DELETE FROM price_history WHERE product_id IN (
+      SELECT id FROM products WHERE image_url LIKE '%001094612301070%' OR url NOT LIKE '%-pr-%' AND source = 'elcorteingles'
+    );
+    DELETE FROM products WHERE image_url LIKE '%001094612301070%' OR (url NOT LIKE '%-pr-%' AND source = 'elcorteingles');
   `);
 }
 
 export function upsertProduct(product) {
+  if (!product || !product.url || !product.name || !product.price || !product.image_url) {
+    return null;
+  }
+  // Reject items with invalid placeholder or mismatched image URLs
+  if (product.image_url.includes("001094612301070")) {
+    return null;
+  }
+
   const db = getDb();
   const existing = db.prepare("SELECT id FROM products WHERE url = ?").get(product.url);
   const countryCode = normalizeCountryCode(product.country);
