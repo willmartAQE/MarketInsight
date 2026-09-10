@@ -19,8 +19,9 @@ import { FilterBar } from "./FilterBar";
 import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import { WikiModal } from "./WikiModal";
+import { OdooSettingsModal } from "./OdooSettingsModal";
 import { ProductGroup } from "@/lib/grouping";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap, BookOpen } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap, BookOpen, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DEFAULT_FILTERS: Filters = {
@@ -135,6 +136,63 @@ export function exportToCSV(
   document.body.removeChild(link);
 }
 
+export function exportToOdooCSV(
+  products: Product[],
+  currencyMode: CurrencyMode = "local",
+  filename: string = "odoo_marketinsight_import.csv"
+) {
+  if (!products || products.length === 0) return;
+
+  // Exact headers expected by Odoo Sales / Product import tool
+  const headers = [
+    "Name",
+    "Sales Price",
+    "Cost",
+    "Product Category",
+    "Internal Reference",
+    "Sales Description"
+  ];
+
+  const escapeCSV = (val: any) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = products.map((p) => {
+    const cost = p.original_price || (p.price ? Math.round(p.price * 0.85 * 100) / 100 : "");
+    const storeLabel = (p.source || "MI").toUpperCase();
+    const internalRef = `MI-${storeLabel}-${p.id}`;
+    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Page: ${p.url}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)`;
+
+    return [
+      escapeCSV(p.name),
+      escapeCSV(p.price || 0),
+      escapeCSV(cost),
+      escapeCSV(p.category || "All / Saleable"),
+      escapeCSV(internalRef),
+      escapeCSV(description),
+    ];
+  });
+
+  const delimiter = ",";
+  const csvContent =
+    "\uFEFF" +
+    [
+      headers.map(escapeCSV).join(delimiter),
+      ...rows.map((r) => r.join(delimiter)),
+    ].join("\r\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 export function Dashboard() {
   const [filters, setFilters] = useState<Filters>(() => {
     if (typeof window !== "undefined") {
@@ -167,6 +225,7 @@ export function Dashboard() {
   const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
   const [isGroupingModalOpen, setIsGroupingModalOpen] = useState(false);
   const [isWikiOpen, setIsWikiOpen] = useState(false);
+  const [isOdooModalOpen, setIsOdooModalOpen] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const prevCountryRef = useRef<string | null>(filters.country || null);
 
@@ -443,6 +502,14 @@ export function Dashboard() {
                 <span>Wiki MarketInsight</span>
               </button>
               <button
+                onClick={() => setIsOdooModalOpen(true)}
+                title="Configura connessione Odoo ERP o sincronizza prodotti"
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-700 via-purple-800 to-indigo-800 px-3.5 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer border border-purple-400/30"
+              >
+                <Layers className="h-4 w-4 text-purple-200" />
+                <span>Odoo ERP</span>
+              </button>
+              <button
                 onClick={handlePurgeAndRescrape}
                 disabled={isPurging || loading}
                 title="Purge server cache and force a fresh real-time scrape across all stores"
@@ -623,6 +690,7 @@ export function Dashboard() {
                 loading={loading}
                 currencyMode={currencyMode}
                 onExportCSV={() => exportToCSV(products, currencyMode)}
+                onExportOdooCSV={() => exportToOdooCSV(products, currencyMode)}
                 onGroupCrossCountry={() => setIsGroupingModalOpen(true)}
                 selectedIds={selectedIds}
                 onToggleSelect={handleToggleSelect}
@@ -714,6 +782,24 @@ export function Dashboard() {
           </button>
 
           <button
+            onClick={() => exportToOdooCSV(products.filter((p) => selectedIds.includes(p.id)), currencyMode, "odoo_selected_products_export.csv")}
+            className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm"
+            title="Esporta prodotti selezionati in formato CSV per Odoo Sales"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5 text-purple-200" />
+            Odoo CSV
+          </button>
+
+          <button
+            onClick={() => setIsOdooModalOpen(true)}
+            className="flex items-center gap-1.5 bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm"
+            title="Apri Modale Sync Odoo"
+          >
+            <Layers className="h-3.5 w-3.5 text-indigo-200" />
+            Sync Odoo
+          </button>
+
+          <button
             onClick={handleClearSelection}
             className="p-1 text-gray-400 hover:text-white rounded-full transition-colors ml-1"
             title="Clear selection"
@@ -724,6 +810,11 @@ export function Dashboard() {
       )}
 
       <WikiModal isOpen={isWikiOpen} onClose={() => setIsWikiOpen(false)} />
+      <OdooSettingsModal
+        isOpen={isOdooModalOpen}
+        onClose={() => setIsOdooModalOpen(false)}
+        selectedProducts={products.filter((p) => selectedIds.includes(p.id))}
+      />
     </div>
   );
 }
