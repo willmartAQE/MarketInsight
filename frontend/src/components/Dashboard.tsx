@@ -150,7 +150,8 @@ export function exportToOdooCSV(
     "Cost",
     "Product Category",
     "Internal Reference",
-    "Sales Description"
+    "Sales Description",
+    "Image"
   ];
 
   const escapeCSV = (val: any) => {
@@ -172,6 +173,7 @@ export function exportToOdooCSV(
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
       escapeCSV(description),
+      escapeCSV(p.image_url || ""),
     ];
   });
 
