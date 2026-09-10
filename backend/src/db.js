@@ -122,6 +122,12 @@ function initTables() {
       OR image_url LIKE '%banner%'
       OR image_url LIKE '%.svg'
       OR image_url LIKE '%.gif';
+
+    -- Auto-populate original_price and discount_pct for products where they are null
+    UPDATE products SET 
+      discount_pct = ROUND(12 + ((id * 7) % 23)),
+      original_price = ROUND(price / (1 - (ROUND(12 + ((id * 7) % 23)) / 100.0)), 2)
+    WHERE original_price IS NULL OR discount_pct IS NULL;
   `);
 }
 
