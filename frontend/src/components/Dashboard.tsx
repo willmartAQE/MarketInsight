@@ -20,6 +20,7 @@ import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import { ProductGroup } from "@/lib/grouping";
 import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DEFAULT_FILTERS: Filters = {
   source: null,
@@ -479,40 +480,38 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-4 border-t border-gray-100 mt-4">
-            <button
-              onClick={() => handleTabChange("overview")}
-              className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
-                activeTab === "overview"
-                  ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <LayoutGrid className="h-4 w-4 text-blue-600" />
-              Overview Analytics
-            </button>
-            <button
-              onClick={() => handleTabChange("duckdb")}
-              className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
-                activeTab === "duckdb"
-                  ? "bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <Database className="h-4 w-4 text-indigo-600" />
-              High-Speed Analytics Engine
-            </button>
-            <button
-              onClick={() => handleTabChange("trends")}
-              className={`flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
-                activeTab === "trends"
-                  ? "bg-orange-50 text-orange-700 border border-orange-200 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <TrendingUp className="h-4 w-4 text-orange-600" />
-              Market Demand & Google Trends
-            </button>
+          <div className="flex items-center gap-2 pt-4 border-t border-gray-100 mt-4 relative">
+            {[
+              { id: "overview", label: "Overview Analytics", icon: LayoutGrid, color: "text-blue-600", activeBg: "bg-blue-600 text-white" },
+              { id: "duckdb", label: "High-Speed Analytics Engine", icon: Database, color: "text-indigo-600", activeBg: "bg-indigo-600 text-white" },
+              { id: "trends", label: "Market Demand & Google Trends", icon: TrendingUp, color: "text-amber-600", activeBg: "bg-amber-600 text-white" }
+            ].map((t) => {
+              const isActive = activeTab === t.id;
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => handleTabChange(t.id as any)}
+                  className={`relative flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer ${
+                    isActive ? "text-white shadow-md" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabPill"
+                      className={`absolute inset-0 rounded-xl ${
+                        t.id === "overview" ? "bg-blue-600" : t.id === "duckdb" ? "bg-indigo-600" : "bg-amber-600"
+                      }`}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Icon className={`h-4 w-4 ${isActive ? "text-white" : t.color}`} />
+                    {t.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </header>
@@ -552,51 +551,76 @@ export function Dashboard() {
       )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {activeTab === "duckdb" ? (
-          <DuckDBPlotlyAnalytics />
-        ) : activeTab === "trends" ? (
-          <GoogleTrendsWidget
-            key={`${trendsKeyword}-${trendsTriggerToken}-${filters.country}`}
-            initialKeyword={trendsKeyword}
-            countryCode={filters.country?.toUpperCase() || "IT"}
-            onReturnToOverview={() => handleTabChange("overview")}
-          />
-        ) : (
-          <>
-            <StatsCards stats={stats} />
+        <AnimatePresence mode="wait">
+          {activeTab === "duckdb" ? (
+            <motion.div
+              key="duckdb"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25 }}
+            >
+              <DuckDBPlotlyAnalytics />
+            </motion.div>
+          ) : activeTab === "trends" ? (
+            <motion.div
+              key="trends"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25 }}
+            >
+              <GoogleTrendsWidget
+                key={`${trendsKeyword}-${trendsTriggerToken}-${filters.country}`}
+                initialKeyword={trendsKeyword}
+                countryCode={filters.country?.toUpperCase() || "IT"}
+                onReturnToOverview={() => handleTabChange("overview")}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              <StatsCards stats={stats} />
 
-            <FilterBar
-              filters={filters}
-              onChange={handleFilterChange}
-              sources={sources}
-              categories={categories}
-              stores={stores}
-              currencyMode={currencyMode}
-              onCurrencyModeChange={setCurrencyMode}
-            />
+              <FilterBar
+                filters={filters}
+                onChange={handleFilterChange}
+                sources={sources}
+                categories={categories}
+                stores={stores}
+                currencyMode={currencyMode}
+                onCurrencyModeChange={setCurrencyMode}
+              />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TopProductsChart products={topProducts} />
-              <CategoryPieChart stats={stats} />
-            </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TopProductsChart products={topProducts} />
+                <CategoryPieChart stats={stats} />
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PriceDistribution stats={stats} />
-              <SourceComparison stats={stats} />
-            </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <PriceDistribution stats={stats} />
+                <SourceComparison stats={stats} />
+              </div>
 
-            <ProductTable
-              products={products}
-              loading={loading}
-              currencyMode={currencyMode}
-              onExportCSV={() => exportToCSV(products, currencyMode)}
-              onGroupCrossCountry={() => setIsGroupingModalOpen(true)}
-              selectedIds={selectedIds}
-              onToggleSelect={handleToggleSelect}
-              onToggleSelectAll={handleToggleSelectAll}
-            />
-          </>
-        )}
+              <ProductTable
+                products={products}
+                loading={loading}
+                currencyMode={currencyMode}
+                onExportCSV={() => exportToCSV(products, currencyMode)}
+                onGroupCrossCountry={() => setIsGroupingModalOpen(true)}
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
+                onToggleSelectAll={handleToggleSelectAll}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       <CrossCountryGroupingModal
