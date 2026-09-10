@@ -211,7 +211,7 @@ export function exportToOdooCSV(
 
     // Internal reference as clean code, metrics nicely grouped as colored Tags
     const internalRef = `MI-${storeLabel}-${p.id}`;
-    const productTags = `${storeLabel}, ⭐${p.rating || "N/A"}, +${symbol}${profitVal} (${marginPct}%)`;
+    const productTags = `${storeLabel}, ⭐${p.rating || "N/A"}, Margin: ${marginPct}%`;
 
     const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ⭐${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
