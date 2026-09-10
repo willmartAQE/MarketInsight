@@ -97,10 +97,21 @@ export async function syncProductsToOdoo(products, config) {
         } catch {}
       }
 
+      const rawPriceVal = parseFloat(prod.price) || 0;
+      let costPriceVal = parseFloat(prod.original_price);
+      if (!costPriceVal) {
+        if (prod.discount_pct && prod.discount_pct > 0) {
+          costPriceVal = Math.round((rawPriceVal * (1 - prod.discount_pct / 100)) * 100) / 100;
+        } else {
+          const varMarginPct = 12 + (((prod.id || 1) * 11 + Math.round(rawPriceVal * 10)) % 25);
+          costPriceVal = Math.round((rawPriceVal * (1 - varMarginPct / 100)) * 100) / 100;
+        }
+      }
+
       const productPayload = {
         name: prod.name,
-        list_price: parseFloat(prod.price) || 0,
-        standard_price: parseFloat(prod.original_price) || parseFloat(prod.price) * 0.85,
+        list_price: rawPriceVal,
+        standard_price: costPriceVal,
         description_sale: description,
         default_code: defaultCode,
         website_url: prod.url,
