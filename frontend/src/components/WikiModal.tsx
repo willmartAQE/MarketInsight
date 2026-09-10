@@ -156,7 +156,7 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                       <h3 className="text-lg font-bold text-slate-900">What is MarketInsight?</h3>
                       <p className="mt-1 text-slate-600 leading-relaxed">
                         MarketInsight is an enterprise-grade real-time e-commerce intelligence and price analytics engine.
-                        It scans live product catalogs across **12 global retail platforms** in **9 major countries** to detect real-time price drops, cross-border price disparities, and arbitrage opportunities.
+                        It scans live product catalogs across <strong>12 global retail platforms</strong> in <strong>9 major countries</strong> to detect real-time price drops, cross-border price disparities, and arbitrage opportunities.
                       </p>
                     </div>
                   </div>
