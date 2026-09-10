@@ -20,6 +20,9 @@ import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import { WikiModal } from "./WikiModal";
 import { OdooSettingsModal } from "./OdooSettingsModal";
+import { Navigation, ActiveTab } from "./Navigation";
+import { MarginCalculator } from "./MarginCalculator";
+import { ProductComparison } from "./ProductComparison";
 import { ProductGroup } from "@/lib/grouping";
 import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap, BookOpen, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -464,10 +467,10 @@ export function Dashboard() {
     : ["walmart", "amazon"];
   const categories = stats?.categories.map((c) => c.name) || [];
 
-  const [activeTab, setActiveTab] = useState<"overview" | "duckdb" | "trends">("overview");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("catalog");
   const [trendsKeyword, setTrendsKeyword] = useState<string>("DeLonghi");
   const [trendsTriggerToken, setTrendsTriggerToken] = useState<number>(Date.now());
-  const prevTabRef = useRef<string>("overview");
+  const prevTabRef = useRef<string>("catalog");
 
   useEffect(() => {
     const prevTab = prevTabRef.current;
@@ -477,7 +480,11 @@ export function Dashboard() {
     prevTabRef.current = activeTab;
   }, [activeTab, handleClearSelection]);
 
-  const handleTabChange = (newTab: "overview" | "duckdb" | "trends") => {
+  const handleTabChange = (newTab: ActiveTab) => {
+    if (newTab === "wiki") {
+      setIsWikiOpen(true);
+      return;
+    }
     if (activeTab === "trends" && newTab !== "trends") {
       handleClearSelection();
     }
@@ -518,129 +525,89 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative pb-20">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">MarketInsight</h1>
-                <p className="text-sm text-gray-500">
-                  E-Commerce Product Analytics
-                  {countryData && (
-                    <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-                      {countryData.flag} {countryData.name}
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {lastUpdated && (
-                <span className="text-xs text-gray-400">
-                  Updated: {lastUpdated.toLocaleTimeString()}
-                </span>
-              )}
-              <button
-                onClick={() => setIsWikiOpen(true)}
-                title="Open MarketInsight Wiki & Arbitrage Guide"
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer border border-purple-400/30"
-              >
-                <BookOpen className="h-4 w-4 text-purple-200" />
-                <span>Wiki MarketInsight</span>
-              </button>
-              <button
-                onClick={() => setIsOdooModalOpen(true)}
-                title="Configura connessione Odoo ERP o sincronizza prodotti"
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-700 via-purple-800 to-indigo-800 px-3.5 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer border border-purple-400/30"
-              >
-                <Layers className="h-4 w-4 text-purple-200" />
-                <span>Odoo ERP</span>
-              </button>
-              <button
-                onClick={handlePurgeAndRescrape}
-                disabled={isPurging || loading}
-                title="Purge server cache and force a fresh real-time scrape across all stores"
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 via-amber-600 to-red-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all duration-200 cursor-pointer"
-              >
-                {isPurging ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-white" />
-                ) : (
-                  <Flame className="h-4 w-4 text-amber-200 animate-pulse" />
-                )}
-                <span>{isPurging ? "Purging & Scraping..." : "Purge Cache & Full Scrape"}</span>
-              </button>
-              <button
-                onClick={() => setIsGroupingModalOpen(true)}
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
-              >
-                <Globe className="h-4 w-4" />
-                Group Cross-Country Matches
-              </button>
-              {selectedIds.length > 0 && (
-                <button
-                  onClick={handleNavigateToCompare}
-                  className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm animate-pulse"
-                >
-                  <Scale className="h-4 w-4" />
-                  Compare ({selectedIds.length})
-                </button>
-              )}
-              <button
-                onClick={() => exportToCSV(products, currencyMode)}
-                disabled={products.length === 0}
-                className="flex items-center gap-2 rounded-lg border border-green-300 bg-green-50 px-3.5 py-2 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-50 transition-colors shadow-sm"
-              >
-                <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                Export CSV ({products.length})
-              </button>
-              <button
-                onClick={fetchData}
-                disabled={loading}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                Refresh
-              </button>
-            </div>
+    <div className="min-h-screen bg-slate-100/60 relative pb-20 font-sans">
+      {/* Top Main Navigation */}
+      <Navigation
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        currencyMode={currencyMode}
+        onCurrencyModeToggle={() => setCurrencyMode(prev => prev === "usd" ? "local" : "usd")}
+        usdRate={1.08}
+      />
+
+      {/* Sub-header Bar for Quick Action Controls & Scrape Status */}
+      <div className="bg-white border-b border-gray-200 py-3 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {countryData && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 border border-slate-200">
+                <span>{countryData.flag}</span>
+                <span>{countryData.name}</span>
+              </span>
+            )}
+            {lastUpdated && (
+              <span className="text-xs text-gray-400 font-medium">
+                Aggiornato: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 pt-4 border-t border-gray-100 mt-4 relative">
-            {[
-              { id: "overview", label: "Overview Analytics", icon: LayoutGrid, color: "text-blue-600", activeBg: "bg-blue-600 text-white" },
-              { id: "duckdb", label: "High-Speed Analytics Engine", icon: Database, color: "text-indigo-600", activeBg: "bg-indigo-600 text-white" },
-              { id: "trends", label: "Market Demand & Google Trends", icon: TrendingUp, color: "text-amber-600", activeBg: "bg-amber-600 text-white" }
-            ].map((t) => {
-              const isActive = activeTab === t.id;
-              const Icon = t.icon;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => handleTabChange(t.id as any)}
-                  className={`relative flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer ${
-                    isActive ? "text-white shadow-md" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTabPill"
-                      className={`absolute inset-0 rounded-xl ${
-                        t.id === "overview" ? "bg-blue-600" : t.id === "duckdb" ? "bg-indigo-600" : "bg-amber-600"
-                      }`}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Icon className={`h-4 w-4 ${isActive ? "text-white" : t.color}`} />
-                    {t.label}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setIsWikiOpen(true)}
+              title="Apri Guida e Playbook Arbitraggio"
+              className="flex items-center gap-1.5 rounded-lg bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 transition-colors"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+              <span>Playbook</span>
+            </button>
+            <button
+              onClick={() => setIsOdooModalOpen(true)}
+              title="Configura connessione Odoo ERP"
+              className="flex items-center gap-1.5 rounded-lg bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 transition-colors"
+            >
+              <Layers className="h-3.5 w-3.5 text-purple-400" />
+              <span>Odoo ERP</span>
+            </button>
+            <button
+              onClick={handlePurgeAndRescrape}
+              disabled={isPurging || loading}
+              title="Forza aggiornamento completo prodotti dagli store"
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-600 to-amber-600 text-white px-3 py-1.5 text-xs font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-sm"
+            >
+              {isPurging ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+              ) : (
+                <Flame className="h-3.5 w-3.5 text-amber-200 animate-pulse" />
+              )}
+              <span>{isPurging ? "Scraping..." : "Riscraping Live"}</span>
+            </button>
+            <button
+              onClick={() => setIsGroupingModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-blue-700 transition-all shadow-sm"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>Match Paesi</span>
+            </button>
+            <button
+              onClick={() => exportToCSV(products, currencyMode)}
+              disabled={products.length === 0}
+              className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 px-3 py-1.5 text-xs font-semibold hover:bg-emerald-100 disabled:opacity-50 transition-all"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Export CSV</span>
+            </button>
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center gap-1.5 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <span>Aggiorna</span>
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {scrapeMessage && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
@@ -654,62 +621,76 @@ export function Dashboard() {
             )}
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-800">{scrapeMessage}</p>
-              {scrapeStatus?.progress && scrapeStatus.progress.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {scrapeStatus.progress.map((p) => (
-                    <span
-                      key={p.source}
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                        p.status === "done"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
-                      }`}
-                    >
-                      {p.status === "done" ? "✓" : "..."} {p.source}
-                      {p.count !== undefined && ` (${p.count})`}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <AnimatePresence mode="wait">
-          {activeTab === "duckdb" ? (
+          {activeTab === "calculator" ? (
             <motion.div
-              key="duckdb"
-              initial={{ opacity: 0, y: 12 }}
+              key="calculator"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <MarginCalculator currencyMode={currencyMode} />
+            </motion.div>
+          ) : activeTab === "analytics" ? (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
             >
               <DuckDBPlotlyAnalytics />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TopProductsChart products={topProducts} />
+                <CategoryPieChart stats={stats} />
+              </div>
+            </motion.div>
+          ) : activeTab === "compare" ? (
+            <motion.div
+              key="compare"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ProductComparison
+                products={getSelectedProductObjects().length > 0 ? getSelectedProductObjects() : allProducts.slice(0, 8)}
+                onRemoveProduct={handleToggleSelect}
+                onClearAll={handleClearSelection}
+                onBack={() => setActiveTab("catalog")}
+                currencyMode={currencyMode}
+              />
             </motion.div>
           ) : activeTab === "trends" ? (
             <motion.div
               key="trends"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
               <GoogleTrendsWidget
                 key={`${trendsKeyword}-${trendsTriggerToken}-${filters.country}`}
                 initialKeyword={trendsKeyword}
                 countryCode={filters.country?.toUpperCase() || "IT"}
-                onReturnToOverview={() => handleTabChange("overview")}
+                onReturnToOverview={() => handleTabChange("catalog")}
               />
             </motion.div>
           ) : (
             <motion.div
-              key="overview"
-              initial={{ opacity: 0, y: 12 }}
+              key="catalog"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               <StatsCards stats={stats} />
@@ -727,11 +708,6 @@ export function Dashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <TopProductsChart products={topProducts} />
                 <CategoryPieChart stats={stats} />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <PriceDistribution stats={stats} />
-                <SourceComparison stats={stats} />
               </div>
 
               <ProductTable
