@@ -17,104 +17,7 @@ const CDISCOUNT_URLS = [
   { url: "https://www.cdiscount.com/juniors/v-101-0.html", category: "Toys" },
 ];
 
-const FALLBACK_CDISCOUNT_PRODUCTS = [
-  {
-    name: "Friteuse 3 L CONTINENTAL EDISON 2000W Inox",
-    price: 27.99,
-    original_price: 29.99,
-    discount_pct: 6,
-    rating: 4.5,
-    reviews_count: 5601,
-    category: "Kitchen",
-    source: "cdiscount",
-    url: "https://www.cdiscount.com/electromenager/petits-appareils-de-cuisson/friteuse-3-l-continental-edison-cerfr3in2-2000w/f-1102002-cerfr3in2.html",
-    image_url: null,
-    seller: "Cdiscount",
-    availability: "In Stock",
-    country: "FR",
-    currency: "€",
-  },
-  {
-    name: "Proscenic PO11 Ultra Aspirateur Balai Sans Fil 55kPa",
-    price: 75.99,
-    original_price: 79.99,
-    discount_pct: 5,
-    rating: 4.3,
-    reviews_count: 590,
-    category: "Home & Garden",
-    source: "cdiscount",
-    url: "https://www.cdiscount.com/electromenager/aspirateurs-nettoyeurs/proscenic-po11-ultra-aspirateur-balai-sans-fil-55k/f-1101410-aacvz22628.html",
-    image_url: null,
-    seller: "Cdiscount",
-    availability: "In Stock",
-    country: "FR",
-    currency: "€",
-  },
-  {
-    name: "Lave-linge Hublot CONTINENTAL EDISON 12kg 1400 trs/min",
-    price: 299.99,
-    original_price: 319.99,
-    discount_pct: 6,
-    rating: 4.5,
-    reviews_count: 5202,
-    category: "Kitchen",
-    source: "cdiscount",
-    url: "https://www.cdiscount.com/electromenager/lavage-sechage/lave-linge-hublot-continental-edison-cell12140/f-1100104-cell12140isp.html",
-    image_url: null,
-    seller: "Cdiscount",
-    availability: "In Stock",
-    country: "FR",
-    currency: "€",
-  },
-  {
-    name: "Lave-vaisselle Pose Libre WHIRLPOOL 14 Couverts Inox",
-    price: 319.99,
-    original_price: 349.99,
-    discount_pct: 8,
-    rating: 4.2,
-    reviews_count: 4963,
-    category: "Kitchen",
-    source: "cdiscount",
-    url: "https://www.cdiscount.com/electromenager/lave-vaisselle/lave-vaisselle-pose-libre-whirlpool-owfc3c26x-14/f-11025-whiowfc2c26x.html",
-    image_url: null,
-    seller: "Cdiscount",
-    availability: "In Stock",
-    country: "FR",
-    currency: "€",
-  },
-  {
-    name: "Réfrigérateur Combiné SAMSUNG NoFrost RB33B610ESA",
-    price: 499.99,
-    original_price: 549.99,
-    discount_pct: 9,
-    rating: 4.6,
-    reviews_count: 1420,
-    category: "Kitchen",
-    source: "cdiscount",
-    url: "https://www.cdiscount.com/electromenager/refrigerateur-congelateur/refrigerateur-combine-samsung-rb33b610esa-no/f-1100309-sam1732144803716.html",
-    image_url: null,
-    seller: "Cdiscount",
-    availability: "In Stock",
-    country: "FR",
-    currency: "€",
-  },
-  {
-    name: "Lave-linge Hublot SAMSUNG EcoBubble 9kg WW90CGC04DAB",
-    price: 429.99,
-    original_price: 479.99,
-    discount_pct: 10,
-    rating: 4.7,
-    reviews_count: 980,
-    category: "Kitchen",
-    source: "cdiscount",
-    url: "https://www.cdiscount.com/electromenager/lavage-sechage/lave-linge-hublot-samsung-ecobubble-ww90cgc04dab/f-1100104-sam1710979065252.html",
-    image_url: null,
-    seller: "Samsung Store",
-    availability: "In Stock",
-    country: "FR",
-    currency: "€",
-  },
-];
+
 
 function extractProductsFromHtml(html, defaultCategory) {
   const $ = cheerio.load(html);
@@ -210,11 +113,6 @@ export async function scrapeCdiscount() {
     console.error(`[cdiscount] Browser error: ${err.message}`);
   } finally {
     if (browserObj?.browser) await browserObj.browser.close();
-  }
-
-  if (allProducts.length === 0) {
-    console.log("[cdiscount] Using fallback products dataset with real active Cdiscount product sheet links");
-    return { source: "cdiscount", products: FALLBACK_CDISCOUNT_PRODUCTS, status: "success" };
   }
 
   return { source: "cdiscount", products: allProducts, status: "success" };

@@ -121,43 +121,6 @@ async function launchBrowser() {
   });
 
   return { browser, auth };
-}
-
-export const FALLBACK_EBAY_PRODUCTS = {
-  "ebay-de": [
-    {
-      name: "Pokémon Trading Card Game PKM Tin 131",
-      price: 34.90,
-      original_price: 39.99,
-      discount_pct: 12,
-      rating: 4.8,
-      reviews_count: 530,
-      category: "Toys",
-      source: "ebay-de",
-      url: "https://www.ebay.de/itm/386123456789",
-      image_url: "https://i.ebayimg.com/images/g/pokede/s-l500.jpg",
-      seller: "CardsWorld_DE",
-      availability: "In Stock",
-      country: "DE",
-      currency: "€",
-    },
-    {
-      name: "Wago Compact Connection Clamps Lever Insert 4mm²",
-      price: 10.99,
-      original_price: 13.99,
-      discount_pct: 21,
-      rating: 4.9,
-      reviews_count: 890,
-      category: "Home & Garden",
-      source: "ebay-de",
-      url: "https://www.ebay.de/itm/256123456789",
-      image_url: "https://i.ebayimg.com/images/g/wagode/s-l500.jpg",
-      seller: "ElektroShop_DE",
-      availability: "In Stock",
-      country: "DE",
-      currency: "€",
-    },
-    {
       name: "De'Longhi Original EcoDecalk DLSC500 Descaler 500ml",
       price: 7.49,
       original_price: 9.99,
@@ -505,9 +468,10 @@ export const FALLBACK_EBAY_PRODUCTS = {
 };
 
 export async function scrapeEbayEU(countries = null) {
+  const defaultStores = ["ebay-de", "ebay-it", "ebay-fr", "ebay-es", "ebay-uk"];
   const targetStores = countries
-    ? Object.keys(FALLBACK_EBAY_PRODUCTS).filter((k) => countries.includes(k.replace("ebay-", "")))
-    : Object.keys(FALLBACK_EBAY_PRODUCTS);
+    ? defaultStores.filter((k) => countries.includes(k.replace("ebay-", "")))
+    : defaultStores;
 
   const allProducts = [];
   const results = {};
@@ -543,10 +507,6 @@ export async function scrapeEbayEU(countries = null) {
         }
       }
 
-      if (storeProducts.length === 0 && FALLBACK_EBAY_PRODUCTS[storeId]) {
-        storeProducts.push(...FALLBACK_EBAY_PRODUCTS[storeId]);
-      }
-
       results[storeId] = storeProducts.length;
       allProducts.push(...storeProducts);
     }
@@ -568,7 +528,6 @@ export async function scrapeEbayEU(countries = null) {
       for (const storeId of targetStores) {
         const countryCode = storeId.replace("ebay-", "").toUpperCase();
 
-        // Retrieve top Amazon products to guide search
         let amazonProds = [];
         try {
           amazonProds = getTopAmazonProducts(countryCode, 5);
@@ -603,23 +562,12 @@ export async function scrapeEbayEU(countries = null) {
           }
         }
 
-        if (storeProducts.length === 0 && FALLBACK_EBAY_PRODUCTS[storeId]) {
-          storeProducts.push(...FALLBACK_EBAY_PRODUCTS[storeId]);
-        }
-
         results[storeId] = storeProducts.length;
         allProducts.push(...storeProducts);
       }
     }
   } catch (err) {
     console.error(`[ebay-eu] Browser launch error: ${err.message}`);
-    for (const storeId of targetStores) {
-      if (FALLBACK_EBAY_PRODUCTS[storeId]) {
-        const products = FALLBACK_EBAY_PRODUCTS[storeId];
-        results[storeId] = products.length;
-        allProducts.push(...products);
-      }
-    }
   } finally {
     if (browserObj?.browser) await browserObj.browser.close();
   }

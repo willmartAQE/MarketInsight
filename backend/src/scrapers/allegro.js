@@ -17,104 +17,6 @@ const ALLEGRO_URLS = [
   { url: "https://allegro.pl/kategoria/dziecko", category: "Toys" },
 ];
 
-export const FALLBACK_ALLEGRO_PRODUCTS = [
-  {
-    name: "Xiaomi Smart Band 8 Czarny Opaska Sportowa",
-    price: 159.99,
-    original_price: 199.99,
-    discount_pct: 20,
-    rating: 4.8,
-    reviews_count: 1420,
-    category: "Electronics",
-    source: "allegro",
-    url: "https://allegro.pl/oferta/xiaomi-smart-band-8-czarny-opaska-sportowa-14492193812",
-    image_url: "https://a.allegroimg.com/s512/114a82/xiaomi-smart-band-8.jpg",
-    seller: "Official Xiaomi Store",
-    availability: "In Stock",
-    country: "PL",
-    currency: "zł",
-  },
-  {
-    name: "Frytkownica Beztłuszczowa Air Fryer 5L 1500W",
-    price: 249.00,
-    original_price: 329.00,
-    discount_pct: 24,
-    rating: 4.7,
-    reviews_count: 850,
-    category: "Kitchen",
-    source: "allegro",
-    url: "https://allegro.pl/oferta/frytkownica-beztluszczowa-air-fryer-5l-1500w-13849120481",
-    image_url: "https://a.allegroimg.com/s512/225b93/air-fryer-5l.jpg",
-    seller: "AgdExpert",
-    availability: "In Stock",
-    country: "PL",
-    currency: "zł",
-  },
-  {
-    name: "Zestaw Klocków Konstrukcyjnych Zamek 1200 Elementów",
-    price: 189.50,
-    original_price: 230.00,
-    discount_pct: 18,
-    rating: 4.9,
-    reviews_count: 410,
-    category: "Toys",
-    source: "allegro",
-    url: "https://allegro.pl/oferta/zestaw-klockow-konstrukcyjnych-zamek-1200-el-12948192031",
-    image_url: "https://a.allegroimg.com/s512/336c04/zestaw-klockow-zamek.jpg",
-    seller: "ToyWorldPL",
-    availability: "In Stock",
-    country: "PL",
-    currency: "zł",
-  },
-  {
-    name: "Robot Sprzątający z Funkcją Mopowania Wi-Fi 3000Pa",
-    price: 699.00,
-    original_price: 899.00,
-    discount_pct: 22,
-    rating: 4.6,
-    reviews_count: 620,
-    category: "Home & Garden",
-    source: "allegro",
-    url: "https://allegro.pl/oferta/robot-sprzatajacy-z-funkcja-mopowania-wifi-3000pa-14192837102",
-    image_url: "https://a.allegroimg.com/s512/447d15/robot-sprzatajacy.jpg",
-    seller: "SmartHome_Store",
-    availability: "In Stock",
-    country: "PL",
-    currency: "zł",
-  },
-  {
-    name: "Słuchawki Bezprzewodowe TWS Bluetooth 5.3 z Etui",
-    price: 89.90,
-    original_price: 129.00,
-    discount_pct: 30,
-    rating: 4.5,
-    reviews_count: 2100,
-    category: "Electronics",
-    source: "allegro",
-    url: "https://allegro.pl/oferta/sluchawki-bezprzewodowe-tws-bluetooth-5-3-13829104812",
-    image_url: "https://a.allegroimg.com/s512/558e26/sluchawki-tws.jpg",
-    seller: "AudioTech",
-    availability: "In Stock",
-    country: "PL",
-    currency: "zł",
-  },
-  {
-    name: "Czajnik Elektryczny Szklany LED 1.7L 2200W",
-    price: 79.00,
-    original_price: 99.00,
-    discount_pct: 20,
-    rating: 4.8,
-    reviews_count: 940,
-    category: "Kitchen",
-    source: "allegro",
-    url: "https://allegro.pl/oferta/czajnik-elektryczny-szklany-led-1-7l-2200w-12849103819",
-    image_url: "https://a.allegroimg.com/s512/669f37/czajnik-szklany.jpg",
-    seller: "HomeGoods_PL",
-    availability: "In Stock",
-    country: "PL",
-    currency: "zł",
-  },
-];
 
 
 function extractProductsFromHtml(html, defaultCategory) {
@@ -227,11 +129,6 @@ export async function scrapeAllegro() {
     console.error(`[allegro] Browser error: ${err.message}`);
   } finally {
     if (browserObj?.browser) await browserObj.browser.close();
-  }
-
-  if (allProducts.length === 0) {
-    console.log("[allegro] Using fallback products dataset due to network/IP block");
-    return { source: "allegro", products: FALLBACK_ALLEGRO_PRODUCTS, status: "success" };
   }
 
   return { source: "allegro", products: allProducts, status: "success" };
