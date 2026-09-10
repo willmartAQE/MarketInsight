@@ -185,24 +185,19 @@ export function exportToOdooCSV(
 
     // Calculate product-specific margin, profit, and cost dynamically
     let marginPct: number;
-    let profitVal: number;
-    let costVal: number;
 
     if (p.original_price && p.original_price > p.price) {
       const origPriceConverted = currencyMode === "usd" ? Math.round((p.original_price * currInfo.rate) * 100) / 100 : p.original_price;
-      costVal = price;
       marginPct = Math.round(((origPriceConverted - price) / origPriceConverted) * 100);
-      profitVal = Math.round((origPriceConverted - price) * 100) / 100;
     } else if (p.discount_pct && p.discount_pct > 0) {
       marginPct = Math.round(p.discount_pct);
-      profitVal = Math.round((price * (marginPct / 100)) * 100) / 100;
-      costVal = Math.round((price - profitVal) * 100) / 100;
     } else {
       // Dynamic product-specific margin variation (range 12% - 37%) based on product ID & price hash
       marginPct = 12 + ((p.id * 11 + Math.round(price * 10)) % 25);
-      profitVal = Math.round((price * (marginPct / 100)) * 100) / 100;
-      costVal = Math.round((price - profitVal) * 100) / 100;
     }
+
+    const profitVal = Math.round((price * (marginPct / 100)) * 100) / 100;
+    const costVal = Math.round((price - profitVal) * 100) / 100;
 
     const storeLabel = (p.source || "MI").toUpperCase();
     const symbol = currencyMode === "usd" ? "$" : currInfo.symbol;

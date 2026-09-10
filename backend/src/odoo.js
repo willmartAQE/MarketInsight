@@ -98,15 +98,16 @@ export async function syncProductsToOdoo(products, config) {
       }
 
       const rawPriceVal = parseFloat(prod.price) || 0;
-      let costPriceVal = parseFloat(prod.original_price);
-      if (!costPriceVal) {
-        if (prod.discount_pct && prod.discount_pct > 0) {
-          costPriceVal = Math.round((rawPriceVal * (1 - prod.discount_pct / 100)) * 100) / 100;
-        } else {
-          const varMarginPct = 12 + (((prod.id || 1) * 11 + Math.round(rawPriceVal * 10)) % 25);
-          costPriceVal = Math.round((rawPriceVal * (1 - varMarginPct / 100)) * 100) / 100;
-        }
+      let marginPct = prod.discount_pct ? Math.round(prod.discount_pct) : 0;
+      if (!marginPct && prod.original_price && prod.original_price > prod.price) {
+        marginPct = Math.round(((prod.original_price - prod.price) / prod.original_price) * 100);
       }
+      if (!marginPct) {
+        marginPct = 12 + (((prod.id || 1) * 11 + Math.round(rawPriceVal * 10)) % 25);
+      }
+
+      const profitVal = Math.round((rawPriceVal * (marginPct / 100)) * 100) / 100;
+      const costPriceVal = Math.round((rawPriceVal - profitVal) * 100) / 100;
 
       const productPayload = {
         name: prod.name,
