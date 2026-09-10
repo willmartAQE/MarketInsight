@@ -157,24 +157,16 @@ export function exportToOdooCSV(
     return "20%";
   };
 
-  // Full list of headers mapped for Odoo Sales / Product import
+  // Full list of headers mapped for Odoo Sales / Product import (only standard Odoo fields)
   const headers = [
     "Name",
     "Sales Price",
     "Cost",
-    "Currency",
-    "Margin",
-    "Margin %",
-    "Product Category",
     "Internal Reference",
     "Customer Taxes",
     "Website URL",
     "Sales Description",
-    "Product URL",
-    "Store",
-    "Country",
-    "Rating",
-    "Reviews Count",
+    "Product Category",
     "image_1920"
   ];
 
@@ -206,25 +198,17 @@ export function exportToOdooCSV(
     const formattedName = `[${storeLabel} ${countryCode} | ⭐${p.rating || "N/A"} | +${symbol}${profitVal} (${marginPct}%)] ${p.name}`;
     const internalRef = `MI-${storeLabel}-${p.id}`;
 
-    const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
+    const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ⭐${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
       escapeCSV(formattedName),
       escapeCSV(price || 0),
       escapeCSV(costVal || 0),
-      escapeCSV(currencyCode),
-      escapeCSV(profitVal > 0 ? profitVal : 0),
-      escapeCSV(marginPct > 0 ? `${marginPct}%` : "0%"),
-      escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
       escapeCSV(""), // Leave empty so Odoo doesn't force 22% default sales tax
       escapeCSV(p.url || ""), // Mapped to Odoo's native website_url for "Go to Website / Product" button
       escapeCSV(description),
-      escapeCSV(p.url || ""),
-      escapeCSV(p.source || ""),
-      escapeCSV(p.country || ""),
-      escapeCSV(p.rating || ""),
-      escapeCSV(p.reviews_count || 0),
+      escapeCSV(p.category || "All / Saleable"),
       escapeCSV(p.image_url || ""),
     ];
   });
