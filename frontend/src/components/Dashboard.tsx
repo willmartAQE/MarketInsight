@@ -167,6 +167,7 @@ export function exportToOdooCSV(
     "Product Category",
     "Internal Reference",
     "Customer Taxes",
+    "Website URL",
     "Sales Description",
     "Product URL",
     "Store",
@@ -210,6 +211,7 @@ export function exportToOdooCSV(
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
       escapeCSV(""), // Leave empty so Odoo doesn't force 22% default sales tax
+      escapeCSV(p.url || ""), // Mapped to Odoo's native website_url for "Go to Website / Product" button
       escapeCSV(description),
       escapeCSV(p.url || ""),
       escapeCSV(p.source || ""),

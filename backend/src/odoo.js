@@ -103,6 +103,7 @@ export async function syncProductsToOdoo(products, config) {
         standard_price: parseFloat(prod.original_price) || parseFloat(prod.price) * 0.85,
         description_sale: description,
         default_code: defaultCode,
+        website_url: prod.url,
       };
 
       if (imageBase64) {
