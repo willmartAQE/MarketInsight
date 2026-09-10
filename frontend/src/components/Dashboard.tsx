@@ -162,6 +162,7 @@ export function exportToOdooCSV(
     "Name",
     "Sales Price",
     "Cost",
+    "Currency",
     "Margin",
     "Margin %",
     "Product Category",
@@ -199,6 +200,7 @@ export function exportToOdooCSV(
     const storeLabel = (p.source || "MI").toUpperCase();
     const internalRef = `MI-${storeLabel}-${p.id}`;
     const symbol = currencyMode === "usd" ? "$" : currInfo.symbol;
+    const currencyCode = currencyMode === "usd" ? "USD" : currInfo.code;
 
     const description = `Store: ${p.source} | Country: ${p.country || "US"}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
@@ -206,6 +208,7 @@ export function exportToOdooCSV(
       escapeCSV(p.name),
       escapeCSV(price || 0),
       escapeCSV(costVal || 0),
+      escapeCSV(currencyCode),
       escapeCSV(profitVal > 0 ? profitVal : 0),
       escapeCSV(marginPct > 0 ? `${marginPct}%` : "0%"),
       escapeCSV(p.category || "All / Saleable"),
