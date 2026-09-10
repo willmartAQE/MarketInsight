@@ -199,9 +199,7 @@ export function exportToOdooCSV(
     const internalRef = `MI-${storeLabel}-${p.id}`;
     const symbol = currencyMode === "usd" ? "$" : currInfo.symbol;
 
-    // Format Product Link as clickable HTML hyperlink for Odoo UI
-    const htmlLink = `<a href="${p.url}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: bold;">${p.url}</a>`;
-    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${htmlLink}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
+    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
       escapeCSV(p.name),
