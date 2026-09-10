@@ -16,17 +16,7 @@ const HOMEDEPOT_URLS = [
   { url: "https://www.homedepot.com/b/Outdoors-Garden-Center/N-5yc1vZbx82", category: "Home & Garden" },
 ];
 
-    reviews_count: 14200,
-    category: "Electronics",
-    source: "homedepot",
-    url: "https://www.homedepot.com/p/Ring-Video-Doorbell-Venetian-Bronze-8VR1S7-0EN0/314112678",
-    image_url: "https://images.thdstatic.com/productImages/8vr1s70en0/svn/ring-video-doorbells-8vr1s7-0en0-64_600.jpg",
-    seller: "The Home Depot",
-    availability: "In Stock",
-    country: "USA",
-    currency: "$",
-  },
-];
+
 
 function extractProductsFromHtml(html, defaultCategory) {
   const dom = new JSDOM(html);

@@ -8,17 +8,7 @@ const OTTO_URLS = [
   { url: "https://www.otto.de/spielzeug/", category: "Toys" },
 ];
 
-    reviews_count: 520,
-    category: "Toys",
-    source: "otto-de",
-    url: "https://www.otto.de/p/playmobil-feuerwehr-leiterfahrzeug-city-action-70935-S07200C2/#variationId=S07200C2-1",
-    image_url: "https://i.otto.de/i/otto/S07200C2?w=512&h=512",
-    seller: "OTTO Toys",
-    availability: "In Stock",
-    country: "DE",
-    currency: "€",
-  },
-];
+
 
 function extractProductsFromHtml(html, defaultCategory) {
   const $ = cheerio.load(html);
