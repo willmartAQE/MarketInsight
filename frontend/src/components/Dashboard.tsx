@@ -161,7 +161,7 @@ export function exportToOdooCSV(
   const headers = [
     "Name",
     "Internal Reference",
-    "Product Tags",
+    "Tags/Name",
     "Sales Price",
     "Cost",
     "Customer Taxes",
