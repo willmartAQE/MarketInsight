@@ -84,7 +84,7 @@ export async function searchEbayAPI(query, countryCode = "it", categoryName = "G
 
   try {
     const filterStr = `itemLocationCountry:${storeInfo.country},buyingOptions:{FIXED_PRICE},conditionIds:{1000}`;
-    const endpoint = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&filter=${encodeURIComponent(filterStr)}&sort=price&limit=15`;
+    const endpoint = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&filter=${encodeURIComponent(filterStr)}&limit=10`;
 
     const res = await gotScraping.get(endpoint, {
       headers: {

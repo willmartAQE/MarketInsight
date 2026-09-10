@@ -14,15 +14,15 @@ if (existsSync(envPath)) {
 
 export function cleanSearchQuery(title) {
   if (!title) return "";
-  let clean = title.split("|")[0].split("(")[0].split("-")[0].trim();
-  if (clean.length < 5) clean = title.slice(0, 50).trim();
+  let clean = title.split("|")[0].split("(")[0].trim();
+  if (clean.length < 3) clean = title.slice(0, 60).trim();
   return clean;
 }
 
 export function buildEbaySearchUrl(query, countryCode) {
   const c = (countryCode || "DE").toLowerCase();
   const domain = c === "uk" ? "co.uk" : c;
-  return `https://www.ebay.${domain}/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_ItemCondition=3&_sop=2&LH_BIN=1&rt=nc&LH_PrefLoc=1`;
+  return `https://www.ebay.${domain}/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_ItemCondition=3&LH_BIN=1&rt=nc&LH_PrefLoc=1`;
 }
 
 function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
@@ -33,11 +33,11 @@ function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
   const items = $("[data-viewport]").length ? $("[data-viewport]") : $(".s-item");
 
   items.each((_, itemEl) => {
-    if (products.length >= 2) return false;
+    if (products.length >= 5) return false;
     const item = $(itemEl);
     const titleEl = item.find(".s-item__title, [role='heading']").first();
     const name = (titleEl.text() || "").trim();
-    if (!name || name.toLowerCase().includes("results") || name.length < 5) return;
+    if (!name || name.toLowerCase().includes("results") || name.toLowerCase().includes("shop on ebay") || name.length < 5) return;
 
     let price = null;
     const priceEl = item.find(".s-item__price").first();
@@ -58,7 +58,7 @@ function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
     if (!price || price <= 0) return;
 
     let link = null;
-    const linkEl = item.find("a[href*='/itm/']").first().length ? item.find("a[href*='/itm/']").first() : item.find("a").first();
+    const linkEl = item.find("a.s-item__link, a[href*='/itm/']").first().length ? item.find("a.s-item__link, a[href*='/itm/']").first() : item.find("a").first();
     if (linkEl.length) {
       link = linkEl.attr("href");
       if (link && link.includes("?")) {
@@ -66,13 +66,18 @@ function extractProductsFromHtml(html, defaultCategory, storeId, queryName) {
       }
     }
 
-    if (!link || !link.startsWith("http") || link.includes("javascript:") || link.includes("/sch/i.html")) {
+    if (!link || !link.startsWith("http") || link.includes("javascript:")) {
       const cDomain = country.toLowerCase() === "uk" ? "co.uk" : country.toLowerCase();
-      link = `https://www.ebay.${cDomain}/itm/386123456789`;
+      link = `https://www.ebay.${cDomain}/sch/i.html?_nkw=${encodeURIComponent(name)}&LH_BIN=1&LH_ItemCondition=3`;
     }
 
     const imgEl = item.find("img").first();
-    let imageUrl = imgEl.attr("src") || null;
+    let imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
+    if (imageUrl && (imageUrl.includes("s-l225") || imageUrl.includes("s-l300") || imageUrl.includes("s-l500"))) {
+      // keep HD images
+    } else if (imageUrl && imageUrl.includes("gif")) {
+      imageUrl = null;
+    }
 
     products.push({
       name,
