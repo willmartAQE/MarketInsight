@@ -169,7 +169,7 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                       <span>100% Live Dynamic Scraping</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-normal">
-                      Zero hardcoded fallback arrays or artificial product entries. Every product card is verified in real-time against actual store Product Detail Pages (PDP) and DAM image CDN servers.
+                      Zero hardcoded fallback arrays or artificial product entries. Every product card is verified in real-time against actual store Product Detail Pages (PDP) and live image CDN servers.
                     </p>
                   </div>
 
@@ -186,10 +186,10 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 text-amber-600 font-bold text-sm mb-2">
                       <Zap className="h-4 w-4" />
-                      <span>DuckDB OLAP Engine</span>
+                      <span>High-Performance Analytics Engine</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-normal">
-                      High-performance analytical SQL processing for outlier deal detection, category quantiles, price distribution clusters, and cross-border arbitrage matrices.
+                      Advanced analytical processing for outlier deal detection, category quantiles, price distribution clusters, and cross-border arbitrage matrices.
                     </p>
                   </div>
                 </div>
@@ -212,8 +212,8 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                     <div className="p-3 rounded-lg border border-slate-100 bg-slate-50 flex items-start gap-2.5">
                       <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                       <div>
-                        <strong className="text-slate-900 block font-semibold">Keepa Integration</strong>
-                        <span>Provides 90-day and 365-day historical floor/ceiling price curves for Amazon products using authentic Keepa API endpoints.</span>
+                        <strong className="text-slate-900 block font-semibold">Historical Price Floor Tracker</strong>
+                        <span>Provides 90-day and 365-day historical floor/ceiling price curves for Amazon products to verify true historical price troughs.</span>
                       </div>
                     </div>
 
@@ -398,7 +398,7 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                     </p>
                     <ul className="list-disc list-inside text-xs text-slate-600 space-y-1">
                       <li>Use MarketInsight to filter by <strong>Discount &gt; 30%</strong> and <strong>Attractiveness Score &gt; 80</strong>.</li>
-                      <li>Cross-reference the Keepa chart for Amazon to verify that Amazon's price ceiling remains high.</li>
+                      <li>Cross-reference the historical price chart for Amazon to verify that Amazon's price ceiling remains high.</li>
                       <li>Source from clearance store and list on Amazon/eBay for market rate.</li>
                     </ul>
                   </div>
@@ -409,10 +409,10 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                       <span className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow">
                         3
                       </span>
-                      <h4 className="font-bold text-slate-900 text-base">DuckDB Outlier Deals & Quantile Arbitrage</h4>
+                      <h4 className="font-bold text-slate-900 text-base">Statistical Outlier Deals & Quantile Arbitrage</h4>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      Open the <strong>DuckDB Analytics tab</strong> and view the <strong>Outlier Deals Table</strong>. Products highlighted here deviate more than $2.5\sigma$ below the category median price floor.
+                      Open the <strong>Advanced Analytics tab</strong> and view the <strong>Outlier Deals Table</strong>. Products highlighted here deviate more than $2.5\sigma$ below the category median price floor.
                     </p>
                     <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 font-medium">
                       💡 Pro Tip: Outliers with high rating counts represent flash discounts that quickly sell out. Buy immediately or launch paid traffic campaigns targeting these deal URLs.
@@ -452,7 +452,7 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                     Supported Global Retail Stores & Scraper Coverage
                   </h3>
                   <p className="text-xs text-slate-600">
-                    MarketInsight monitors 12 major e-commerce platforms using live headless browser workers and direct JSON API connections.
+                    MarketInsight monitors 12 major e-commerce platforms using live real-time scrapers and automated catalog analytics.
                   </p>
                 </div>
 
@@ -466,49 +466,49 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Amazon US / EU</strong>
                     <span className="text-slate-600 block">Coverage: US, DE, FR, ES, IT, UK</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Scraping + Keepa API</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Tracker Active</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇪🇸 El Corte Inglés</strong>
                     <span className="text-slate-600 block">Coverage: Spain (Electronics, Kitchen, Home)</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live -pr- PDP Scraper</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live PDP Store Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇳🇱 Bol.com</strong>
                     <span className="text-slate-600 block">Coverage: Netherlands & Belgium</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Cheerio Scraper</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Catalog Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇫🇷 Cdiscount</strong>
                     <span className="text-slate-600 block">Coverage: France High-Tech & Appliances</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live DOM Scraper</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇩🇪 Otto.de</strong>
                     <span className="text-slate-600 block">Coverage: Germany Appliances & Tech</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live German Scraper</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇵🇱 Allegro</strong>
                     <span className="text-slate-600 block">Coverage: Poland Market Leader</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Allegro Scraper</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇪🇺 eBay EU / US</strong>
                     <span className="text-slate-600 block">Coverage: DE, IT, FR, ES, UK, US</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Search API & Scraper</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Tracker Active</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
                     <strong className="text-slate-900 block font-bold text-sm mb-1">🇨🇦 Canadian Retail</strong>
                     <span className="text-slate-600 block">Coverage: Walmart CA, Best Buy CA</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Scraping Active</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
                   </div>
                 </div>
               </motion.div>
