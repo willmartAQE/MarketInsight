@@ -203,14 +203,15 @@ export function exportToOdooCSV(
     const currencyCode = currencyMode === "usd" ? "USD" : currInfo.code;
     const countryCode = (p.country || "US").toUpperCase();
 
-    // Format Internal Reference to display Store, Country, Rating, and Profit directly in Odoo's main table column!
-    const internalRef = `${storeLabel} [${countryCode}] | ⭐${p.rating || "N/A"} | +${symbol}${profitVal} (${marginPct}%)`;
+    // Format Product Name to include Store, Country, Rating, and Profit Spread right in Odoo's main Product Name column!
+    const formattedName = `[${storeLabel} ${countryCode} | ⭐${p.rating || "N/A"} | +${symbol}${profitVal} (${marginPct}%)] ${p.name}`;
+    const internalRef = `MI-${storeLabel}-${p.id}`;
     const barcode = `⭐${p.rating || "N/A"} (+${marginPct}%)`;
 
     const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
-      escapeCSV(p.name),
+      escapeCSV(formattedName),
       escapeCSV(price || 0),
       escapeCSV(costVal || 0),
       escapeCSV(currencyCode),
