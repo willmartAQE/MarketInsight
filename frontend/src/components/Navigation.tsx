@@ -30,12 +30,12 @@ export function Navigation({
   usdRate,
 }: NavigationProps) {
   const tabs: { id: ActiveTab; label: string; icon: React.ElementType; badge?: string }[] = [
-    { id: "catalog", label: "Catalogo & Margini", icon: LayoutGrid },
-    { id: "calculator", label: "Calcolatore Margine & ROI", icon: Calculator, badge: "NUOVO" },
-    { id: "analytics", label: "Analytics BI", icon: BarChart3 },
-    { id: "compare", label: "Confronto Stores", icon: Scale },
+    { id: "catalog", label: "Catalog & Margins", icon: LayoutGrid },
+    { id: "calculator", label: "Margin & ROI Calculator", icon: Calculator, badge: "NEW" },
+    { id: "analytics", label: "BI Analytics", icon: BarChart3 },
+    { id: "compare", label: "Store Matcher", icon: Scale },
     { id: "trends", label: "Market Trends", icon: TrendingUp },
-    { id: "wiki", label: "Playbook Arbitraggio", icon: BookOpen },
+    { id: "wiki", label: "Arbitrage Playbook", icon: BookOpen },
   ];
 
   return (
@@ -100,7 +100,7 @@ export function Navigation({
               title="Toggle between USD conversion ($) and Local marketplace currencies (£/€)"
             >
               <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Valuta: <strong className="text-white">{currencyMode === "usd" ? "USD ($)" : "Locale (£/€)"}</strong></span>
+              <span>Currency: <strong className="text-white">{currencyMode === "usd" ? "USD ($)" : "Local (£/€)"}</strong></span>
             </button>
           </div>
         </div>

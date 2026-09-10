@@ -68,22 +68,22 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="bg-blue-500/20 text-blue-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-400/30">
-                SIMULATORE ARBITRAGGIO
+                ARBITRAGE SIMULATOR
               </span>
-              <span className="text-slate-400 text-xs">• Valuta attiva: {symbol}</span>
+              <span className="text-slate-400 text-xs">• Active Currency: {symbol}</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <Calculator className="h-7 w-7 text-blue-400" />
-              Calcolatore Margine & ROI Netto
+              Arbitrage & Net Margin Calculator
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              Calcola istantaneamente il margine di guadagno netto, le commissioni del marketplace e il ritorno sull'investimento (ROI) prima di acquistare un articolo.
+              Instantly calculate net profit margin, marketplace referral fees, shipping costs, and return on investment (ROI) before purchasing an item.
             </p>
           </div>
 
           {/* Quick Presets */}
           <div className="flex items-center gap-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 shrink-0">
-            <span className="text-xs text-slate-400 font-medium px-2">Preset:</span>
+            <span className="text-xs text-slate-400 font-medium px-2">Presets:</span>
             <button
               onClick={() => resetPreset("amazon")}
               className="px-2.5 py-1 text-xs font-semibold bg-amber-500/20 text-amber-300 rounded-lg hover:bg-amber-500/30 border border-amber-500/30 transition-all"
@@ -106,13 +106,13 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
         <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-blue-600" />
-            Parametri Operazione
+            Trade Parameters
           </h2>
 
           {/* Buy Price */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Prezzo d'Acquisto (Costo Articolo) ({symbol})
+              Purchase Price (Item Cost) ({symbol})
             </label>
             <div className="relative rounded-xl shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold">
@@ -133,7 +133,7 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
           {/* Target Sell Price */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Prezzo di Vendita Previsto ({symbol})
+              Target Selling Price ({symbol})
             </label>
             <div className="relative rounded-xl shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold">
@@ -155,9 +155,9 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Commissione Marketplace (%)
+                Marketplace Referral Fee (%)
               </label>
-              <span className="text-xs text-blue-600 font-semibold">{symbol}{marketplaceFee.toFixed(2)} trattenuti</span>
+              <span className="text-xs text-blue-600 font-semibold">{symbol}{marketplaceFee.toFixed(2)} fee</span>
             </div>
             <div className="relative rounded-xl shadow-sm">
               <input
@@ -179,7 +179,7 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
           {/* Shipping & Logistics Cost */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Spese di Spedizione / Logistica ({symbol})
+              Shipping & Logistics Cost ({symbol})
             </label>
             <div className="relative rounded-xl shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold">
@@ -211,42 +211,42 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
                 : "bg-gray-50 border-gray-200 text-gray-900"
             }`}>
               <div className="flex items-center justify-between text-xs font-bold tracking-wider uppercase opacity-80 mb-2">
-                <span>Profitto Netto</span>
+                <span>Net Profit</span>
                 <Sparkles className="h-4 w-4" />
               </div>
               <div className="text-3xl font-extrabold tracking-tight">
                 {netProfit >= 0 ? `+${symbol}${netProfit.toFixed(2)}` : `-${symbol}${Math.abs(netProfit).toFixed(2)}`}
               </div>
               <p className="text-xs font-medium opacity-80 mt-1">
-                {netProfit > 0 ? "Operazione in Profitto" : netProfit < 0 ? "Operazione in Perditata" : "Parità"}
+                {netProfit > 0 ? "Profitable Trade" : netProfit < 0 ? "Loss Making Trade" : "Break-Even"}
               </p>
             </div>
 
             {/* Margin % Card */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50/70 rounded-2xl p-5 border border-blue-200 text-blue-950 shadow-sm">
               <div className="flex items-center justify-between text-xs font-bold tracking-wider uppercase opacity-80 mb-2">
-                <span>Margine Netto</span>
+                <span>Net Margin</span>
                 <Percent className="h-4 w-4 text-blue-600" />
               </div>
               <div className="text-3xl font-extrabold text-blue-600 tracking-tight">
                 {netMarginPct}%
               </div>
               <p className="text-xs text-blue-700 font-medium mt-1">
-                Quota profitto su prezzo vendita
+                Share of profit on selling price
               </p>
             </div>
 
             {/* ROI % Card */}
             <div className="bg-gradient-to-br from-purple-50 to-pink-50/70 rounded-2xl p-5 border border-purple-200 text-purple-950 shadow-sm">
               <div className="flex items-center justify-between text-xs font-bold tracking-wider uppercase opacity-80 mb-2">
-                <span>Ritorno ROI</span>
+                <span>ROI Return</span>
                 <TrendingUp className="h-4 w-4 text-purple-600" />
               </div>
               <div className="text-3xl font-extrabold text-purple-600 tracking-tight">
                 {roiPct}%
               </div>
               <p className="text-xs text-purple-700 font-medium mt-1">
-                Rendimento sul capitale investito
+                Return on invested capital
               </p>
             </div>
           </div>
@@ -254,29 +254,29 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
           {/* Breakdown Table Card */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3 flex items-center justify-between">
-              <span>Riepilogo Finanziario Dettagliato</span>
+              <span>Financial Breakdown</span>
               <span className="text-xs font-semibold text-gray-500">Break-even: {symbol}{breakEvenPrice.toFixed(2)}</span>
             </h3>
 
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center py-1.5 border-b border-gray-50 text-gray-700">
-                <span className="font-medium">Ricavo Lordo (Prezzo di Vendita)</span>
+                <span className="font-medium">Gross Revenue (Target Selling Price)</span>
                 <span className="font-bold text-gray-900">{symbol}{grossRevenue.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-50 text-gray-700">
-                <span>Costo di Acquisto Prodotto</span>
+                <span>Item Purchase Cost</span>
                 <span className="font-semibold text-rose-600">-{symbol}{(buyPrice || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-50 text-gray-700">
-                <span>Commissione Marketplace ({feePct}%)</span>
+                <span>Marketplace Referral Fee ({feePct}%)</span>
                 <span className="font-semibold text-amber-600">-{symbol}{marketplaceFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-50 text-gray-700">
-                <span>Spese di Spedizione / Logistica</span>
+                <span>Shipping & Logistics Cost</span>
                 <span className="font-semibold text-rose-600">-{symbol}{(shippingCost || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-2.5 bg-slate-50 px-3 rounded-xl font-bold text-base text-gray-900 border border-slate-200">
-                <span>Guadagno Netto Finale</span>
+                <span>Net Final Profit</span>
                 <span className={netProfit >= 0 ? "text-emerald-600" : "text-rose-600"}>
                   {netProfit >= 0 ? `+${symbol}${netProfit.toFixed(2)}` : `-${symbol}${Math.abs(netProfit).toFixed(2)}`}
                 </span>
@@ -295,24 +295,24 @@ export function MarginCalculator({ currencyMode }: MarginCalculatorProps) {
                 <>
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="font-bold">Ottima Opportunità d'Arbitraggio!</strong>
-                    <p className="mt-0.5">Il margine netto del {netMarginPct}% e il ROI del {roiPct}% garantiscono un solido cuscinetto contro oscillazioni di mercato o sconti della concorrenza.</p>
+                    <strong className="font-bold">Great Arbitrage Opportunity!</strong>
+                    <p className="mt-0.5">A net margin of {netMarginPct}% and ROI of {roiPct}% provide a strong buffer against price fluctuations or competitor discounts.</p>
                   </div>
                 </>
               ) : netMarginPct > 0 ? (
                 <>
                   <HelpCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="font-bold">Margine Moderato ({netMarginPct}%)</strong>
-                    <p className="mt-0.5">L'operazione è in utile ma ha un margine contenuto. Assicurati che non ci siano spese di reso o fluttuazioni di cambio impreviste.</p>
+                    <strong className="font-bold">Moderate Margin ({netMarginPct}%)</strong>
+                    <p className="mt-0.5 font-medium">The trade is profitable but has a tight margin buffer. Account for potential return rates or currency exchange shifts.</p>
                   </div>
                 </>
               ) : (
                 <>
                   <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="font-bold">Operazione a Rischio / In Perdita</strong>
-                    <p className="mt-0.5">Per andare a pareggio (Break-even) devi vendere l'articolo ad almeno <strong>{symbol}{breakEvenPrice.toFixed(2)}</strong>.</p>
+                    <strong className="font-bold">High Risk / Loss Making Trade</strong>
+                    <p className="mt-0.5 font-medium">To achieve break-even, you must sell the item for at least <strong>{symbol}{breakEvenPrice.toFixed(2)}</strong>.</p>
                   </div>
                 </>
               )}

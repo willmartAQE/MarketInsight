@@ -547,32 +547,25 @@ export function Dashboard() {
             )}
             {lastUpdated && (
               <span className="text-xs text-gray-400 font-medium">
-                Aggiornato: {lastUpdated.toLocaleTimeString()}
+                Updated: {lastUpdated.toLocaleTimeString()}
               </span>
             )}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              onClick={() => setIsWikiOpen(true)}
-              title="Apri Guida e Playbook Arbitraggio"
-              className="flex items-center gap-1.5 rounded-lg bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 transition-colors"
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center gap-1.5 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors"
             >
-              <BookOpen className="h-3.5 w-3.5 text-purple-400" />
-              <span>Playbook</span>
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <span>Refresh Data</span>
             </button>
-            <button
-              onClick={() => setIsOdooModalOpen(true)}
-              title="Configura connessione Odoo ERP"
-              className="flex items-center gap-1.5 rounded-lg bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 transition-colors"
-            >
-              <Layers className="h-3.5 w-3.5 text-purple-400" />
-              <span>Odoo ERP</span>
-            </button>
+
             <button
               onClick={handlePurgeAndRescrape}
               disabled={isPurging || loading}
-              title="Forza aggiornamento completo prodotti dagli store"
+              title="Force a real-time scrape across all stores"
               className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-600 to-amber-600 text-white px-3 py-1.5 text-xs font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-sm"
             >
               {isPurging ? (
@@ -580,15 +573,17 @@ export function Dashboard() {
               ) : (
                 <Flame className="h-3.5 w-3.5 text-amber-200 animate-pulse" />
               )}
-              <span>{isPurging ? "Scraping..." : "Riscraping Live"}</span>
+              <span>{isPurging ? "Scraping..." : "Live Rescrape"}</span>
             </button>
+
             <button
               onClick={() => setIsGroupingModalOpen(true)}
               className="flex items-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-blue-700 transition-all shadow-sm"
             >
               <Globe className="h-3.5 w-3.5" />
-              <span>Match Paesi</span>
+              <span>Match Countries</span>
             </button>
+
             <button
               onClick={() => exportToCSV(products, currencyMode)}
               disabled={products.length === 0}
@@ -597,13 +592,14 @@ export function Dashboard() {
               <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
               <span>Export CSV</span>
             </button>
+
             <button
-              onClick={fetchData}
-              disabled={loading}
-              className="flex items-center gap-1.5 rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors"
+              onClick={() => setIsOdooModalOpen(true)}
+              title="Configure Odoo ERP connection"
+              className="flex items-center gap-1.5 rounded-lg bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 transition-colors"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Aggiorna</span>
+              <Layers className="h-3.5 w-3.5 text-purple-400" />
+              <span>Odoo Sync</span>
             </button>
           </div>
         </div>

@@ -434,6 +434,28 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
                       When Google Trends shows an upward breakout spike ($+50\%$ interest velocity) while MarketInsight detects a local store price dip, conversion rates for paid ads (Google Ads / TikTok Ads) peak at maximum ROI.
                     </p>
                   </div>
+
+                  {/* Strategy 5 */}
+                  <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-sm space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow">
+                        5
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-base">Interactive Margin & ROI Calculation Engine</h4>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Open the <strong>Margin & ROI Calculator tab</strong> to simulate exact trade profitability before committing capital.
+                    </p>
+                    <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 text-xs space-y-2">
+                      <div className="font-semibold text-slate-900">Arbitrage Financial Formulas:</div>
+                      <ul className="list-disc list-inside space-y-1 text-slate-600">
+                        <li><strong>Net Profit ($/€):</strong> Selling Price - Purchase Cost - Referral Fee - Shipping</li>
+                        <li><strong>Net Margin %:</strong> (Net Profit / Selling Price) * 100</li>
+                        <li><strong>Return on Investment (ROI %):</strong> (Net Profit / (Purchase Cost + Shipping)) * 100</li>
+                        <li><strong>Break-Even Price ($/€):</strong> (Purchase Cost + Shipping) / (1 - Referral Fee % - Tax %)</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
