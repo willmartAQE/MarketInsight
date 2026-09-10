@@ -157,12 +157,13 @@ export function exportToOdooCSV(
     return "20%";
   };
 
-  // Full list of headers mapped for Odoo Sales / Product import (only standard Odoo fields)
+  // Full list of headers mapped for Odoo Sales / Product import
   const headers = [
     "Name",
+    "Internal Reference",
+    "Product Tags",
     "Sales Price",
     "Cost",
-    "Internal Reference",
     "Customer Taxes",
     "Website URL",
     "Sales Description",
@@ -194,17 +195,19 @@ export function exportToOdooCSV(
     const currencyCode = currencyMode === "usd" ? "USD" : currInfo.code;
     const countryCode = (p.country || "US").toUpperCase();
 
-    // Format Product Name to include Store, Country, Rating, and Profit Spread right in Odoo's main Product Name column!
-    const formattedName = `[${storeLabel} ${countryCode} | ⭐${p.rating || "N/A"} | +${symbol}${profitVal} (${marginPct}%)] ${p.name}`;
-    const internalRef = `MI-${storeLabel}-${p.id}`;
+    // Dedicated metrics column formatted for Internal Reference and Product Tags
+    const metricsStr = `⭐${p.rating || "N/A"} | +${symbol}${profitVal} (${marginPct}%)`;
+    const internalRef = `[${storeLabel}] ${metricsStr}`;
+    const productTags = `${storeLabel}, ⭐${p.rating || "N/A"}, +${symbol}${profitVal} (${marginPct}%)`;
 
     const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ⭐${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
-      escapeCSV(formattedName),
+      escapeCSV(p.name),
+      escapeCSV(internalRef),
+      escapeCSV(productTags),
       escapeCSV(price || 0),
       escapeCSV(costVal || 0),
-      escapeCSV(internalRef),
       escapeCSV(""), // Leave empty so Odoo doesn't force 22% default sales tax
       escapeCSV(p.url || ""), // Mapped to Odoo's native website_url for "Go to Website / Product" button
       escapeCSV(description),
