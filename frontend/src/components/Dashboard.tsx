@@ -162,6 +162,8 @@ export function exportToOdooCSV(
     "Name",
     "Sales Price",
     "Cost",
+    "Arbitrage Profit",
+    "Arbitrage Margin %",
     "Product Category",
     "Internal Reference",
     "Customer Taxes",
@@ -181,19 +183,26 @@ export function exportToOdooCSV(
   };
 
   const rows = products.map((p) => {
-    const cost = p.original_price || (p.price ? Math.round(p.price * 0.85 * 100) / 100 : "");
+    const price = parseFloat(String(p.price || 0));
+    const cost = p.original_price || (price ? Math.round(price * 0.85 * 100) / 100 : 0);
+    const costVal = parseFloat(String(cost || 0));
+    const profitVal = price && costVal && price > costVal ? Math.round((price - costVal) * 100) / 100 : 0;
+    const marginPct = price && costVal && price > costVal ? Math.round(((price - costVal) / price) * 100) : 0;
+
     const storeLabel = (p.source || "MI").toUpperCase();
     const internalRef = `MI-${storeLabel}-${p.id}`;
     const vatTax = getCountryVatTax(p.country);
 
     // Format Product Link as clickable HTML hyperlink for Odoo UI
     const htmlLink = `<a href="${p.url}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: bold;">${p.url}</a>`;
-    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${htmlLink}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
+    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${htmlLink}\nProfit Spread: ${profitVal > 0 ? profitVal + " (" + marginPct + "%)" : "N/A"}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
       escapeCSV(p.name),
-      escapeCSV(p.price || 0),
-      escapeCSV(cost),
+      escapeCSV(price || 0),
+      escapeCSV(costVal || 0),
+      escapeCSV(profitVal > 0 ? profitVal : 0),
+      escapeCSV(marginPct > 0 ? `${marginPct}%` : "0%"),
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
       escapeCSV(vatTax),
