@@ -18,8 +18,9 @@ import { DuckDBPlotlyAnalytics } from "./DuckDBPlotlyAnalytics";
 import { FilterBar } from "./FilterBar";
 import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
+import { WikiModal } from "./WikiModal";
 import { ProductGroup } from "@/lib/grouping";
-import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap } from "lucide-react";
+import { RefreshCw, BarChart3, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Scale, X, Database, LayoutGrid, Globe, Sparkles, TrendingUp, Flame, Trash2, Zap, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DEFAULT_FILTERS: Filters = {
@@ -165,6 +166,7 @@ export function Dashboard() {
   const [scrapeStatus, setScrapeStatus] = useState<ScrapeStatus | null>(null);
   const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
   const [isGroupingModalOpen, setIsGroupingModalOpen] = useState(false);
+  const [isWikiOpen, setIsWikiOpen] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const prevCountryRef = useRef<string | null>(filters.country || null);
 
@@ -432,6 +434,14 @@ export function Dashboard() {
                   Updated: {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
+              <button
+                onClick={() => setIsWikiOpen(true)}
+                title="Open MarketInsight Wiki & Arbitrage Guide"
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200 cursor-pointer border border-purple-400/30"
+              >
+                <BookOpen className="h-4 w-4 text-purple-200" />
+                <span>Wiki MarketInsight</span>
+              </button>
               <button
                 onClick={handlePurgeAndRescrape}
                 disabled={isPurging || loading}
@@ -712,6 +722,8 @@ export function Dashboard() {
           </button>
         </div>
       )}
+
+      <WikiModal isOpen={isWikiOpen} onClose={() => setIsWikiOpen(false)} />
     </div>
   );
 }
