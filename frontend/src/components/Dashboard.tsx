@@ -162,8 +162,8 @@ export function exportToOdooCSV(
     "Name",
     "Sales Price",
     "Cost",
-    "Arbitrage Profit",
-    "Arbitrage Margin %",
+    "Margin",
+    "Margin %",
     "Product Category",
     "Internal Reference",
     "Customer Taxes",
@@ -183,19 +183,25 @@ export function exportToOdooCSV(
   };
 
   const rows = products.map((p) => {
-    const price = parseFloat(String(p.price || 0));
-    const cost = p.original_price || (price ? Math.round(price * 0.85 * 100) / 100 : 0);
-    const costVal = parseFloat(String(cost || 0));
+    const currInfo = getCurrencyInfo(p.country, currencyMode);
+    const rawPrice = parseFloat(String(p.price || 0));
+    const rawCost = p.original_price || (rawPrice ? Math.round(rawPrice * 0.85 * 100) / 100 : 0);
+    const rawCostVal = parseFloat(String(rawCost || 0));
+
+    // Apply currency rate conversion if USD mode is active
+    const price = currencyMode === "usd" ? Math.round((rawPrice * currInfo.rate) * 100) / 100 : rawPrice;
+    const costVal = currencyMode === "usd" ? Math.round((rawCostVal * currInfo.rate) * 100) / 100 : rawCostVal;
+
     const profitVal = price && costVal && price > costVal ? Math.round((price - costVal) * 100) / 100 : 0;
     const marginPct = price && costVal && price > costVal ? Math.round(((price - costVal) / price) * 100) : 0;
 
     const storeLabel = (p.source || "MI").toUpperCase();
     const internalRef = `MI-${storeLabel}-${p.id}`;
-    const vatTax = getCountryVatTax(p.country);
+    const symbol = currencyMode === "usd" ? "$" : currInfo.symbol;
 
     // Format Product Link as clickable HTML hyperlink for Odoo UI
     const htmlLink = `<a href="${p.url}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: bold;">${p.url}</a>`;
-    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${htmlLink}\nProfit Spread: ${profitVal > 0 ? profitVal + " (" + marginPct + "%)" : "N/A"}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
+    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${htmlLink}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
       escapeCSV(p.name),
@@ -205,7 +211,7 @@ export function exportToOdooCSV(
       escapeCSV(marginPct > 0 ? `${marginPct}%` : "0%"),
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
-      escapeCSV(vatTax),
+      escapeCSV(""), // Leave empty so Odoo doesn't force 22% default sales tax
       escapeCSV(description),
       escapeCSV(p.url || ""),
       escapeCSV(p.source || ""),
