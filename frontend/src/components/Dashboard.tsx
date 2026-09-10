@@ -143,6 +143,20 @@ export function exportToOdooCSV(
 ) {
   if (!products || products.length === 0) return;
 
+  const getCountryVatTax = (countryCode?: string) => {
+    const c = (countryCode || "US").toUpperCase();
+    if (c === "IT") return "22%";
+    if (c === "ES") return "21%";
+    if (c === "DE") return "19%";
+    if (c === "FR") return "20%";
+    if (c === "UK" || c === "GB") return "20%";
+    if (c === "NL") return "21%";
+    if (c === "PL") return "23%";
+    if (c === "CA") return "13%";
+    if (c === "US") return "0%";
+    return "20%";
+  };
+
   // Full list of headers mapped for Odoo Sales / Product import
   const headers = [
     "Name",
@@ -150,6 +164,7 @@ export function exportToOdooCSV(
     "Cost",
     "Product Category",
     "Internal Reference",
+    "Customer Taxes",
     "Sales Description",
     "Product URL",
     "Store",
@@ -169,7 +184,11 @@ export function exportToOdooCSV(
     const cost = p.original_price || (p.price ? Math.round(p.price * 0.85 * 100) / 100 : "");
     const storeLabel = (p.source || "MI").toUpperCase();
     const internalRef = `MI-${storeLabel}-${p.id}`;
-    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${p.url}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
+    const vatTax = getCountryVatTax(p.country);
+
+    // Format Product Link as clickable HTML hyperlink for Odoo UI
+    const htmlLink = `<a href="${p.url}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: bold;">${p.url}</a>`;
+    const description = `Store: ${p.source} | Country: ${p.country || "US"}\nProduct Link: ${htmlLink}\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
     return [
       escapeCSV(p.name),
@@ -177,6 +196,7 @@ export function exportToOdooCSV(
       escapeCSV(cost),
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
+      escapeCSV(vatTax),
       escapeCSV(description),
       escapeCSV(p.url || ""),
       escapeCSV(p.source || ""),
