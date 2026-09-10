@@ -167,7 +167,6 @@ export function exportToOdooCSV(
     "Margin %",
     "Product Category",
     "Internal Reference",
-    "Barcode",
     "Customer Taxes",
     "Website URL",
     "Sales Description",
@@ -206,7 +205,6 @@ export function exportToOdooCSV(
     // Format Product Name to include Store, Country, Rating, and Profit Spread right in Odoo's main Product Name column!
     const formattedName = `[${storeLabel} ${countryCode} | ⭐${p.rating || "N/A"} | +${symbol}${profitVal} (${marginPct}%)] ${p.name}`;
     const internalRef = `MI-${storeLabel}-${p.id}`;
-    const barcode = `⭐${p.rating || "N/A"} (+${marginPct}%)`;
 
     const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
 
@@ -219,7 +217,6 @@ export function exportToOdooCSV(
       escapeCSV(marginPct > 0 ? `${marginPct}%` : "0%"),
       escapeCSV(p.category || "All / Saleable"),
       escapeCSV(internalRef),
-      escapeCSV(barcode),
       escapeCSV(""), // Leave empty so Odoo doesn't force 22% default sales tax
       escapeCSV(p.url || ""), // Mapped to Odoo's native website_url for "Go to Website / Product" button
       escapeCSV(description),
