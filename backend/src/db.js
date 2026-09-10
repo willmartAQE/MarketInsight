@@ -85,20 +85,53 @@ function initTables() {
     UPDATE products SET country = 'NL' WHERE UPPER(country) IN ('NETHERLANDS', 'HOLLAND');
     UPDATE products SET country = 'PL' WHERE UPPER(country) IN ('POLAND', 'POLSKA');
 
-    -- Purge any mismatched legacy asset records or invalid entries
+    -- Purge any mismatched legacy asset records, fake URLs, or promo banner images
     DELETE FROM price_history WHERE product_id IN (
-      SELECT id FROM products WHERE image_url LIKE '%001094612301070%' OR url NOT LIKE '%-pr-%' AND source = 'elcorteingles'
+      SELECT id FROM products WHERE 
+        image_url LIKE '%001094612301070%' 
+        OR (url NOT LIKE '%-pr-%' AND source = 'elcorteingles')
+        OR url LIKE '%386123456789%'
+        OR url LIKE '%item-%'
+        OR image_url LIKE '%instant_ink%'
+        OR image_url LIKE '%hp_%'
+        OR image_url LIKE '%logo%'
+        OR image_url LIKE '%badge%'
+        OR image_url LIKE '%banner%'
+        OR image_url LIKE '%.svg'
+        OR image_url LIKE '%.gif'
     );
-    DELETE FROM products WHERE image_url LIKE '%001094612301070%' OR (url NOT LIKE '%-pr-%' AND source = 'elcorteingles');
+    DELETE FROM products WHERE 
+      image_url LIKE '%001094612301070%' 
+      OR (url NOT LIKE '%-pr-%' AND source = 'elcorteingles')
+      OR url LIKE '%386123456789%'
+      OR url LIKE '%item-%'
+      OR image_url LIKE '%instant_ink%'
+      OR image_url LIKE '%hp_%'
+      OR image_url LIKE '%logo%'
+      OR image_url LIKE '%badge%'
+      OR image_url LIKE '%banner%'
+      OR image_url LIKE '%.svg'
+      OR image_url LIKE '%.gif';
   `);
 }
 
+export function isInvalidImageOrUrl(product) {
+  if (!product || !product.url || !product.name || !product.price || !product.image_url) return true;
+  const url = String(product.url).toLowerCase();
+  const img = String(product.image_url).toLowerCase();
+
+  // Reject fake URLs
+  if (url.includes("386123456789") || url.includes("item-") || url.includes("javascript:")) return true;
+
+  // Reject promo badges, logos, SVG/GIFs, or HP instant ink banners instead of real product images
+  const badImageTerms = ["instant_ink", "hp_", "banner", "badge", "sponsor", "advertisement", "logo", ".svg", ".gif", "001094612301070"];
+  if (badImageTerms.some((term) => img.includes(term))) return true;
+
+  return false;
+}
+
 export function upsertProduct(product) {
-  if (!product || !product.url || !product.name || !product.price || !product.image_url) {
-    return null;
-  }
-  // Reject items with invalid placeholder or mismatched image URLs
-  if (product.image_url.includes("001094612301070")) {
+  if (isInvalidImageOrUrl(product)) {
     return null;
   }
 

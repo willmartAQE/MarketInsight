@@ -44,12 +44,7 @@ function extractProductsFromHtml(html, defaultCategory) {
 
     let link = item.querySelector("a[href*='/p/']")?.getAttribute("href");
     if (link && !link.startsWith("http")) link = `https://www.homedepot.com${link}`;
-
-    if (!link) {
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      const hash = Math.abs(name.split("").reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)).toString();
-      link = `https://www.homedepot.com/p/${slug}/${hash}`;
-    }
+    if (!link) continue;
 
     let imageUrl = item.querySelector("img")?.getAttribute("src") || item.querySelector("img")?.getAttribute("data-src");
     if (imageUrl && imageUrl.startsWith("//")) imageUrl = `https:${imageUrl}`;

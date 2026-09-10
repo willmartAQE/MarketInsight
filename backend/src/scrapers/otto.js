@@ -35,7 +35,8 @@ function extractProductsFromHtml(html, defaultCategory) {
     if (!price || price <= 0) return;
 
     let link = item.find("a[href*='/p/']").first().attr("href") || item.find("a").first().attr("href");
-    if (link && !link.startsWith("http")) link = `https://www.otto.de${link}`;
+    if (!link) return;
+    if (!link.startsWith("http")) link = `https://www.otto.de${link}`;
 
     let imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
 
@@ -48,7 +49,7 @@ function extractProductsFromHtml(html, defaultCategory) {
       reviews_count: Math.floor(Math.random() * 350) + 50,
       category: defaultCategory,
       source: "otto-de",
-      url: link || `https://www.otto.de/p/item-${Date.now()}`,
+      url: link,
       image_url: imageUrl,
       seller: "OTTO",
       availability: "In Stock",

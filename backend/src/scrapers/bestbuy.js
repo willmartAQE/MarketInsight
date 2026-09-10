@@ -30,7 +30,7 @@ export async function scrapeBestBuy() {
           const html = await page.content();
           const $ = cheerio.load(html);
 
-          $(".sku-item, li.sku-item, .grid-item").each((_, el) => {
+          $(".sku-item, li.sku-item, div.sku-item").each((_, el) => {
             const card = $(el);
             const titleEl = card.find(".sku-title a, h4.sku-title a, a[href*='.p?']").first();
             const name = titleEl.text().trim();
@@ -47,8 +47,16 @@ export async function scrapeBestBuy() {
             const price = parseFloat(priceText);
             if (!price || price <= 0) return;
 
-            const imgEl = card.find("img.sku-image, img").first();
-            const imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
+            const imgEl = card.find("img.sku-image, img[src*='pisces.bbystatic.com']").first().length 
+              ? card.find("img.sku-image, img[src*='pisces.bbystatic.com']").first() 
+              : card.find("img").first();
+            
+            let imageUrl = imgEl.attr("src") || imgEl.attr("data-src") || null;
+            if (imageUrl && (imageUrl.includes("instant_ink") || imageUrl.includes("hp_") || imageUrl.includes("logo") || imageUrl.includes("banner") || imageUrl.includes("badge") || imageUrl.includes("sponsor"))) {
+              imageUrl = null;
+            }
+
+            if (!imageUrl) return;
 
             if (!seenUrls.has(link)) {
               seenUrls.add(link);
