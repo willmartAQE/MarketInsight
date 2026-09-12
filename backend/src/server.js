@@ -144,7 +144,6 @@ async function runScrapeJob(jobId, countries, sources) {
         logScrape(source, "success", saved);
         scrapingJobs.get(jobId).progress.push({ source, status: "done", count: saved });
       }
-      }
     }
 
     if (sources.includes("bestbuy") || sources.includes("all")) {
