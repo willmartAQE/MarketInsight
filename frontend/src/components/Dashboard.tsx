@@ -19,7 +19,6 @@ import { FilterBar } from "./FilterBar";
 import { CrossCountryGroupingModal } from "./CrossCountryGroupingModal";
 import { GoogleTrendsWidget } from "./GoogleTrendsWidget";
 import { WikiModal } from "./WikiModal";
-import { OdooSettingsModal } from "./OdooSettingsModal";
 import { Navigation, ActiveTab } from "./Navigation";
 import { MarginCalculator } from "./MarginCalculator";
 import { ProductComparison } from "./ProductComparison";
@@ -139,111 +138,7 @@ export function exportToCSV(
   document.body.removeChild(link);
 }
 
-export function exportToOdooCSV(
-  products: Product[],
-  currencyMode: CurrencyMode = "local",
-  filename: string = "odoo_marketinsight_import.csv"
-) {
-  if (!products || products.length === 0) return;
 
-  const getCountryVatTax = (countryCode?: string) => {
-    const c = (countryCode || "US").toUpperCase();
-    if (c === "IT") return "22%";
-    if (c === "ES") return "21%";
-    if (c === "DE") return "19%";
-    if (c === "FR") return "20%";
-    if (c === "UK" || c === "GB") return "20%";
-    if (c === "NL") return "21%";
-    if (c === "PL") return "23%";
-    if (c === "CA") return "13%";
-    if (c === "US") return "0%";
-    return "20%";
-  };
-
-  // Full list of headers mapped for Odoo Sales / Product import
-  const headers = [
-    "Name",
-    "Internal Reference",
-    "Tags",
-    "Sales Price",
-    "Cost",
-    "Customer Taxes",
-    "Website URL",
-    "Sales Description",
-    "Product Category",
-    "image_1920"
-  ];
-
-  const escapeCSV = (val: any) => {
-    if (val === null || val === undefined) return '""';
-    const str = String(val).replace(/"/g, '""');
-    return `"${str}"`;
-  };
-
-  const rows = products.map((p) => {
-    const currInfo = getCurrencyInfo(p.country, currencyMode);
-    const rawPrice = parseFloat(String(p.price || 0));
-    // Apply currency rate conversion if USD mode is active
-    const price = currencyMode === "usd" ? Math.round((rawPrice * currInfo.rate) * 100) / 100 : rawPrice;
-
-    // Calculate product-specific margin, profit, and cost dynamically
-    let marginPct: number;
-
-    if (p.original_price && p.original_price > p.price) {
-      const origPriceConverted = currencyMode === "usd" ? Math.round((p.original_price * currInfo.rate) * 100) / 100 : p.original_price;
-      marginPct = Math.round(((origPriceConverted - price) / origPriceConverted) * 100);
-    } else if (p.discount_pct && p.discount_pct > 0) {
-      marginPct = Math.round(p.discount_pct);
-    } else {
-      // Dynamic product-specific margin variation (range 12% - 37%) based on product ID & price hash
-      marginPct = 12 + ((p.id * 11 + Math.round(price * 10)) % 25);
-    }
-
-    const profitVal = Math.round((price * (marginPct / 100)) * 100) / 100;
-    const costVal = Math.round((price - profitVal) * 100) / 100;
-
-    const storeLabel = (p.source || "MI").toUpperCase();
-    const symbol = currencyMode === "usd" ? "$" : currInfo.symbol;
-    const currencyCode = currencyMode === "usd" ? "USD" : currInfo.code;
-    const countryCode = (p.country || "US").toUpperCase();
-
-    // Internal reference as clean code, metrics nicely grouped as colored Tags
-    const internalRef = `MI-${storeLabel}-${p.id}`;
-    const productTags = `${storeLabel}, ⭐${p.rating || "N/A"}, Margin: ${marginPct}%`;
-
-    const description = `Store: ${p.source} | Country: ${countryCode}\nGo to product (${p.source}): ${p.url}\nProfit Spread: ${symbol}${profitVal} (${marginPct}%)\nRating: ⭐${p.rating || "N/A"} (${p.reviews_count || 0} reviews)\nDiscount: ${p.discount_pct ? p.discount_pct + "%" : "N/A"}`;
-
-    return [
-      escapeCSV(p.name),
-      escapeCSV(internalRef),
-      escapeCSV(productTags),
-      escapeCSV(price || 0),
-      escapeCSV(costVal || 0),
-      escapeCSV(""), // Leave empty so Odoo doesn't force 22% default sales tax
-      escapeCSV(p.url || ""), // Mapped to Odoo's native website_url for "Go to Website / Product" button
-      escapeCSV(description),
-      escapeCSV(p.category || "All / Saleable"),
-      escapeCSV(p.image_url || ""),
-    ];
-  });
-
-  const delimiter = ",";
-  const csvContent =
-    "\uFEFF" +
-    [
-      headers.map(escapeCSV).join(delimiter),
-      ...rows.map((r) => r.join(delimiter)),
-    ].join("\r\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 export function Dashboard() {
   const [filters, setFilters] = useState<Filters>(() => {
@@ -277,7 +172,6 @@ export function Dashboard() {
   const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
   const [isGroupingModalOpen, setIsGroupingModalOpen] = useState(false);
   const [isWikiOpen, setIsWikiOpen] = useState(false);
-  const [isOdooModalOpen, setIsOdooModalOpen] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const prevCountryRef = useRef<string | null>(filters.country || null);
 
@@ -592,15 +486,6 @@ export function Dashboard() {
               <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
               <span>Export CSV</span>
             </button>
-
-            <button
-              onClick={() => setIsOdooModalOpen(true)}
-              title="Configure Odoo ERP connection"
-              className="flex items-center gap-1.5 rounded-lg bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 transition-colors"
-            >
-              <Layers className="h-3.5 w-3.5 text-purple-400" />
-              <span>Odoo Sync</span>
-            </button>
           </div>
         </div>
       </div>
@@ -711,7 +596,6 @@ export function Dashboard() {
                 loading={loading}
                 currencyMode={currencyMode}
                 onExportCSV={() => exportToCSV(products, currencyMode)}
-                onExportOdooCSV={() => exportToOdooCSV(products, currencyMode)}
                 onGroupCrossCountry={() => setIsGroupingModalOpen(true)}
                 selectedIds={selectedIds}
                 onToggleSelect={handleToggleSelect}
@@ -801,41 +685,10 @@ export function Dashboard() {
             <FileSpreadsheet className="h-3.5 w-3.5" />
             Export Selected
           </button>
-
-          <button
-            onClick={() => exportToOdooCSV(products.filter((p) => selectedIds.includes(p.id)), currencyMode, "odoo_selected_products_export.csv")}
-            className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm"
-            title="Esporta prodotti selezionati in formato CSV per Odoo Sales"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5 text-purple-200" />
-            Odoo CSV
-          </button>
-
-          <button
-            onClick={() => setIsOdooModalOpen(true)}
-            className="flex items-center gap-1.5 bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm"
-            title="Apri Modale Sync Odoo"
-          >
-            <Layers className="h-3.5 w-3.5 text-indigo-200" />
-            Sync Odoo
-          </button>
-
-          <button
-            onClick={handleClearSelection}
-            className="p-1 text-gray-400 hover:text-white rounded-full transition-colors ml-1"
-            title="Clear selection"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
       )}
 
       <WikiModal isOpen={isWikiOpen} onClose={() => setIsWikiOpen(false)} />
-      <OdooSettingsModal
-        isOpen={isOdooModalOpen}
-        onClose={() => setIsOdooModalOpen(false)}
-        selectedProducts={products.filter((p) => selectedIds.includes(p.id))}
-      />
     </div>
   );
 }

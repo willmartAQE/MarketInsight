@@ -12,7 +12,6 @@ interface ProductTableProps {
   loading: boolean;
   currencyMode: CurrencyMode;
   onExportCSV?: () => void;
-  onExportOdooCSV?: () => void;
   onGroupCrossCountry?: () => void;
   selectedIds?: number[];
   onToggleSelect?: (id: number) => void;
@@ -52,7 +51,6 @@ export function ProductTable({
   loading,
   currencyMode,
   onExportCSV,
-  onExportOdooCSV,
   onGroupCrossCountry,
   selectedIds = [],
   onToggleSelect,
@@ -106,16 +104,6 @@ export function ProductTable({
             >
               <FileSpreadsheet className="h-3.5 w-3.5 text-green-600" />
               Export CSV
-            </button>
-          )}
-          {onExportOdooCSV && (
-            <button
-              onClick={onExportOdooCSV}
-              className="flex items-center gap-1.5 rounded-lg border border-purple-300 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors shadow-sm"
-              title="Esporta in formato CSV compatibile nativamente con Odoo Sales"
-            >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-purple-600" />
-              Esporta per Odoo (CSV)
             </button>
           )}
         </div>

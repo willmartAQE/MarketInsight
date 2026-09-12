@@ -70,16 +70,6 @@ function initTables() {
       completed_at TEXT
     );
 
-    CREATE TABLE IF NOT EXISTS odoo_config (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      url TEXT,
-      db TEXT,
-      username TEXT,
-      api_key TEXT,
-      auto_sync INTEGER DEFAULT 0,
-      updated_at TEXT DEFAULT (datetime('now'))
-    );
-
     CREATE INDEX IF NOT EXISTS idx_products_source ON products(source);
     CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
     CREATE INDEX IF NOT EXISTS idx_products_url ON products(url);
@@ -337,43 +327,6 @@ export function getTopAmazonProducts(countryCode, limit = 10) {
   const db = getDb();
   const norm = normalizeCountryCode(countryCode);
   return db.prepare("SELECT * FROM products WHERE source LIKE 'amazon%' AND UPPER(country) = ? ORDER BY rating DESC, reviews_count DESC LIMIT ?").all(norm, limit);
-}
-
-export function getOdooConfig() {
-  const db = getDb();
-  const row = db.prepare("SELECT url, db, username, api_key, auto_sync FROM odoo_config WHERE id = 1").get();
-  if (!row) {
-    return { url: "", db: "", username: "", apiKey: "", autoSync: false };
-  }
-  return {
-    url: row.url || "",
-    db: row.db || "",
-    username: row.username || "",
-    apiKey: row.api_key || "",
-    autoSync: Boolean(row.auto_sync),
-  };
-}
-
-export function saveOdooConfig({ url, db: dbName, username, apiKey, autoSync }) {
-  const db = getDb();
-  db.prepare(`
-    INSERT INTO odoo_config (id, url, db, username, api_key, auto_sync, updated_at)
-    VALUES (1, ?, ?, ?, ?, ?, datetime('now'))
-    ON CONFLICT(id) DO UPDATE SET
-      url = excluded.url,
-      db = excluded.db,
-      username = excluded.username,
-      api_key = excluded.api_key,
-      auto_sync = excluded.auto_sync,
-      updated_at = datetime('now')
-  `).run(
-    (url || "").trim(),
-    (dbName || "").trim(),
-    (username || "").trim(),
-    (apiKey || "").trim(),
-    autoSync ? 1 : 0
-  );
-  return getOdooConfig();
 }
 
 

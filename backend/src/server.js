@@ -16,10 +16,7 @@ import {
   getScrapeLogs,
   addPriceHistory,
   logScrape,
-  getOdooConfig,
-  saveOdooConfig,
 } from "./db.js";
-import { testOdooConnection, syncProductsToOdoo } from "./odoo.js";
 import {
   getDuckDBMarketplaceHeatmap,
   getDuckDBOutlierDeals,
@@ -615,64 +612,6 @@ app.get("/api/keepa/:productId", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-app.get("/api/odoo/config", (req, res) => {
-  try {
-    const config = getOdooConfig();
-    res.json({ success: true, config });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.post("/api/odoo/config", (req, res) => {
-  try {
-    const { url, db, username, apiKey, autoSync } = req.body || {};
-    const config = saveOdooConfig({ url, db, username, apiKey, autoSync });
-    res.json({ success: true, config });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.post("/api/odoo/test", async (req, res) => {
-  try {
-    const credentials = req.body && req.body.url ? req.body : getOdooConfig();
-    const result = await testOdooConnection(credentials);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.post("/api/odoo/sync", async (req, res) => {
-  try {
-    const { productIds, credentials } = req.body || {};
-    const config = credentials && credentials.url ? credentials : getOdooConfig();
-
-    if (!config.url || !config.db || !config.username || !config.apiKey) {
-      return res.status(400).json({ success: false, error: "Odoo connection credentials are not configured" });
-    }
-
-    const db = getDb();
-    let products = [];
-    if (Array.isArray(productIds) && productIds.length > 0) {
-      const placeholders = productIds.map(() => "?").join(",");
-      products = db.prepare(`SELECT * FROM products WHERE id IN (${placeholders})`).all(...productIds);
-    } else {
-      products = db.prepare("SELECT * FROM products ORDER BY rating DESC LIMIT 50").all();
-    }
-
-    if (products.length === 0) {
-      return res.status(400).json({ success: false, error: "No valid products found for Odoo synchronization" });
-    }
-
-    const result = await syncProductsToOdoo(products, config);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
   }
 });
 
