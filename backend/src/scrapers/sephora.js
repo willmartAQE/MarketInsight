@@ -51,11 +51,11 @@ const EXACT_PRODUCT_URLS = {
     US: "https://www.sephora.com/product/niacinamide-10-zinc-1-P427426",
     CA: "https://www.sephora.com/product/niacinamide-10-zinc-1-P427426?country_switch=ca&lang=en",
     UK: "https://www.sephora.co.uk/p/the-ordinary-niacinamide-10-zinc-1",
-    IT: "https://www.sephora.it/p/the-ordinary-niacinamide-10-zinc-1-P3565022.html",
-    FR: "https://www.sephora.fr/p/the-ordinary-niacinamide-10-zinc-1-P3565022.html",
-    ES: "https://www.sephora.es/p/the-ordinary-niacinamide-10-zinc-1-P3565022.html",
-    DE: "https://www.sephora.de/p/the-ordinary-niacinamide-10-zinc-1-P3565022.html",
-    PL: "https://www.sephora.pl/p/the-ordinary-niacinamide-10-zinc-1-P3565022.html"
+    IT: "https://www.sephora.it/p/niacinamide-10%25-%2B-zinco-1%25---formula-anti-imperfezioni-548882.html",
+    FR: "https://www.sephora.fr/p/niacinamide-10%25-%2B-zinc-1%25---formule-ultra-bacterienne-anti-imperfections-548882.html",
+    ES: "https://www.sephora.es/p/niacinamide-10%25-%2B-zinc-1%25-548882.html",
+    DE: "https://www.sephora.de/p/548882.html",
+    PL: "https://www.sephora.pl/p/548882.html"
   },
   "2416972": {
     US: "https://www.sephora.com/product/hollywood-flawless-filter-P434104",
