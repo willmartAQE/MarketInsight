@@ -271,20 +271,18 @@ export function Dashboard() {
 
     setFilters(newFilters);
 
-    if (newCountry !== prevCountry) {
-      if (newCountry) {
-        setScrapeMessage(`Scraping ${stores[newCountry]?.name || newCountry}...`);
-        setScrapeStatus(null);
-        try {
-          const { jobId } = await startScrape(newCountry);
-          pollScrapeStatus(jobId);
-        } catch (err) {
-          setScrapeMessage("Failed to start scraping");
-          setTimeout(() => setScrapeMessage(null), 3000);
-        }
-      } else {
-        fetchData();
+    if (newCountry !== prevCountry && newCountry) {
+      setScrapeMessage(`Scraping ${stores[newCountry]?.name || newCountry}...`);
+      setScrapeStatus(null);
+      try {
+        const { jobId } = await startScrape(newCountry);
+        pollScrapeStatus(jobId);
+      } catch (err) {
+        setScrapeMessage("Failed to start scraping");
+        setTimeout(() => setScrapeMessage(null), 3000);
       }
+    } else {
+      fetchData();
     }
   }, [stores, fetchData, pollScrapeStatus]);
 

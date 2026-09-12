@@ -192,6 +192,25 @@ export function logScrape(source, status, productsFound, error = null) {
   `).run(source, status, productsFound, error);
 }
 
+function applySourceAndCountry(where, params, db, source, country) {
+  if (source) {
+    where.push("source = ?");
+    params.push(source);
+    if (country) {
+      const norm = normalizeCountryCode(country);
+      const test = db.prepare("SELECT COUNT(*) as c FROM products WHERE source = ? AND UPPER(country) = ?").get(source, norm);
+      if (test && test.c > 0) {
+        where.push("UPPER(country) = ?");
+        params.push(norm);
+      }
+    }
+  } else if (country) {
+    const norm = normalizeCountryCode(country);
+    where.push("UPPER(country) = ?");
+    params.push(norm);
+  }
+}
+
 export function getProducts({ source, category, country, sort_by = "price", order = "desc", min_price, max_price, limit = 200, offset = 0, ids = null } = {}) {
   const db = getDb();
   let where = [];
@@ -208,17 +227,9 @@ export function getProducts({ source, category, country, sort_by = "price", orde
     }
   }
 
-  if (source) {
-    where.push("source = ?");
-    params.push(source);
-  }
+  applySourceAndCountry(where, params, db, source, country);
 
   if (category) { where.push("category = ?"); params.push(category); }
-  if (country) {
-    const norm = normalizeCountryCode(country);
-    where.push("UPPER(country) = ?");
-    params.push(norm);
-  }
   if (min_price !== null && min_price !== undefined) { where.push("price >= ?"); params.push(min_price); }
   if (max_price !== null && max_price !== undefined) { where.push("price <= ?"); params.push(max_price); }
 
@@ -235,16 +246,7 @@ export function getStats(source = null, country = null) {
   let where = [];
   let params = [];
 
-  if (source) {
-    where.push("source = ?");
-    params.push(source);
-  }
-
-  if (country) {
-    const norm = normalizeCountryCode(country);
-    where.push("UPPER(country) = ?");
-    params.push(norm);
-  }
+  applySourceAndCountry(where, params, db, source, country);
 
   const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
@@ -284,16 +286,7 @@ export function getTopProducts(source = null, country = null, limit = 10) {
   let where = ["reviews_count IS NOT NULL"];
   let params = [];
 
-  if (source) {
-    where.push("source = ?");
-    params.push(source);
-  }
-
-  if (country) {
-    const norm = normalizeCountryCode(country);
-    where.push("UPPER(country) = ?");
-    params.push(norm);
-  }
+  applySourceAndCountry(where, params, db, source, country);
 
   return db.prepare(`SELECT * FROM products WHERE ${where.join(" AND ")} ORDER BY reviews_count DESC LIMIT ?`).all(...params, limit);
 }
