@@ -31,9 +31,14 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+import fs from "fs";
+
 export function runScraplingPythonScraper(sources) {
   return new Promise((resolve, reject) => {
-    const pythonPath = path.resolve(__dirname, "../../scraper/.venv/bin/python");
+    let pythonPath = path.resolve(__dirname, "../../scraper/.venv/bin/python");
+    if (!fs.existsSync(pythonPath)) {
+      pythonPath = "python3";
+    }
     const scriptPath = path.resolve(__dirname, "../../scraper/run_scraper.py");
     const projectRoot = path.resolve(__dirname, "../../");
 
@@ -61,19 +66,30 @@ export async function runScrape(sources) {
   const jsScrapers = {
     walmart: scrapeWalmart,
     amazon: scrapeAmazon,
+    target: scrapeTarget,
+    "amazon-jp": scrapeAmazonJP,
+    sephora: scrapeSephora,
+    lego: scrapeLego,
+    interflora: scrapeInterflora,
   };
 
   const scraplingTargets = sources.filter((s) => scraplingSources.includes(s));
-  const jsTargets = sources.filter((s) => !scraplingSources.includes(s));
+  let failedScraplingTargets = [];
 
   if (scraplingTargets.length > 0) {
     console.log(`[scrapling] Delegating ${scraplingTargets.join(", ")} to Scrapling Python Engine...`);
     try {
       await runScraplingPythonScraper(scraplingTargets);
     } catch (err) {
-      console.error(`[scrapling] Python engine error: ${err.message}`);
+      console.error(`[scrapling] Python engine error: ${err.message}. Falling back to JS scrapers...`);
+      failedScraplingTargets = scraplingTargets;
     }
   }
+
+  const jsTargets = Array.from(new Set([
+    ...sources.filter((s) => !scraplingSources.includes(s)),
+    ...failedScraplingTargets
+  ]));
 
   for (const source of jsTargets) {
     const scraper = jsScrapers[source];
