@@ -33,14 +33,8 @@ import { scrapeWalmart } from "./scrapers/walmart.js";
 import { scrapeAmazon } from "./scrapers/amazon.js";
 import { scrapeAmazonEU } from "./scrapers/amazon-eu.js";
 import { scrapeEbayEU } from "./scrapers/ebay-eu.js";
-import { scrapeAllegro } from "./scrapers/allegro.js";
-import { scrapeBol } from "./scrapers/bol.js";
-import { scrapeCdiscount } from "./scrapers/cdiscount.js";
-import { scrapeOtto } from "./scrapers/otto.js";
-import { scrapeElCorteIngles } from "./scrapers/elcorteingles.js";
 import { scrapeHomeDepot } from "./scrapers/homedepot.js";
 import { scrapeBestBuy } from "./scrapers/bestbuy.js";
-import { scrapeSears } from "./scrapers/sears.js";
 import { scrapeCanadaStores } from "./scrapers/canada.js";
 import { getGoogleTrendsInterest } from "./scrapers/google-trends.js";
 import {
@@ -150,123 +144,7 @@ async function runScrapeJob(jobId, countries, sources) {
         logScrape(source, "success", saved);
         scrapingJobs.get(jobId).progress.push({ source, status: "done", count: saved });
       }
-
-      if (countries.includes("pl")) {
-        scrapingJobs.get(jobId).progress.push({ source: "allegro", status: "running" });
-        const result = await scrapeAllegro();
-        let saved = 0;
-        for (const p of result.products) {
-          const id = upsertProduct(p);
-          addPriceHistory(id, p.price);
-          saved++;
-        }
-        logScrape("allegro", result.status, saved);
-        scrapingJobs.get(jobId).progress.push({ source: "allegro", status: "done", count: saved });
       }
-
-      if (countries.includes("nl")) {
-        scrapingJobs.get(jobId).progress.push({ source: "bol-nl", status: "running" });
-        const result = await scrapeBol();
-        let saved = 0;
-        for (const p of result.products) {
-          const id = upsertProduct(p);
-          addPriceHistory(id, p.price);
-          saved++;
-        }
-        logScrape("bol-nl", result.status, saved);
-        scrapingJobs.get(jobId).progress.push({ source: "bol-nl", status: "done", count: saved });
-      }
-
-      if (countries.includes("fr")) {
-        scrapingJobs.get(jobId).progress.push({ source: "cdiscount", status: "running" });
-        const result = await scrapeCdiscount();
-        let saved = 0;
-        for (const p of result.products) {
-          const id = upsertProduct(p);
-          addPriceHistory(id, p.price);
-          saved++;
-        }
-        logScrape("cdiscount", result.status, saved);
-        scrapingJobs.get(jobId).progress.push({ source: "cdiscount", status: "done", count: saved });
-      }
-
-      if (countries.includes("de")) {
-        scrapingJobs.get(jobId).progress.push({ source: "otto-de", status: "running" });
-        const result = await scrapeOtto();
-        let saved = 0;
-        for (const p of result.products) {
-          const id = upsertProduct(p);
-          addPriceHistory(id, p.price);
-          saved++;
-        }
-        logScrape("otto-de", result.status, saved);
-        scrapingJobs.get(jobId).progress.push({ source: "otto-de", status: "done", count: saved });
-      }
-
-      if (countries.includes("es") || sources.includes("elcorteingles")) {
-        scrapingJobs.get(jobId).progress.push({ source: "elcorteingles", status: "running" });
-        const result = await scrapeElCorteIngles();
-        let saved = 0;
-        for (const p of result.products) {
-          const id = upsertProduct(p);
-          addPriceHistory(id, p.price);
-          saved++;
-        }
-        logScrape("elcorteingles", result.status, saved);
-        scrapingJobs.get(jobId).progress.push({ source: "elcorteingles", status: "done", count: saved });
-      }
-    }
-
-    if (sources.includes("allegro") && !countries.includes("pl")) {
-      scrapingJobs.get(jobId).progress.push({ source: "allegro", status: "running" });
-      const result = await scrapeAllegro();
-      let saved = 0;
-      for (const p of result.products) {
-        const id = upsertProduct(p);
-        addPriceHistory(id, p.price);
-        saved++;
-      }
-      logScrape("allegro", result.status, saved);
-      scrapingJobs.get(jobId).progress.push({ source: "allegro", status: "done", count: saved });
-    }
-
-    if ((sources.includes("bol") || sources.includes("bol-nl")) && !countries.includes("nl")) {
-      scrapingJobs.get(jobId).progress.push({ source: "bol-nl", status: "running" });
-      const result = await scrapeBol();
-      let saved = 0;
-      for (const p of result.products) {
-        const id = upsertProduct(p);
-        addPriceHistory(id, p.price);
-        saved++;
-      }
-      logScrape("bol-nl", result.status, saved);
-      scrapingJobs.get(jobId).progress.push({ source: "bol-nl", status: "done", count: saved });
-    }
-
-    if (sources.includes("cdiscount") && !countries.includes("fr")) {
-      scrapingJobs.get(jobId).progress.push({ source: "cdiscount", status: "running" });
-      const result = await scrapeCdiscount();
-      let saved = 0;
-      for (const p of result.products) {
-        const id = upsertProduct(p);
-        addPriceHistory(id, p.price);
-        saved++;
-      }
-      logScrape("cdiscount", result.status, saved);
-      scrapingJobs.get(jobId).progress.push({ source: "cdiscount", status: "done", count: saved });
-    }
-
-    if ((sources.includes("otto") || sources.includes("otto-de")) && !countries.includes("de")) {
-      scrapingJobs.get(jobId).progress.push({ source: "otto-de", status: "running" });
-      const result = await scrapeOtto();
-      let saved = 0;
-      for (const p of result.products) {
-        const id = upsertProduct(p);
-        addPriceHistory(id, p.price);
-        saved++;
-      }
-      logScrape("otto-de", result.status, saved);
-      scrapingJobs.get(jobId).progress.push({ source: "otto-de", status: "done", count: saved });
     }
 
     if (sources.includes("bestbuy") || sources.includes("all")) {
@@ -282,18 +160,6 @@ async function runScrapeJob(jobId, countries, sources) {
       scrapingJobs.get(jobId).progress.push({ source: "bestbuy", status: "done", count: saved });
     }
 
-    if (sources.includes("sears") || sources.includes("all")) {
-      scrapingJobs.get(jobId).progress.push({ source: "sears", status: "running" });
-      const result = await scrapeSears();
-      let saved = 0;
-      for (const p of result.products) {
-        const id = upsertProduct(p);
-        addPriceHistory(id, p.price);
-        saved++;
-      }
-      logScrape("sears", result.status, saved);
-      scrapingJobs.get(jobId).progress.push({ source: "sears", status: "done", count: saved });
-    }
 
     if (sources.includes("canada") || sources.includes("bestbuy-ca") || sources.includes("walmart-ca") || sources.includes("all")) {
       const caResult = await scrapeCanadaStores();
@@ -511,9 +377,8 @@ app.post("/api/scrape/purge-and-rescrape", async (req, res) => {
     // 2. Launch full rescrape across all countries and stores
     const allCountries = ["us", "ca", "uk", "de", "fr", "es", "it", "nl", "pl"];
     const allSources = [
-      "walmart", "amazon", "homedepot", "allegro", "bol", "bol-nl",
-      "cdiscount", "otto", "otto-de", "elcorteingles", "bestbuy",
-      "sears", "canada", "bestbuy-ca", "walmart-ca", "all"
+      "walmart", "amazon", "homedepot", "bestbuy",
+      "canada", "bestbuy-ca", "walmart-ca", "all"
     ];
 
     const jobId = `purge-job-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

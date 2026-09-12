@@ -55,13 +55,6 @@ export function exportToCSV(
     if (s === "bestbuy") return "Best Buy US";
     if (s === "bestbuy-ca") return "Best Buy Canada";
     if (s === "homedepot") return "The Home Depot";
-    if (s === "sears") return "Sears";
-    if (s === "canadiantire") return "Canadian Tire";
-    if (s === "elcorteingles") return "El Corte Inglés";
-    if (s === "allegro") return "Allegro";
-    if (s === "bol-nl" || s === "bol") return "Bol.com";
-    if (s === "cdiscount") return "Cdiscount";
-    if (s === "otto-de" || s === "otto") return "Otto.de";
     return src;
   };
 

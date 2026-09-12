@@ -8,7 +8,6 @@ export const STORES = {
       { id: "amazon-us", name: "Amazon US", type: "amazon", enabled: true },
       { id: "homedepot", name: "The Home Depot", type: "homedepot", enabled: true },
       { id: "bestbuy", name: "Best Buy", type: "bestbuy", enabled: true },
-      { id: "sears", name: "Sears", type: "sears", enabled: true },
     ],
   },
   "ca": {
@@ -18,7 +17,6 @@ export const STORES = {
     stores: [
       { id: "amazon-ca", name: "Amazon Canada", type: "amazon", enabled: true },
       { id: "bestbuy-ca", name: "Best Buy Canada", type: "bestbuy", enabled: true },
-      { id: "canadiantire", name: "Canadian Tire", type: "canadiantire", enabled: true },
       { id: "walmart-ca", name: "Walmart Canada", type: "walmart", enabled: true },
     ],
   },
@@ -30,7 +28,6 @@ export const STORES = {
     stores: [
       { id: "amazon-de", name: "Amazon.de", type: "amazon", enabled: true },
       { id: "ebay-de", name: "eBay.de", type: "ebay", enabled: true },
-      { id: "otto-de", name: "Otto.de", type: "otto", enabled: true },
     ],
   },
   "fr": {
@@ -39,7 +36,6 @@ export const STORES = {
     currency: "€",
     stores: [
       { id: "amazon-fr", name: "Amazon.fr", type: "amazon", enabled: true },
-      { id: "cdiscount", name: "Cdiscount", type: "cdiscount", enabled: true },
       { id: "ebay-fr", name: "eBay.fr", type: "ebay", enabled: true },
     ],
   },
@@ -59,7 +55,6 @@ export const STORES = {
     stores: [
       { id: "amazon-es", name: "Amazon.es", type: "amazon", enabled: true },
       { id: "ebay-es", name: "eBay.es", type: "ebay", enabled: true },
-      { id: "elcorteingles", name: "El Corte Inglés", type: "elcorteingles", enabled: true },
     ],
   },
   "uk": {
@@ -77,7 +72,6 @@ export const STORES = {
     currency: "€",
     stores: [
       { id: "amazon-nl", name: "Amazon.nl", type: "amazon", enabled: true },
-      { id: "bol-nl", name: "Bol.com", type: "bol", enabled: true },
     ],
   },
   "pl": {
@@ -86,7 +80,6 @@ export const STORES = {
     currency: "zł",
     stores: [
       { id: "amazon-pl", name: "Amazon.pl", type: "amazon", enabled: true },
-      { id: "allegro", name: "Allegro", type: "allegro", enabled: true },
     ],
   },
 };

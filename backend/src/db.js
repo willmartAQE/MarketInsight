@@ -113,6 +113,13 @@ function initTables() {
       OR image_url LIKE '%.svg'
       OR image_url LIKE '%.gif';
 
+    -- Purge products and price history for removed stores
+    DELETE FROM price_history WHERE product_id IN (
+      SELECT id FROM products WHERE LOWER(source) IN ('otto-de', 'otto', 'sears', 'canadiantire', 'canadian tire', 'cdiscount', 'bol-nl', 'bol', 'allegro', 'elcorteingles')
+    );
+    DELETE FROM products WHERE LOWER(source) IN ('otto-de', 'otto', 'sears', 'canadiantire', 'canadian tire', 'cdiscount', 'bol-nl', 'bol', 'allegro', 'elcorteingles');
+    DELETE FROM scrape_logs WHERE LOWER(source) IN ('otto-de', 'otto', 'sears', 'canadiantire', 'canadian tire', 'cdiscount', 'bol-nl', 'bol', 'allegro', 'elcorteingles');
+
     -- Auto-populate original_price and discount_pct for products where they are null
     UPDATE products SET 
       discount_pct = ROUND(12 + ((id * 7) % 23)),

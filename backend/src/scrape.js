@@ -2,10 +2,6 @@ import { scrapeWalmart } from "./scrapers/walmart.js";
 import { scrapeAmazon } from "./scrapers/amazon.js";
 import { scrapeAmazonEU } from "./scrapers/amazon-eu.js";
 import { scrapeEbayEU } from "./scrapers/ebay-eu.js";
-import { scrapeAllegro } from "./scrapers/allegro.js";
-import { scrapeBol } from "./scrapers/bol.js";
-import { scrapeCdiscount } from "./scrapers/cdiscount.js";
-import { scrapeOtto } from "./scrapers/otto.js";
 import { upsertProduct, addPriceHistory, logScrape } from "./db.js";
 
 async function saveProducts(source, products) {
@@ -89,51 +85,6 @@ async function runEUScrape(countries) {
     console.log(`[ebay-eu] Total saved: ${saved} products in ${elapsed}s`);
   } catch (err) {
     console.error(`[ebay-eu] Error:`, err.message);
-  }
-
-  const targetList = countries || ["pl", "nl", "fr", "de"];
-  if (targetList.includes("pl")) {
-    try {
-      const res = await scrapeAllegro();
-      const n = await saveProducts("allegro", res.products);
-      logScrape("allegro", res.status, n);
-      console.log(`[allegro] Saved ${n} products`);
-    } catch (err) {
-      console.error(`[allegro] Error:`, err.message);
-    }
-  }
-
-  if (targetList.includes("nl")) {
-    try {
-      const res = await scrapeBol();
-      const n = await saveProducts("bol-nl", res.products);
-      logScrape("bol-nl", res.status, n);
-      console.log(`[bol-nl] Saved ${n} products`);
-    } catch (err) {
-      console.error(`[bol-nl] Error:`, err.message);
-    }
-  }
-
-  if (targetList.includes("fr")) {
-    try {
-      const res = await scrapeCdiscount();
-      const n = await saveProducts("cdiscount", res.products);
-      logScrape("cdiscount", res.status, n);
-      console.log(`[cdiscount] Saved ${n} products`);
-    } catch (err) {
-      console.error(`[cdiscount] Error:`, err.message);
-    }
-  }
-
-  if (targetList.includes("de")) {
-    try {
-      const res = await scrapeOtto();
-      const n = await saveProducts("otto-de", res.products);
-      logScrape("otto-de", res.status, n);
-      console.log(`[otto-de] Saved ${n} products`);
-    } catch (err) {
-      console.error(`[otto-de] Error:`, err.message);
-    }
   }
 
   console.log(`EU Scraping completed at ${new Date().toISOString()}`);
