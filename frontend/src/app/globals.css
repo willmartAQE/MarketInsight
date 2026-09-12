@@ -1,38 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Alumni+Sans:ital,wght@0,100;0,300;0,400;0,600;0,700;1,300&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
-}
+  --background: #090a0d;
+  --foreground: #f1f5f9;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Impeccable Kinpaku & Dark Mineral Palette */
+  --lacquer-black: #090a0d;
+  --lacquer-deep: #040507;
+  --lacquer-panel: #111318;
+  --graphite-surface: #181b22;
+  --graphite-border: rgba(255, 255, 255, 0.08);
+
+  --kinpaku-gold: #d4af37;
+  --kinpaku-rich: #e5c07b;
+  --kinpaku-glow: rgba(212, 175, 55, 0.25);
+  --kinpaku-border: rgba(212, 175, 55, 0.35);
+
+  --patina-verdigris: #2dd4bf;
+  --patina-glow: rgba(45, 212, 191, 0.2);
+  --patina-border: rgba(45, 212, 191, 0.3);
+
+  --text-champagne: #f8fafc;
+  --text-warm: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--lacquer-black);
+  color: var(--text-warm);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.01em;
 }
 
-/* Custom scrollbar */
+/* Impeccable Typography Helper Classes */
+.font-display {
+  font-family: 'Alumni Sans', sans-serif;
+}
+
+.font-sans {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Impeccable Bento & Card Surface Utilities */
+.ks-panel {
+  background-color: var(--lacquer-panel);
+  border: 1px solid var(--graphite-border);
+  border-radius: 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ks-panel-gold {
+  background-color: var(--lacquer-panel);
+  border: 1px solid var(--kinpaku-border);
+  box-shadow: 0 0 20px -5px var(--kinpaku-glow);
+}
+
+.ks-panel-patina {
+  background-color: var(--lacquer-panel);
+  border: 1px solid var(--patina-border);
+  box-shadow: 0 0 20px -5px var(--patina-glow);
+}
+
+.ks-panel-hover:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+/* Kinpaku Gold Accent Text & Highlights */
+.text-kinpaku {
+  color: var(--kinpaku-gold);
+}
+
+.text-kinpaku-rich {
+  color: var(--kinpaku-rich);
+}
+
+.text-patina {
+  color: var(--patina-verdigris);
+}
+
+.bg-kinpaku-gold {
+  background-color: var(--kinpaku-gold);
+}
+
+.bg-patina-verdigris {
+  background-color: var(--patina-verdigris);
+}
+
+/* Eyebrow Micro-type */
+.ks-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--lacquer-deep);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
+  background: #262a36;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--kinpaku-gold);
 }

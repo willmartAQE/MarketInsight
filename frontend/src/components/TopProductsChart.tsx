@@ -17,16 +17,14 @@ interface TopProductsChartProps {
 }
 
 const COLORS = [
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-  "#ec4899",
-  "#f97316",
-  "#14b8a6",
-  "#6366f1",
+  "#d4af37",
+  "#2dd4bf",
+  "#e5c07b",
+  "#38bdf8",
+  "#a78bfa",
+  "#f472b6",
+  "#fb923c",
+  "#4ade80",
 ];
 
 export function TopProductsChart({ products }: TopProductsChartProps) {
@@ -38,31 +36,35 @@ export function TopProductsChart({ products }: TopProductsChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products by Reviews</h3>
-        <p className="text-gray-400 text-center py-8">No data available</p>
+      <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#111318] p-6 shadow-2xl">
+        <h3 className="font-display text-lg font-semibold text-[#f8fafc] mb-4">Top Products by Reviews</h3>
+        <p className="font-mono text-xs text-slate-500 text-center py-8">No data available</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products by Reviews</h3>
+    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#111318] p-6 shadow-2xl">
+      <h3 className="font-display text-lg font-semibold text-[#f8fafc] mb-4">Top Products by Reviews</h3>
       <ResponsiveContainer width="100%" height={350}>
         <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis type="number" tick={{ fontSize: 12 }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1f2430" />
+          <XAxis type="number" tick={{ fontSize: 11, fill: "#94a3b8", fontFamily: "JetBrains Mono" }} />
           <YAxis
             type="category"
             dataKey="name"
             width={180}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: "#cbd5e1", fontFamily: "Outfit" }}
           />
           <Tooltip
             contentStyle={{
+              backgroundColor: "#181b22",
               borderRadius: "8px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+              boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
+              color: "#f8fafc",
+              fontFamily: "JetBrains Mono",
+              fontSize: "12px",
             }}
             formatter={(value: any) => [String(value), "Reviews"]}
           />

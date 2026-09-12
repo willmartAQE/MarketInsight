@@ -15,24 +15,22 @@ interface CategoryPieChartProps {
 }
 
 const COLORS = [
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-  "#ec4899",
-  "#f97316",
-  "#14b8a6",
-  "#6366f1",
+  "#d4af37",
+  "#2dd4bf",
+  "#e5c07b",
+  "#38bdf8",
+  "#a78bfa",
+  "#f472b6",
+  "#fb923c",
+  "#4ade80",
 ];
 
 export function CategoryPieChart({ stats }: CategoryPieChartProps) {
   if (!stats || stats.categories.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Products by Category</h3>
-        <p className="text-gray-400 text-center py-8">No data available</p>
+      <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#111318] p-6 shadow-2xl">
+        <h3 className="font-display text-lg font-semibold text-[#f8fafc] mb-4">Products by Category</h3>
+        <p className="font-mono text-xs text-slate-500 text-center py-8">No data available</p>
       </div>
     );
   }
@@ -43,8 +41,8 @@ export function CategoryPieChart({ stats }: CategoryPieChartProps) {
   }));
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Products by Category</h3>
+    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#111318] p-6 shadow-2xl">
+      <h3 className="font-display text-lg font-semibold text-[#f8fafc] mb-4">Products by Category</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -66,11 +64,22 @@ export function CategoryPieChart({ stats }: CategoryPieChartProps) {
           </Pie>
           <Tooltip
             contentStyle={{
+              backgroundColor: "#181b22",
               borderRadius: "8px",
-              border: "1px solid #e5e7eb",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+              boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
+              color: "#f8fafc",
+              fontFamily: "JetBrains Mono",
+              fontSize: "12px",
             }}
           />
-          <Legend />
+          <Legend
+            wrapperStyle={{
+              fontSize: "12px",
+              fontFamily: "Outfit",
+              color: "#94a3b8",
+            }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>
