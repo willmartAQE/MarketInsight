@@ -25,21 +25,58 @@ async function saveProducts(source, products) {
   return saved;
 }
 
+import { execFile } from "child_process";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export function runScraplingPythonScraper(sources) {
+  return new Promise((resolve, reject) => {
+    const pythonPath = path.resolve(__dirname, "../../scraper/.venv/bin/python");
+    const scriptPath = path.resolve(__dirname, "../../scraper/run_scraper.py");
+    const projectRoot = path.resolve(__dirname, "../../");
+
+    const sourceArgs = Array.isArray(sources) ? sources : [sources];
+    execFile(
+      pythonPath,
+      [scriptPath, ...sourceArgs],
+      { cwd: projectRoot },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`[scrapling] Execution error: ${error.message}`);
+          return reject(error);
+        }
+        console.log(`[scrapling] Python Output:\n${stdout.trim()}`);
+        resolve(stdout);
+      }
+    );
+  });
+}
+
 export async function runScrape(sources) {
   console.log(`Scraping started at ${new Date().toISOString()}`);
 
-  const scrapers = {
+  const scraplingSources = ["lego", "interflora", "target", "sephora", "amazon-jp"];
+  const jsScrapers = {
     walmart: scrapeWalmart,
     amazon: scrapeAmazon,
-    target: scrapeTarget,
-    "amazon-jp": scrapeAmazonJP,
-    sephora: scrapeSephora,
-    lego: scrapeLego,
-    interflora: scrapeInterflora,
   };
 
-  for (const source of sources) {
-    const scraper = scrapers[source];
+  const scraplingTargets = sources.filter((s) => scraplingSources.includes(s));
+  const jsTargets = sources.filter((s) => !scraplingSources.includes(s));
+
+  if (scraplingTargets.length > 0) {
+    console.log(`[scrapling] Delegating ${scraplingTargets.join(", ")} to Scrapling Python Engine...`);
+    try {
+      await runScraplingPythonScraper(scraplingTargets);
+    } catch (err) {
+      console.error(`[scrapling] Python engine error: ${err.message}`);
+    }
+  }
+
+  for (const source of jsTargets) {
+    const scraper = jsScrapers[source];
     if (!scraper) {
       console.log(`Unknown source: ${source}`);
       continue;
