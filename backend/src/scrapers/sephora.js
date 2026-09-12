@@ -181,6 +181,7 @@ function parseHtmlProducts(html, cfg, seenUrls = new Set(), seenSkus = new Set()
     const pMatches = Array.from(cleanHtml.matchAll(/["'\\](\/p\/[^"'\s\\>]+\.html|https?:\/\/[^"'\s\\]+\/p\/[^"'\s\\>]+\.html)["'\\]/g));
 
     for (const pm of pMatches) {
+      const rawHref = pm[1];
       const cleanDomain = cfg.domain.startsWith("www.") ? cfg.domain : `www.${cfg.domain}`;
       const fullUrl = rawHref.startsWith("http") ? rawHref : `https://${cleanDomain}${rawHref}`;
 
@@ -370,22 +371,23 @@ export async function scrapeSephoraLocalized(countryCode = "US") {
       const backendDir = path.resolve(__dirname, "../..");
       const projectRoot = path.resolve(backendDir, "..");
       const pythonPath = path.resolve(projectRoot, "scraper/.venv/bin/python");
-      const scriptPath = path.resolve(projectRoot, "scraper/scrapers/sephora_bestseller_test.py");
+      const pythonCode = `
+import json, sys
+sys.path.append("${projectRoot}/scraper")
+from scrapers.scrapling_scrapers import scrape_sephora_scrapling
+res = scrape_sephora_scrapling("${code}")
+print(json.dumps(res))
+`;
 
-      exec(`${pythonPath} ${scriptPath}`, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
+      exec(`${pythonPath} -c '${pythonCode.replace(/'/g, "'\\''")}'`, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
         if (error || !stdout) {
           console.error(`[sephora-js] Scrapling engine failed for ${code}: ${error?.message}`);
           return resolve(null);
         }
         try {
-          const jsonStart = stdout.indexOf("[");
-          const jsonEnd = stdout.lastIndexOf("]");
-          if (jsonStart !== -1 && jsonEnd !== -1) {
-            const jsonStr = stdout.substring(jsonStart, jsonEnd + 1);
-            const prods = JSON.parse(jsonStr);
-            if (Array.isArray(prods) && prods.length > 0) {
-              return resolve({ source: cfg.source, products: prods, status: "success" });
-            }
+          const parsed = JSON.parse(stdout.trim());
+          if (parsed && Array.isArray(parsed.products) && parsed.products.length > 0) {
+            return resolve(parsed);
           }
           resolve(null);
         } catch (err) {

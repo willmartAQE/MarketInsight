@@ -174,14 +174,14 @@ def scrape_amazon_jp_scrapling():
 
 
 SEPHORA_CONFIG = {
-    "US": {"domain": "www.sephora.com", "country": "US", "currency": "$", "source": "sephora", "seller": "Sephora US", "urls": ["https://www.sephora.com"]},
-    "CA": {"domain": "www.sephora.ca", "country": "CA", "currency": "$", "source": "sephora-ca", "seller": "Sephora Canada", "urls": ["https://www.sephora.com/?country_switch=ca&lang=en"]},
-    "FR": {"domain": "www.sephora.fr", "country": "FR", "currency": "€", "source": "sephora-fr", "seller": "Sephora France", "urls": ["https://www.sephora.fr/best-seller/", "https://www.sephora.fr/promotions/"]},
-    "IT": {"domain": "www.sephora.it", "country": "IT", "currency": "€", "source": "sephora-it", "seller": "Sephora Italia", "urls": ["https://www.sephora.it/bestseller/", "https://www.sephora.it/promozioni/"]},
-    "DE": {"domain": "www.sephora.de", "country": "DE", "currency": "€", "source": "sephora-de", "seller": "Sephora Germany", "urls": ["https://www.sephora.de/bestseller/", "https://www.sephora.de/angebote/"]},
-    "ES": {"domain": "www.sephora.es", "country": "ES", "currency": "€", "source": "sephora-es", "seller": "Sephora España", "urls": ["https://www.sephora.es/best-sellers/", "https://www.sephora.es/promociones/"]},
-    "UK": {"domain": "www.sephora.co.uk", "country": "UK", "currency": "£", "source": "sephora-uk", "seller": "Sephora UK", "urls": ["https://www.sephora.co.uk/bestsellers", "https://www.sephora.co.uk/offers"]},
-    "PL": {"domain": "www.sephora.pl", "country": "PL", "currency": "zł", "source": "sephora-pl", "seller": "Sephora Polska", "urls": ["https://www.sephora.pl/bestseller/", "https://www.sephora.pl/promocje/"]},
+    "US": {"domain": "www.sephora.com", "country": "US", "currency": "$", "source": "sephora", "seller": "Sephora US", "bestseller_path": "/shop/bestselling-beauty-products", "urls": ["https://www.sephora.com"]},
+    "CA": {"domain": "www.sephora.com", "country": "CA", "currency": "$", "source": "sephora-ca", "seller": "Sephora Canada", "bestseller_path": "/shop/bestselling-beauty-products?country_switch=ca&lang=en", "urls": ["https://www.sephora.com/?country_switch=ca&lang=en"]},
+    "FR": {"domain": "www.sephora.fr", "country": "FR", "currency": "€", "source": "sephora-fr", "seller": "Sephora France", "bestseller_path": "/best-seller/", "urls": ["https://www.sephora.fr/best-seller/"]},
+    "IT": {"domain": "www.sephora.it", "country": "IT", "currency": "€", "source": "sephora-it", "seller": "Sephora Italia", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.it/bestseller/"]},
+    "DE": {"domain": "www.sephora.de", "country": "DE", "currency": "€", "source": "sephora-de", "seller": "Sephora Germany", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.de/bestseller/"]},
+    "ES": {"domain": "www.sephora.es", "country": "ES", "currency": "€", "source": "sephora-es", "seller": "Sephora España", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.es/bestseller/"]},
+    "UK": {"domain": "www.sephora.co.uk", "country": "UK", "currency": "£", "source": "sephora-uk", "seller": "Sephora UK", "bestseller_path": "/bestsellers", "urls": ["https://www.sephora.co.uk/bestsellers"]},
+    "PL": {"domain": "www.sephora.pl", "country": "PL", "currency": "zł", "source": "sephora-pl", "seller": "Sephora Polska", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.pl/bestseller/"]},
 }
 
 
@@ -201,6 +201,7 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
     cfg = SEPHORA_CONFIG.get(cc, SEPHORA_CONFIG["IT"])
     domain_str = cfg["domain"]
     source_id = cfg["source"]
+    base_path = cfg.get("bestseller_path", "/bestseller/")
 
     options = uc.ChromeOptions()
     options.add_argument("--no-sandbox")
@@ -210,20 +211,24 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
     seen_urls = set()
 
     try:
-        logger.info(f"[scrapling] Initializing Akamai session for {domain_str}...")
+        logger.info(f"[scrapling] Initializing Akamai session for https://{domain_str}...")
         driver.get(f"https://{domain_str}")
         time.sleep(4)
 
-        page_urls = [
-            f"https://{domain_str}/bestseller/",
-            f"https://{domain_str}/bestseller/?start=24&sz=24",
-            f"https://{domain_str}/bestseller/?start=48&sz=24",
-            f"https://{domain_str}/bestseller/?start=72&sz=24",
-            f"https://{domain_str}/bestseller/?start=96&sz=24"
-        ]
+        if "?" in base_path:
+            page_urls = [f"https://{domain_str}{base_path}&start={i*24}&sz=24" for i in range(5)]
+        else:
+            page_urls = [
+                f"https://{domain_str}{base_path}",
+                f"https://{domain_str}{base_path}?start=24&sz=24",
+                f"https://{domain_str}{base_path}?start=48&sz=24",
+                f"https://{domain_str}{base_path}?start=72&sz=24",
+                f"https://{domain_str}{base_path}?start=96&sz=24"
+            ]
 
         for p_idx, p_url in enumerate(page_urls):
             try:
+                logger.info(f"[scrapling] Sephora {cc} page {p_idx + 1}: {p_url}")
                 driver.get(p_url)
                 time.sleep(4)
 
@@ -234,11 +239,11 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
 
                 items = driver.execute_script("""
                     const products = [];
-                    const anchors = Array.from(document.querySelectorAll("a[href*='/p/']"));
+                    const anchors = Array.from(document.querySelectorAll("a[href*='/p/'], a[href*='/product/']"));
 
                     for (const a of anchors) {
                         const href = a.getAttribute("href");
-                        if (!href) continue;
+                        if (!href || href.includes("gift-card") || href.includes("servizi")) continue;
                         const fullUrl = href.startsWith("http") ? href : "https://" + window.location.host + href;
 
                         const card = a.closest(".product-tile, [data-product-id], .card, [class*='product']") || a.parentElement.parentElement;
@@ -247,14 +252,14 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
                         const cardText = card.innerText || "";
                         const rawLines = cardText.split("\\n").map(l => l.trim()).filter(Boolean);
 
-                        const BADGES = ["OFFERTA FEDELTÀ", "HOT ON SOCIAL", "ESCLUSIVO", "CLEAN AT SEPHORA", "NOVITÀ", "OFFERTA FEDELTA"];
-                        const lines = rawLines.filter(l => !BADGES.includes(l.toUpperCase()));
+                        const BADGES = ["OFFERTA FEDELTÀ", "HOT ON SOCIAL", "ESCLUSIVO", "CLEAN AT SEPHORA", "NOVITÀ", "OFFERTA FEDELTA", "BESTSELLER", "MEILLEURES VENTES", "MAS VENDIDOS", "SHOWING 40 OF 13163"];
+                        const lines = rawLines.filter(l => !BADGES.includes(l.toUpperCase()) && !l.toUpperCase().startsWith("SHOWING"));
 
                         let brand = "";
                         let titleLines = [];
 
                         for (const line of lines) {
-                            if (line.includes("€") || line.includes("£") || line.includes("zł") || line.includes("Recensioni") || line.includes("Aggiungi") || line.includes("Disponibile") || line.includes("Prezzo più basso") || line.startsWith("-")) {
+                            if (line.includes("€") || line.includes("£") || line.includes("zł") || line.includes("$") || line.includes("Recensioni") || line.includes("reviews") || line.includes("avis") || line.includes("reseñas") || line.includes("Aggiungi") || line.includes("Disponibile") || line.includes("Prezzo più basso") || line.startsWith("-")) {
                                 break;
                             }
                             if (!brand && line === line.toUpperCase() && line.length >= 2 && !/\\d/.test(line)) {
@@ -271,6 +276,7 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
 
                         let rawTitle = titleLines.join(" ").trim();
                         if (rawTitle.endsWith(" Da")) rawTitle = rawTitle.slice(0, -3).trim();
+                        if (rawTitle.endsWith(" From")) rawTitle = rawTitle.slice(0, -5).trim();
 
                         let fullName = rawTitle;
                         if (brand && !fullName.toLowerCase().includes(brand.toLowerCase())) {
@@ -281,14 +287,16 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
                         let lowestPrice = 0;
                         let discountPct = 0;
 
-                        const priceM = cardText.match(/(?:Da\\s*)?([\\d\\.,]+)\\s*[€£zł]/i);
+                        const priceM = cardText.match(/(?:Da\\s*|From\\s*|Dès\\s*)?([\\d\\.,]+)\\s*[€£zł$]|[$€£zł]\\s*([\\d\\.,]+)/i);
                         if (priceM) {
-                            price = parseFloat(priceM[1].replace(",", "."));
+                            const rawP = (priceM[1] || priceM[2]).replace(",", ".");
+                            price = parseFloat(rawP);
                         }
 
-                        const lowestM = cardText.match(/Prezzo più basso\\s*:\\s*([\\d\\.,]+)\\s*[€£zł]/i);
+                        const lowestM = cardText.match(/(?:Prezzo più basso|Lowest price|Prix le plus bas)\\s*:\\s*([\\d\\.,]+)\\s*[€£zł$]|[$€£zł]\\s*([\\d\\.,]+)/i);
                         if (lowestM) {
-                            lowestPrice = parseFloat(lowestM[1].replace(",", "."));
+                            const rawL = (lowestM[1] || lowestM[2]).replace(",", ".");
+                            lowestPrice = parseFloat(rawL);
                         }
 
                         const discountM = cardText.match(/-(\\d+)%/);
@@ -296,7 +304,7 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
                             discountPct = parseInt(discountM[1], 10);
                         }
 
-                        const reviewsM = cardText.match(/(\\d+)\\s*Recensioni/i);
+                        const reviewsM = cardText.match(/(\\d+)\\s*(?:Recensioni|reviews|avis|reseñas|opinie)/i);
                         const reviewsCount = reviewsM ? parseInt(reviewsM[1], 10) : 0;
 
                         const img = card.querySelector("img");
