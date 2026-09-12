@@ -95,11 +95,15 @@ export function FilterBar({
             className="w-full rounded-md border border-slate-800 bg-[#181b22] px-3 py-2 text-xs font-sans text-slate-200 focus:border-[#d4af37] outline-none transition-colors"
           >
             <option value="">All Stores</option>
-            {availableStores.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
+            {availableStores.map((s) => {
+              const countryKey = Object.keys(stores).find((k) => stores[k].stores.some((st) => st.id === s.id));
+              const flag = countryKey ? stores[countryKey].flag : "";
+              return (
+                <option key={s.id} value={s.id}>
+                  {flag ? `${flag} ${s.name}` : s.name}
+                </option>
+              );
+            })}
           </select>
         </div>
 

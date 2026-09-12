@@ -5,6 +5,7 @@ import { Product } from "@/types";
 import { ExternalLink, Star, ShoppingCart, FileSpreadsheet, Globe, Package } from "lucide-react";
 import { CurrencyMode, formatPrice } from "@/lib/currency";
 import { getAutoEnglishUrl } from "@/lib/urls";
+import { getCountryFlag } from "@/lib/grouping";
 import { ProductDetailModal } from "./ProductDetailModal";
 
 interface ProductTableProps {
@@ -227,8 +228,9 @@ export function ProductTable({
                     {product.reviews_count ? product.reviews_count.toLocaleString() : "-"}
                   </td>
                   <td className="px-3 py-3 text-center whitespace-nowrap">
-                    <span className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[10px] font-semibold ${srcInfo.style}`}>
-                      {srcInfo.label}
+                    <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-mono text-[10px] font-semibold ${srcInfo.style}`}>
+                      <span>{getCountryFlag(product.country)}</span>
+                      <span>{srcInfo.label}</span>
                     </span>
                   </td>
                   <td className="px-3 py-3 text-slate-400 whitespace-nowrap font-sans">{product.category}</td>
