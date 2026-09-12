@@ -192,7 +192,20 @@ export function logScrape(source, status, productsFound, error = null) {
   `).run(source, status, productsFound, error);
 }
 
-function applySourceAndCountry(where, params, db, source, country) {
+export function normalizeSource(src) {
+  if (!src) return null;
+  const s = String(src).trim().toLowerCase();
+  if (s === "amazon-us") return "amazon";
+  if (s === "walmart-us") return "walmart";
+  if (s === "bestbuy-us") return "bestbuy";
+  if (s === "target-us") return "target";
+  if (s === "lego-us") return "lego";
+  if (s === "sephora-us") return "sephora";
+  return s;
+}
+
+function applySourceAndCountry(where, params, db, rawSource, country) {
+  const source = normalizeSource(rawSource);
   if (source) {
     where.push("source = ?");
     params.push(source);
@@ -241,12 +254,33 @@ export function getProducts({ source, category, country, sort_by = "price", orde
     .all(...params, limit, offset);
 }
 
-export function getStats(source = null, country = null) {
+export function getStats(filtersOrSource = null, maybeCountry = null) {
   const db = getDb();
   let where = [];
   let params = [];
 
+  let source = null;
+  let country = null;
+  let category = null;
+  let min_price = null;
+  let max_price = null;
+
+  if (filtersOrSource && typeof filtersOrSource === "object") {
+    source = filtersOrSource.source || null;
+    country = filtersOrSource.country || null;
+    category = filtersOrSource.category || null;
+    min_price = filtersOrSource.min_price !== undefined ? filtersOrSource.min_price : null;
+    max_price = filtersOrSource.max_price !== undefined ? filtersOrSource.max_price : null;
+  } else {
+    source = filtersOrSource || null;
+    country = maybeCountry || null;
+  }
+
   applySourceAndCountry(where, params, db, source, country);
+
+  if (category) { where.push("category = ?"); params.push(category); }
+  if (min_price !== null && min_price !== undefined) { where.push("price >= ?"); params.push(min_price); }
+  if (max_price !== null && max_price !== undefined) { where.push("price <= ?"); params.push(max_price); }
 
   const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
@@ -281,12 +315,36 @@ export function getStats(source = null, country = null) {
   };
 }
 
-export function getTopProducts(source = null, country = null, limit = 10) {
+export function getTopProducts(filtersOrSource = null, maybeCountry = null, maybeLimit = 10) {
   const db = getDb();
   let where = ["reviews_count IS NOT NULL"];
   let params = [];
 
+  let source = null;
+  let country = null;
+  let category = null;
+  let min_price = null;
+  let max_price = null;
+  let limit = 10;
+
+  if (filtersOrSource && typeof filtersOrSource === "object") {
+    source = filtersOrSource.source || null;
+    country = filtersOrSource.country || null;
+    category = filtersOrSource.category || null;
+    min_price = filtersOrSource.min_price !== undefined ? filtersOrSource.min_price : null;
+    max_price = filtersOrSource.max_price !== undefined ? filtersOrSource.max_price : null;
+    if (filtersOrSource.limit) limit = filtersOrSource.limit;
+  } else {
+    source = filtersOrSource || null;
+    country = maybeCountry || null;
+    if (maybeLimit) limit = maybeLimit;
+  }
+
   applySourceAndCountry(where, params, db, source, country);
+
+  if (category) { where.push("category = ?"); params.push(category); }
+  if (min_price !== null && min_price !== undefined) { where.push("price >= ?"); params.push(min_price); }
+  if (max_price !== null && max_price !== undefined) { where.push("price <= ?"); params.push(max_price); }
 
   return db.prepare(`SELECT * FROM products WHERE ${where.join(" AND ")} ORDER BY reviews_count DESC LIMIT ?`).all(...params, limit);
 }

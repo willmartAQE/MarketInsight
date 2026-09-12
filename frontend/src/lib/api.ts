@@ -25,10 +25,13 @@ export async function getProducts(filters: Partial<Filters> & { ids?: string | n
   return fetchJSON<Product[]>(`/api/products?${params.toString()}`);
 }
 
-export async function getStats(source?: string, country?: string): Promise<Stats> {
+export async function getStats(filters: Partial<Filters> = {}): Promise<Stats> {
   const params = new URLSearchParams();
-  if (source) params.set("source", source);
-  if (country) params.set("country", country);
+  if (filters.source) params.set("source", filters.source);
+  if (filters.category) params.set("category", filters.category);
+  if (filters.country) params.set("country", filters.country);
+  if (filters.min_price !== null && filters.min_price !== undefined) params.set("min_price", String(filters.min_price));
+  if (filters.max_price !== null && filters.max_price !== undefined) params.set("max_price", String(filters.max_price));
   const qs = params.toString();
   return fetchJSON<Stats>(`/api/stats${qs ? `?${qs}` : ""}`);
 }
@@ -37,10 +40,13 @@ export async function getPriceHistory(productId: number): Promise<PricePoint[]> 
   return fetchJSON<PricePoint[]>(`/api/products/${productId}/history`);
 }
 
-export async function getTopProducts(source?: string, country?: string): Promise<Product[]> {
+export async function getTopProducts(filters: Partial<Filters> = {}): Promise<Product[]> {
   const params = new URLSearchParams();
-  if (source) params.set("source", source);
-  if (country) params.set("country", country);
+  if (filters.source) params.set("source", filters.source);
+  if (filters.category) params.set("category", filters.category);
+  if (filters.country) params.set("country", filters.country);
+  if (filters.min_price !== null && filters.min_price !== undefined) params.set("min_price", String(filters.min_price));
+  if (filters.max_price !== null && filters.max_price !== undefined) params.set("max_price", String(filters.max_price));
   const qs = params.toString();
   return fetchJSON<Product[]>(`/api/top-products${qs ? `?${qs}` : ""}`);
 }

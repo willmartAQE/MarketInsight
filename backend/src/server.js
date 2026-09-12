@@ -312,11 +312,26 @@ app.get("/api/products/:id/history", (req, res) => {
 });
 
 app.get("/api/stats", (req, res) => {
-  res.json(getStats(req.query.source || null, req.query.country || null));
+  const { source, country, category, min_price, max_price } = req.query;
+  res.json(getStats({
+    source: source || null,
+    country: country || null,
+    category: category || null,
+    min_price: min_price ? parseFloat(min_price) : null,
+    max_price: max_price ? parseFloat(max_price) : null,
+  }));
 });
 
 app.get("/api/top-products", (req, res) => {
-  res.json(getTopProducts(req.query.source || null, req.query.country || null, parseInt(req.query.limit) || 10));
+  const { source, country, category, min_price, max_price, limit } = req.query;
+  res.json(getTopProducts({
+    source: source || null,
+    country: country || null,
+    category: category || null,
+    min_price: min_price ? parseFloat(min_price) : null,
+    max_price: max_price ? parseFloat(max_price) : null,
+    limit: limit ? parseInt(limit) : 10,
+  }));
 });
 
 app.get("/api/categories", (req, res) => {

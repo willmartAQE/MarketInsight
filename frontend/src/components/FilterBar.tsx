@@ -91,7 +91,7 @@ export function FilterBar({
           <label className="block font-mono text-[11px] font-medium text-slate-400 mb-1 uppercase tracking-wider">Store</label>
           <select
             value={filters.source || ""}
-            onChange={(e) => update({ source: e.target.value || null })}
+            onChange={(e) => update({ source: e.target.value || null, category: null })}
             className="w-full rounded-md border border-slate-800 bg-[#181b22] px-3 py-2 text-xs font-sans text-slate-200 focus:border-[#d4af37] outline-none transition-colors"
           >
             <option value="">All Stores</option>

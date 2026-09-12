@@ -191,12 +191,10 @@ export function Dashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const countryParam = filters.country || undefined;
-      const sourceParam = filters.source || undefined;
       const [productsData, statsData, topData, globalProds] = await Promise.all([
         getProducts(filters),
-        getStats(sourceParam, countryParam),
-        getTopProducts(sourceParam, countryParam),
+        getStats(filters),
+        getTopProducts(filters),
         getProducts({}),
       ]);
       setProducts(productsData);
