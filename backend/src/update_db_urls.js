@@ -1,9 +1,9 @@
 import { getDb, upsertProduct } from "./db.js";
-import { FALLBACK_BESTBUY_PRODUCTS } from "./scrapers/bestbuy.js";
-import { FALLBACK_SEARS_PRODUCTS } from "./scrapers/sears.js";
-import { FALLBACK_CANADA_PRODUCTS } from "./scrapers/canada.js";
-import { FALLBACK_ALLEGRO_PRODUCTS } from "./scrapers/allegro.js";
-import { FALLBACK_EBAY_PRODUCTS } from "./scrapers/ebay-eu.js";
+import { FALLBACK_TARGET_PRODUCTS } from "./scrapers/target.js";
+import { FALLBACK_AMAZON_JP_PRODUCTS } from "./scrapers/amazon-jp.js";
+import { FALLBACK_SEPHORA_PRODUCTS } from "./scrapers/sephora.js";
+import { FALLBACK_LEGO_PRODUCTS } from "./scrapers/lego.js";
+import { FALLBACK_INTERFLORA_PRODUCTS } from "./scrapers/interflora.js";
 
 const db = getDb();
 
@@ -111,11 +111,11 @@ const HOMEDEPOT_PRODUCTS = [
 
 const allToSeed = [
   ...HOMEDEPOT_PRODUCTS,
-  ...FALLBACK_BESTBUY_PRODUCTS,
-  ...FALLBACK_SEARS_PRODUCTS,
-  ...FALLBACK_CANADA_PRODUCTS,
-  ...FALLBACK_ALLEGRO_PRODUCTS,
-  ...Object.values(FALLBACK_EBAY_PRODUCTS).flat(),
+  ...FALLBACK_TARGET_PRODUCTS,
+  ...FALLBACK_AMAZON_JP_PRODUCTS,
+  ...FALLBACK_SEPHORA_PRODUCTS,
+  ...FALLBACK_LEGO_PRODUCTS,
+  ...FALLBACK_INTERFLORA_PRODUCTS,
 ];
 
 

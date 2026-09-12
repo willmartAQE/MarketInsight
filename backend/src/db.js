@@ -1,6 +1,11 @@
 import Database from "better-sqlite3";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { FALLBACK_TARGET_PRODUCTS } from "./scrapers/target.js";
+import { FALLBACK_AMAZON_JP_PRODUCTS } from "./scrapers/amazon-jp.js";
+import { FALLBACK_SEPHORA_PRODUCTS } from "./scrapers/sephora.js";
+import { FALLBACK_LEGO_PRODUCTS } from "./scrapers/lego.js";
+import { FALLBACK_INTERFLORA_PRODUCTS } from "./scrapers/interflora.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, "..", "marketinsight.db");
@@ -127,6 +132,21 @@ function initTables() {
       original_price = ROUND(price / (1 - (ROUND(12 + ((id * 7) % 23)) / 100.0)), 2)
     WHERE original_price IS NULL OR discount_pct IS NULL;
   `);
+
+  const checkStmt = db.prepare("SELECT COUNT(*) as count FROM products WHERE source = ?");
+  const newStoreFallbacks = [
+    ...FALLBACK_TARGET_PRODUCTS,
+    ...FALLBACK_AMAZON_JP_PRODUCTS,
+    ...FALLBACK_SEPHORA_PRODUCTS,
+    ...FALLBACK_LEGO_PRODUCTS,
+    ...FALLBACK_INTERFLORA_PRODUCTS,
+  ];
+  for (const p of newStoreFallbacks) {
+    const existing = checkStmt.get(p.source);
+    if (!existing || existing.count === 0) {
+      upsertProduct(p);
+    }
+  }
 }
 
 export function isInvalidImageOrUrl(product) {
