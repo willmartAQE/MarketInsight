@@ -9,7 +9,7 @@ export const STORES = {
       { id: "homedepot", name: "The Home Depot", type: "homedepot", enabled: true },
       { id: "bestbuy", name: "Best Buy", type: "bestbuy", enabled: true },
       { id: "target", name: "Target", type: "target", enabled: true },
-      { id: "sephora", name: "Sephora", type: "sephora", enabled: true },
+      { id: "sephora", name: "Sephora US", type: "sephora", enabled: true },
       { id: "lego", name: "LEGO Store", type: "lego", enabled: true },
     ],
   },
@@ -21,6 +21,7 @@ export const STORES = {
       { id: "amazon-ca", name: "Amazon Canada", type: "amazon", enabled: true },
       { id: "bestbuy-ca", name: "Best Buy Canada", type: "bestbuy", enabled: true },
       { id: "walmart-ca", name: "Walmart Canada", type: "walmart", enabled: true },
+      { id: "sephora-ca", name: "Sephora Canada", type: "sephora", enabled: true },
     ],
   },
   "jp": {
@@ -38,6 +39,7 @@ export const STORES = {
     stores: [
       { id: "amazon-de", name: "Amazon.de", type: "amazon", enabled: true },
       { id: "ebay-de", name: "eBay.de", type: "ebay", enabled: true },
+      { id: "sephora-de", name: "Sephora Germany", type: "sephora", enabled: true },
     ],
   },
   "fr": {
@@ -47,6 +49,7 @@ export const STORES = {
     stores: [
       { id: "amazon-fr", name: "Amazon.fr", type: "amazon", enabled: true },
       { id: "ebay-fr", name: "eBay.fr", type: "ebay", enabled: true },
+      { id: "sephora-fr", name: "Sephora France", type: "sephora", enabled: true },
     ],
   },
   "it": {
@@ -57,6 +60,7 @@ export const STORES = {
       { id: "amazon-it", name: "Amazon.it", type: "amazon", enabled: true },
       { id: "ebay-it", name: "eBay.it", type: "ebay", enabled: true },
       { id: "interflora", name: "Interflora", type: "interflora", enabled: true },
+      { id: "sephora-it", name: "Sephora Italia", type: "sephora", enabled: true },
     ],
   },
   "es": {
@@ -66,6 +70,7 @@ export const STORES = {
     stores: [
       { id: "amazon-es", name: "Amazon.es", type: "amazon", enabled: true },
       { id: "ebay-es", name: "eBay.es", type: "ebay", enabled: true },
+      { id: "sephora-es", name: "Sephora España", type: "sephora", enabled: true },
     ],
   },
   "uk": {
@@ -75,6 +80,7 @@ export const STORES = {
     stores: [
       { id: "amazon-uk", name: "Amazon.co.uk", type: "amazon", enabled: true },
       { id: "ebay-uk", name: "eBay.co.uk", type: "ebay", enabled: true },
+      { id: "sephora-uk", name: "Sephora UK", type: "sephora", enabled: true },
     ],
   },
   "nl": {
@@ -91,6 +97,7 @@ export const STORES = {
     currency: "zł",
     stores: [
       { id: "amazon-pl", name: "Amazon.pl", type: "amazon", enabled: true },
+      { id: "sephora-pl", name: "Sephora Polska", type: "sephora", enabled: true },
     ],
   },
 };

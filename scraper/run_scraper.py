@@ -97,7 +97,12 @@ async def main():
     await init_db()
     print(f"Scrapling Scraping Engine started at {datetime.utcnow().isoformat()}")
 
-    sources = sys.argv[1:] if len(sys.argv) > 1 else ["lego", "interflora", "target", "sephora", "amazon-jp"]
+    default_sources = [
+        "lego", "interflora", "target", "amazon-jp",
+        "sephora-us", "sephora-ca", "sephora-fr", "sephora-it",
+        "sephora-de", "sephora-es", "sephora-uk", "sephora-pl"
+    ]
+    sources = sys.argv[1:] if len(sys.argv) > 1 else default_sources
 
     if "lego" in sources:
         res = scrape_lego_scrapling()
@@ -111,9 +116,23 @@ async def main():
         res = scrape_target_scrapling()
         await save_dict_scrape_result(res)
 
-    if "sephora" in sources:
-        res = scrape_sephora_scrapling()
-        await save_dict_scrape_result(res)
+    sephora_map = {
+        "sephora": "US",
+        "sephora-us": "US",
+        "sephora-ca": "CA",
+        "sephora-fr": "FR",
+        "sephora-it": "IT",
+        "sephora-de": "DE",
+        "sephora-es": "ES",
+        "sephora-uk": "UK",
+        "sephora-pl": "PL",
+    }
+
+    for src_arg in sources:
+        if src_arg in sephora_map:
+            country_code = sephora_map[src_arg]
+            res = scrape_sephora_scrapling(country_code=country_code)
+            await save_dict_scrape_result(res)
 
     if "amazon-jp" in sources:
         res = scrape_amazon_jp_scrapling()

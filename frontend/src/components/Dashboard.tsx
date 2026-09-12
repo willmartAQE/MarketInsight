@@ -54,9 +54,11 @@ export function exportToCSV(
     if (s === "amazon") return "Amazon US";
     if (s === "bestbuy") return "Best Buy US";
     if (s === "bestbuy-ca") return "Best Buy Canada";
-    if (s === "homedepot") return "The Home Depot";
     if (s === "target") return "Target";
-    if (s === "sephora") return "Sephora";
+    if (s.startsWith("sephora")) {
+      const code = s.replace("sephora-", "").replace("sephora", "").toUpperCase();
+      return `Sephora ${code}`.trim();
+    }
     if (s === "lego") return "LEGO";
     if (s === "interflora") return "Interflora";
     return src;

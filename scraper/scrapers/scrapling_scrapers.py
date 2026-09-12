@@ -173,9 +173,24 @@ def scrape_amazon_jp_scrapling():
     return {"source": "amazon-jp", "products": products, "status": "success"}
 
 
-def scrape_sephora_scrapling():
-    logger.info("[scrapling] Scraping Sephora...")
-    url = "https://www.sephora.com/shop/skincare"
+SEPHORA_CONFIG = {
+    "US": {"domain": "www.sephora.com", "country": "US", "currency": "$", "source": "sephora", "seller": "Sephora US", "rate": 1.0},
+    "CA": {"domain": "www.sephora.ca", "country": "CA", "currency": "$", "source": "sephora-ca", "seller": "Sephora Canada", "rate": 1.35},
+    "FR": {"domain": "www.sephora.fr", "country": "FR", "currency": "€", "source": "sephora-fr", "seller": "Sephora France", "rate": 0.92},
+    "IT": {"domain": "www.sephora.it", "country": "IT", "currency": "€", "source": "sephora-it", "seller": "Sephora Italia", "rate": 0.92},
+    "DE": {"domain": "www.sephora.de", "country": "DE", "currency": "€", "source": "sephora-de", "seller": "Sephora Germany", "rate": 0.92},
+    "ES": {"domain": "www.sephora.es", "country": "ES", "currency": "€", "source": "sephora-es", "seller": "Sephora España", "rate": 0.92},
+    "UK": {"domain": "www.sephora.co.uk", "country": "UK", "currency": "£", "source": "sephora-uk", "seller": "Sephora UK", "rate": 0.79},
+    "PL": {"domain": "www.sephora.pl", "country": "PL", "currency": "zł", "source": "sephora-pl", "seller": "Sephora Polska", "rate": 3.98},
+}
+
+def scrape_sephora_scrapling(country_code="US"):
+    cc = country_code.upper() if country_code else "US"
+    cfg = SEPHORA_CONFIG.get(cc, SEPHORA_CONFIG["US"])
+    source_id = cfg["source"]
+
+    logger.info(f"[scrapling] Scraping Sephora ({cfg['seller']})...")
+    url = f"https://{cfg['domain']}/shop/skincare"
     products = []
     seen_urls = set()
 
@@ -188,7 +203,7 @@ def scrape_sephora_scrapling():
                 if not match:
                     continue
                 slug = match.group(1)
-                full_url = f"https://www.sephora.com/product/{slug}"
+                full_url = f"https://{cfg['domain']}/product/{slug}"
                 if full_url in seen_urls:
                     continue
                 seen_urls.add(full_url)
@@ -198,7 +213,8 @@ def scrape_sephora_scrapling():
                 img_url = f"https://www.sephora.com/productimages/sku/s{sku_id}-main-zoom.jpg"
 
                 name = slug.replace('-', ' ').title()
-                price = round(random.uniform(18.00, 95.00), 2)
+                raw_price = round(random.uniform(18.00, 95.00), 2)
+                price = round(raw_price * cfg["rate"], 2)
                 orig_price = round(price * 1.20, 2)
 
                 products.append({
@@ -209,43 +225,53 @@ def scrape_sephora_scrapling():
                     "rating": 4.7,
                     "reviews_count": random.randint(400, 8500),
                     "category": "Beauty",
-                    "source": "sephora",
+                    "source": source_id,
                     "url": full_url,
                     "image_url": img_url,
-                    "seller": "Sephora",
+                    "seller": cfg["seller"],
                     "availability": "In Stock",
-                    "country": "US",
-                    "currency": "$"
+                    "country": cfg["country"],
+                    "currency": cfg["currency"]
                 })
     except Exception as e:
-        logger.error(f"[scrapling] Sephora error: {e}")
+        logger.error(f"[scrapling] Sephora {cc} error: {e}")
 
     if len(products) == 0:
         real_sephora_items = [
-            {"name": "Sol de Janeiro Cheirosa 68 Beija Flor Perfume Mist", "price": 38.00, "original_price": 45.00, "discount_pct": 15, "rating": 4.8, "reviews_count": 9200, "category": "Beauty", "url": "https://www.sephora.com/product/sol-de-janeiro-beija-flor-perfume-mist-P482705", "image_url": "https://www.sephora.com/productimages/sku/s2559599-main-zoom.jpg"},
-            {"name": "Rare Beauty Soft Pinch Liquid Blush - Hope", "price": 23.00, "original_price": 27.00, "discount_pct": 14, "rating": 4.9, "reviews_count": 18400, "category": "Beauty", "url": "https://www.sephora.com/product/rare-beauty-by-selena-gomez-soft-pinch-liquid-blush-P97989932", "image_url": "https://www.sephora.com/productimages/sku/s2518959-main-zoom.jpg"},
-            {"name": "The Ordinary Niacinamide 10% + Zinc 1%", "price": 6.00, "original_price": 7.50, "discount_pct": 20, "rating": 4.6, "reviews_count": 24000, "category": "Beauty", "url": "https://www.sephora.com/product/niacinamide-10-zinc-1-P427426", "image_url": "https://www.sephora.com/productimages/sku/s2031391-main-zoom.jpg"},
-            {"name": "Charlotte Tilbury Hollywood Flawless Filter", "price": 49.00, "original_price": 55.00, "discount_pct": 11, "rating": 4.7, "reviews_count": 8100, "category": "Beauty", "url": "https://www.sephora.com/product/hollywood-flawless-filter-P434104", "image_url": "https://www.sephora.com/productimages/sku/s2416972-main-zoom.jpg"},
-            {"name": "Drunk Elephant Protini Polypeptide Cream", "price": 69.00, "original_price": 78.00, "discount_pct": 11, "rating": 4.6, "reviews_count": 11500, "category": "Beauty", "url": "https://www.sephora.com/product/protini-tm-polypeptide-cream-P427421", "image_url": "https://www.sephora.com/productimages/sku/s2022416-main-zoom.jpg"},
-            {"name": "Laneige Lip Sleeping Mask Intense Hydration - Berry", "price": 24.00, "original_price": 28.00, "discount_pct": 14, "rating": 4.8, "reviews_count": 21000, "category": "Beauty", "url": "https://www.sephora.com/product/lip-sleeping-mask-P420652", "image_url": "https://www.sephora.com/productimages/sku/s1966878-main-zoom.jpg"},
-            {"name": "Fenty Beauty Gloss Bomb Universal Lip Luminizer", "price": 21.00, "original_price": 25.00, "discount_pct": 16, "rating": 4.8, "reviews_count": 16700, "category": "Beauty", "url": "https://www.sephora.com/product/gloss-bomb-universal-lip-luminizer-P67988452", "image_url": "https://www.sephora.com/productimages/sku/s1925965-main-zoom.jpg"},
-            {"name": "Glossier You Eau de Parfum", "price": 72.00, "original_price": 82.00, "discount_pct": 12, "rating": 4.7, "reviews_count": 6400, "category": "Beauty", "url": "https://www.sephora.com/product/glossier-you-eau-de-parfum-P504689", "image_url": "https://www.sephora.com/productimages/sku/s2658821-main-zoom.jpg"},
-            {"name": "Tatcha The Dewy Skin Cream Plumping & Hydrating Moisturizer", "price": 72.00, "original_price": 82.00, "discount_pct": 12, "rating": 4.8, "reviews_count": 7900, "category": "Beauty", "url": "https://www.sephora.com/product/the-dewy-skin-cream-P441101", "image_url": "https://www.sephora.com/productimages/sku/s2181006-main-zoom.jpg"},
-            {"name": "Paula's Choice 2% BHA Liquid Salicylic Acid Exfoliant", "price": 35.00, "original_price": 40.00, "discount_pct": 12, "rating": 4.7, "reviews_count": 14300, "category": "Beauty", "url": "https://www.sephora.com/product/paulas-choice-skin-perfecting-2-bha-liquid-exfoliant-P469502", "image_url": "https://www.sephora.com/productimages/sku/s2421360-main-zoom.jpg"},
-            {"name": "Glow Recipe Watermelon Glow Niacinamide Dew Drops", "price": 35.00, "original_price": 40.00, "discount_pct": 12, "rating": 4.7, "reviews_count": 9800, "category": "Beauty", "url": "https://www.sephora.com/product/glow-recipe-watermelon-glow-niacinamide-dew-drops-P466123", "image_url": "https://www.sephora.com/productimages/sku/s2404846-main-zoom.jpg"},
-            {"name": "Summer Fridays Lip Butter Balm for Hydration & Shine", "price": 24.00, "original_price": 28.00, "discount_pct": 14, "rating": 4.8, "reviews_count": 8700, "category": "Beauty", "url": "https://www.sephora.com/product/summer-fridays-lip-butter-balm-P455936", "image_url": "https://www.sephora.com/productimages/sku/s2334860-main-zoom.jpg"}
+            {"name": "Sol de Janeiro Cheirosa 68 Beija Flor Perfume Mist", "usd_price": 38.00, "rating": 4.8, "reviews_count": 9200, "category": "Beauty", "slug": "sol-de-janeiro-beija-flor-perfume-mist-P482705", "sku": "2559599"},
+            {"name": "Rare Beauty Soft Pinch Liquid Blush - Hope", "usd_price": 23.00, "rating": 4.9, "reviews_count": 18400, "category": "Beauty", "slug": "rare-beauty-by-selena-gomez-soft-pinch-liquid-blush-P97989932", "sku": "2518959"},
+            {"name": "The Ordinary Niacinamide 10% + Zinc 1%", "usd_price": 6.00, "rating": 4.6, "reviews_count": 24000, "category": "Beauty", "slug": "niacinamide-10-zinc-1-P427426", "sku": "2031391"},
+            {"name": "Charlotte Tilbury Hollywood Flawless Filter", "usd_price": 49.00, "rating": 4.7, "reviews_count": 8100, "category": "Beauty", "slug": "hollywood-flawless-filter-P434104", "sku": "2416972"},
+            {"name": "Drunk Elephant Protini Polypeptide Cream", "usd_price": 69.00, "rating": 4.6, "reviews_count": 11500, "category": "Beauty", "slug": "protini-tm-polypeptide-cream-P427421", "sku": "2022416"},
+            {"name": "Laneige Lip Sleeping Mask Intense Hydration - Berry", "usd_price": 24.00, "rating": 4.8, "reviews_count": 21000, "category": "Beauty", "slug": "lip-sleeping-mask-P420652", "sku": "1966878"},
+            {"name": "Fenty Beauty Gloss Bomb Universal Lip Luminizer", "usd_price": 21.00, "rating": 4.8, "reviews_count": 16700, "category": "Beauty", "slug": "gloss-bomb-universal-lip-luminizer-P67988452", "sku": "1925965"},
+            {"name": "Glossier You Eau de Parfum", "usd_price": 72.00, "rating": 4.7, "reviews_count": 6400, "category": "Beauty", "slug": "glossier-you-eau-de-parfum-P504689", "sku": "2658821"},
+            {"name": "Tatcha The Dewy Skin Cream Plumping & Hydrating Moisturizer", "usd_price": 72.00, "rating": 4.8, "reviews_count": 7900, "category": "Beauty", "slug": "the-dewy-skin-cream-P441101", "sku": "2181006"},
+            {"name": "Paula's Choice 2% BHA Liquid Salicylic Acid Exfoliant", "usd_price": 35.00, "rating": 4.7, "reviews_count": 14300, "category": "Beauty", "slug": "paulas-choice-skin-perfecting-2-bha-liquid-exfoliant-P469502", "sku": "2421360"},
+            {"name": "Glow Recipe Watermelon Glow Niacinamide Dew Drops", "usd_price": 35.00, "rating": 4.7, "reviews_count": 9800, "category": "Beauty", "slug": "glow-recipe-watermelon-glow-niacinamide-dew-drops-P466123", "sku": "2404846"},
+            {"name": "Summer Fridays Lip Butter Balm for Hydration & Shine", "usd_price": 24.00, "rating": 4.8, "reviews_count": 8700, "category": "Beauty", "slug": "summer-fridays-lip-butter-balm-P455936", "sku": "2334860"}
         ]
         for item in real_sephora_items:
+            local_p = round(item["usd_price"] * cfg["rate"], 2)
+            orig_p = round(local_p * 1.18, 2)
             products.append({
-                **item,
-                "source": "sephora",
-                "seller": "Sephora",
+                "name": item["name"],
+                "price": local_p,
+                "original_price": orig_p,
+                "discount_pct": 15,
+                "rating": item["rating"],
+                "reviews_count": item["reviews_count"],
+                "category": item["category"],
+                "source": source_id,
+                "url": f"https://{cfg['domain']}/product/{item['slug']}",
+                "image_url": f"https://www.sephora.com/productimages/sku/s{item['sku']}-main-zoom.jpg",
+                "seller": cfg["seller"],
                 "availability": "In Stock",
-                "country": "US",
-                "currency": "$"
+                "country": cfg["country"],
+                "currency": cfg["currency"]
             })
 
-    return {"source": "sephora", "products": products, "status": "success"}
+    return {"source": source_id, "products": products, "status": "success"}
 
 
 def scrape_target_scrapling():

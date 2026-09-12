@@ -62,7 +62,10 @@ export function runScraplingPythonScraper(sources) {
 export async function runScrape(sources) {
   console.log(`Scraping started at ${new Date().toISOString()}`);
 
-  const scraplingSources = ["lego", "interflora", "target", "sephora", "amazon-jp"];
+  const scraplingSources = [
+    "lego", "interflora", "target", "sephora", "amazon-jp",
+    "sephora-us", "sephora-ca", "sephora-fr", "sephora-it", "sephora-de", "sephora-es", "sephora-uk", "sephora-pl"
+  ];
   const jsScrapers = {
     walmart: scrapeWalmart,
     amazon: scrapeAmazon,
