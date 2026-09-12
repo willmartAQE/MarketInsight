@@ -2,6 +2,11 @@ import { scrapeWalmart } from "./scrapers/walmart.js";
 import { scrapeAmazon } from "./scrapers/amazon.js";
 import { scrapeAmazonEU } from "./scrapers/amazon-eu.js";
 import { scrapeEbayEU } from "./scrapers/ebay-eu.js";
+import { scrapeTarget } from "./scrapers/target.js";
+import { scrapeAmazonJP } from "./scrapers/amazon-jp.js";
+import { scrapeSephora } from "./scrapers/sephora.js";
+import { scrapeLego } from "./scrapers/lego.js";
+import { scrapeInterflora } from "./scrapers/interflora.js";
 import { upsertProduct, addPriceHistory, logScrape } from "./db.js";
 
 async function saveProducts(source, products) {
@@ -21,15 +26,20 @@ async function saveProducts(source, products) {
 async function runScrape(sources) {
   console.log(`Scraping started at ${new Date().toISOString()}`);
 
-  const usScrapers = {
+  const scrapers = {
     walmart: scrapeWalmart,
     amazon: scrapeAmazon,
+    target: scrapeTarget,
+    "amazon-jp": scrapeAmazonJP,
+    sephora: scrapeSephora,
+    lego: scrapeLego,
+    interflora: scrapeInterflora,
   };
 
   for (const source of sources) {
-    const scraper = usScrapers[source];
+    const scraper = scrapers[source];
     if (!scraper) {
-      console.log(`[us] Unknown source: ${source}`);
+      console.log(`Unknown source: ${source}`);
       continue;
     }
 
@@ -97,6 +107,6 @@ if (args.includes("--eu")) {
   const countries = euArgs.length > 0 ? euArgs : null;
   runEUScrape(countries);
 } else {
-  const sources = args.length > 0 ? args : ["walmart", "amazon"];
+  const sources = args.length > 0 ? args : ["walmart", "amazon", "target", "amazon-jp", "sephora", "lego", "interflora"];
   runScrape(sources);
 }

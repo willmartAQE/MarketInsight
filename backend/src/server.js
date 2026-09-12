@@ -36,6 +36,11 @@ import { scrapeEbayEU } from "./scrapers/ebay-eu.js";
 import { scrapeHomeDepot } from "./scrapers/homedepot.js";
 import { scrapeBestBuy } from "./scrapers/bestbuy.js";
 import { scrapeCanadaStores } from "./scrapers/canada.js";
+import { scrapeTarget } from "./scrapers/target.js";
+import { scrapeAmazonJP } from "./scrapers/amazon-jp.js";
+import { scrapeSephora } from "./scrapers/sephora.js";
+import { scrapeLego } from "./scrapers/lego.js";
+import { scrapeInterflora } from "./scrapers/interflora.js";
 import { getGoogleTrendsInterest } from "./scrapers/google-trends.js";
 import {
   extractAmazonAsin,
@@ -159,6 +164,71 @@ async function runScrapeJob(jobId, countries, sources) {
       scrapingJobs.get(jobId).progress.push({ source: "bestbuy", status: "done", count: saved });
     }
 
+
+    if (sources.includes("target") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "target", status: "running" });
+      const result = await scrapeTarget();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("target", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "target", status: "done", count: saved });
+    }
+
+    if (sources.includes("amazon-jp") || countries.includes("jp") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "amazon-jp", status: "running" });
+      const result = await scrapeAmazonJP();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("amazon-jp", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "amazon-jp", status: "done", count: saved });
+    }
+
+    if (sources.includes("sephora") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "sephora", status: "running" });
+      const result = await scrapeSephora();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("sephora", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "sephora", status: "done", count: saved });
+    }
+
+    if (sources.includes("lego") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "lego", status: "running" });
+      const result = await scrapeLego();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("lego", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "lego", status: "done", count: saved });
+    }
+
+    if (sources.includes("interflora") || sources.includes("all")) {
+      scrapingJobs.get(jobId).progress.push({ source: "interflora", status: "running" });
+      const result = await scrapeInterflora();
+      let saved = 0;
+      for (const p of result.products) {
+        const id = upsertProduct(p);
+        addPriceHistory(id, p.price);
+        saved++;
+      }
+      logScrape("interflora", result.status, saved);
+      scrapingJobs.get(jobId).progress.push({ source: "interflora", status: "done", count: saved });
+    }
 
     if (sources.includes("canada") || sources.includes("bestbuy-ca") || sources.includes("walmart-ca") || sources.includes("all")) {
       const caResult = await scrapeCanadaStores();
@@ -374,9 +444,9 @@ app.post("/api/scrape/purge-and-rescrape", async (req, res) => {
     await resetDuckDB();
 
     // 2. Launch full rescrape across all countries and stores
-    const allCountries = ["us", "ca", "uk", "de", "fr", "es", "it", "nl", "pl"];
+    const allCountries = ["us", "ca", "jp", "uk", "de", "fr", "es", "it", "nl", "pl"];
     const allSources = [
-      "walmart", "amazon", "homedepot", "bestbuy",
+      "walmart", "amazon", "homedepot", "bestbuy", "target", "amazon-jp", "sephora", "lego", "interflora",
       "canada", "bestbuy-ca", "walmart-ca", "all"
     ];
 

@@ -84,6 +84,7 @@ function initTables() {
     UPDATE products SET country = 'UK' WHERE UPPER(country) IN ('GB', 'UNITED KINGDOM', 'GREAT BRITAIN');
     UPDATE products SET country = 'NL' WHERE UPPER(country) IN ('NETHERLANDS', 'HOLLAND');
     UPDATE products SET country = 'PL' WHERE UPPER(country) IN ('POLAND', 'POLSKA');
+    UPDATE products SET country = 'JP' WHERE UPPER(country) IN ('JAPAN', 'JPN');
 
     -- Purge any mismatched legacy asset records, fake URLs, or promo banner images
     DELETE FROM price_history WHERE product_id IN (

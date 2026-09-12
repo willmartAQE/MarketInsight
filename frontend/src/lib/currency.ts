@@ -5,6 +5,7 @@ export const EXCHANGE_RATES: Record<string, number> = {
   GBP: 1.30,
   PLN: 0.25,
   CAD: 0.74,
+  JPY: 0.0067,
   USD: 1.00,
 };
 
@@ -22,6 +23,9 @@ export function getCurrencyInfo(country?: string, mode: CurrencyMode = "local") 
   } else if (c === "CA" || c === "CANADA") {
     code = "CAD";
     symbol = "C$";
+  } else if (c === "JP" || c === "JAPAN") {
+    code = "JPY";
+    symbol = "¥";
   } else if (c === "USA" || c === "US") {
     code = "USD";
     symbol = "$";
@@ -29,7 +33,6 @@ export function getCurrencyInfo(country?: string, mode: CurrencyMode = "local") 
     code = "EUR";
     symbol = "€";
   }
-
 
   if (mode === "usd") {
     return {

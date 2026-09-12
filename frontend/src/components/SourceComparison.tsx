@@ -22,11 +22,16 @@ const SOURCE_LABELS: Record<string, string> = {
   "amazon-uk": "Amazon UK",
   "amazon-nl": "Amazon NL",
   "amazon-pl": "Amazon PL",
+  "amazon-jp": "Amazon JP",
   "ebay-de": "eBay DE",
   "ebay-fr": "eBay FR",
   "ebay-it": "eBay IT",
   "ebay-es": "eBay ES",
   "ebay-uk": "eBay UK",
+  "target": "Target",
+  "sephora": "Sephora",
+  "lego": "LEGO",
+  "interflora": "Interflora",
 };
 
 export function SourceComparison({ stats }: SourceComparisonProps) {

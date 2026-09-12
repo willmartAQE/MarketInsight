@@ -60,6 +60,10 @@ function formatSource(source: string): { label: string; style: string } {
   if (src === "homedepot") return { label: "The Home Depot", style: "bg-orange-100 text-orange-800 border-orange-300" };
   if (src === "bestbuy") return { label: "Best Buy", style: "bg-yellow-100 text-blue-900 border-yellow-300" };
   if (src === "bestbuy-ca") return { label: "Best Buy CA", style: "bg-yellow-100 text-blue-900 border-yellow-300" };
+  if (src === "target") return { label: "Target", style: "bg-red-100 text-red-700 border-red-200" };
+  if (src === "sephora") return { label: "Sephora", style: "bg-pink-100 text-pink-700 border-pink-200" };
+  if (src === "lego") return { label: "LEGO", style: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+  if (src === "interflora") return { label: "Interflora", style: "bg-emerald-100 text-emerald-800 border-emerald-200" };
   return { label: source, style: "bg-gray-100 text-gray-700 border-gray-200" };
 }
 

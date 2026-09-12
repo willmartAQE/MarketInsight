@@ -8,6 +8,9 @@ export const STORES = {
       { id: "amazon-us", name: "Amazon US", type: "amazon", enabled: true },
       { id: "homedepot", name: "The Home Depot", type: "homedepot", enabled: true },
       { id: "bestbuy", name: "Best Buy", type: "bestbuy", enabled: true },
+      { id: "target", name: "Target", type: "target", enabled: true },
+      { id: "sephora", name: "Sephora", type: "sephora", enabled: true },
+      { id: "lego", name: "LEGO Store", type: "lego", enabled: true },
     ],
   },
   "ca": {
@@ -20,7 +23,14 @@ export const STORES = {
       { id: "walmart-ca", name: "Walmart Canada", type: "walmart", enabled: true },
     ],
   },
-
+  "jp": {
+    name: "Japan",
+    flag: "🇯🇵",
+    currency: "¥",
+    stores: [
+      { id: "amazon-jp", name: "Amazon Japan", type: "amazon", enabled: true },
+    ],
+  },
   "de": {
     name: "Germany",
     flag: "🇩🇪",
@@ -46,6 +56,7 @@ export const STORES = {
     stores: [
       { id: "amazon-it", name: "Amazon.it", type: "amazon", enabled: true },
       { id: "ebay-it", name: "eBay.it", type: "ebay", enabled: true },
+      { id: "interflora", name: "Interflora", type: "interflora", enabled: true },
     ],
   },
   "es": {

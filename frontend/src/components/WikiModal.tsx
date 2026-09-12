@@ -480,57 +480,57 @@ export function WikiModal({ isOpen, onClose }: WikiModalProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Walmart US</strong>
-                    <span className="text-slate-600 block">Category coverage: Electronics, Kitchen, Home</span>
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Walmart US & 🇨🇦 CA</strong>
+                    <span className="text-slate-600 block">Coverage: Electronics, Kitchen, Home</span>
                     <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Scraping Active</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Amazon US / EU</strong>
-                    <span className="text-slate-600 block">Coverage: US, DE, FR, ES, IT, UK</span>
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Amazon US, EU & 🇯🇵 JP</strong>
+                    <span className="text-slate-600 block">Coverage: US, DE, FR, ES, IT, UK, JP</span>
                     <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Tracker Active</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇪🇸 El Corte Inglés</strong>
-                    <span className="text-slate-600 block">Coverage: Spain (Electronics, Kitchen, Home)</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live PDP Store Scraper</span>
-                  </div>
-
-                  <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇳🇱 Bol.com</strong>
-                    <span className="text-slate-600 block">Coverage: Netherlands & Belgium</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Catalog Scraper</span>
-                  </div>
-
-                  <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇫🇷 Cdiscount</strong>
-                    <span className="text-slate-600 block">Coverage: France High-Tech & Appliances</span>
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 The Home Depot</strong>
+                    <span className="text-slate-600 block">Coverage: Home Improvement & Tools</span>
                     <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇩🇪 Otto.de</strong>
-                    <span className="text-slate-600 block">Coverage: Germany Appliances & Tech</span>
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Best Buy US & 🇨🇦 CA</strong>
+                    <span className="text-slate-600 block">Coverage: Tech & Consumer Electronics</span>
                     <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇵🇱 Allegro</strong>
-                    <span className="text-slate-600 block">Coverage: Poland Market Leader</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
-                  </div>
-
-                  <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇪🇺 eBay EU / US</strong>
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇪🇺 eBay EU & US</strong>
                     <span className="text-slate-600 block">Coverage: DE, IT, FR, ES, UK, US</span>
                     <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Tracker Active</span>
                   </div>
 
                   <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
-                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇨🇦 Canadian Retail</strong>
-                    <span className="text-slate-600 block">Coverage: Walmart CA, Best Buy CA</span>
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Target.com</strong>
+                    <span className="text-slate-600 block">Coverage: Retail, Home & Electronics</span>
                     <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
+                  </div>
+
+                  <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 Sephora</strong>
+                    <span className="text-slate-600 block">Coverage: Beauty & Cosmetics</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Catalog Scraper</span>
+                  </div>
+
+                  <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇺🇸 LEGO Store</strong>
+                    <span className="text-slate-600 block">Coverage: Toys & Collectibles</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Store Scraper</span>
+                  </div>
+
+                  <div className="p-3.5 border border-slate-200 rounded-xl bg-slate-50">
+                    <strong className="text-slate-900 block font-bold text-sm mb-1">🇮🇹 Interflora Italy</strong>
+                    <span className="text-slate-600 block">Coverage: Flowers & Gifts</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">Status: Live Catalog Scraper</span>
                   </div>
                 </div>
               </motion.div>

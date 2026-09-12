@@ -35,6 +35,10 @@ function formatSource(source: string): { label: string; style: string } {
   if (src === "homedepot") return { label: "The Home Depot", style: "bg-orange-950/60 text-orange-300 border-orange-800/60" };
   if (src === "bestbuy") return { label: "Best Buy", style: "bg-yellow-950/60 text-yellow-300 border-yellow-800/60" };
   if (src === "bestbuy-ca") return { label: "Best Buy CA", style: "bg-yellow-950/60 text-yellow-300 border-yellow-800/60" };
+  if (src === "target") return { label: "Target", style: "bg-red-950/60 text-red-300 border-red-800/60" };
+  if (src === "sephora") return { label: "Sephora", style: "bg-pink-950/60 text-pink-300 border-pink-800/60" };
+  if (src === "lego") return { label: "LEGO", style: "bg-yellow-950/60 text-yellow-300 border-yellow-800/60" };
+  if (src === "interflora") return { label: "Interflora", style: "bg-emerald-950/60 text-emerald-300 border-emerald-800/60" };
   return { label: source, style: "bg-slate-800 text-slate-300 border-slate-700" };
 }
 
