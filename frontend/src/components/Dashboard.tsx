@@ -431,7 +431,7 @@ export function Dashboard() {
 
       {/* Sub-header Bar for Quick Action Controls & Scrape Status */}
       <div className="bg-white border-b border-gray-200 py-3 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
+        <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {countryData && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 border border-slate-200">
@@ -491,7 +491,7 @@ export function Dashboard() {
       </div>
 
       {scrapeMessage && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex items-center gap-3">
             {scrapeStatus?.status === "completed" ? (
               <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
@@ -507,7 +507,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <AnimatePresence mode="wait">
           {activeTab === "calculator" ? (
             <motion.div

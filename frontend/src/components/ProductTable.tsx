@@ -112,7 +112,7 @@ export function ProductTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="w-10 px-3 py-3 text-center">
+              <th className="w-8 px-2 py-3 text-center">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -121,19 +121,19 @@ export function ProductTable({
                   title="Select all products"
                 />
               </th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Product</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600">
+              <th className="px-3 py-3 text-left font-medium text-gray-600">Product</th>
+              <th className="px-3 py-3 text-right font-medium text-gray-600 whitespace-nowrap">
                 Price {currencyMode === "usd" ? "(USD $)" : "(Local)"}
               </th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600">Original</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600">Discount</th>
-              <th className="px-4 py-3 text-right font-medium text-emerald-700">Profit Spread</th>
-              <th className="px-4 py-3 text-center font-medium text-blue-700">Margin %</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600">Rating</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600">Reviews</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600">Source</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Category</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600">Link</th>
+              <th className="px-3 py-3 text-right font-medium text-gray-600 whitespace-nowrap">Original</th>
+              <th className="px-3 py-3 text-center font-medium text-gray-600 whitespace-nowrap">Discount</th>
+              <th className="px-3 py-3 text-right font-medium text-emerald-700 whitespace-nowrap">Profit Spread</th>
+              <th className="px-3 py-3 text-center font-medium text-blue-700 whitespace-nowrap">Margin %</th>
+              <th className="px-3 py-3 text-center font-medium text-gray-600 whitespace-nowrap">Rating</th>
+              <th className="px-3 py-3 text-right font-medium text-gray-600 whitespace-nowrap">Reviews</th>
+              <th className="px-3 py-3 text-center font-medium text-gray-600 whitespace-nowrap">Source</th>
+              <th className="px-3 py-3 text-left font-medium text-gray-600 whitespace-nowrap">Category</th>
+              <th className="px-3 py-3 text-center font-medium text-gray-600 whitespace-nowrap">Link</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -162,7 +162,7 @@ export function ProductTable({
                     isSelected ? "bg-blue-50/60 hover:bg-blue-50" : "hover:bg-blue-50/40"
                   }`}
                 >
-                  <td className="w-10 px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                  <td className="w-8 px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -170,32 +170,32 @@ export function ProductTable({
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
+                  <td className="px-3 py-3">
+                    <div className="flex items-center gap-2.5">
                       {product.image_url && !imgErrors[product.id] ? (
                         <img
                           src={product.image_url}
                           alt={product.name}
-                          className="h-10 w-10 rounded-lg object-contain bg-gray-50 shrink-0 border border-gray-100 p-0.5"
+                          className="h-9 w-9 rounded-lg object-contain bg-gray-50 shrink-0 border border-gray-100 p-0.5"
                           onError={() => setImgErrors(prev => ({ ...prev, [product.id]: true }))}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 text-gray-400">
-                          <Package className="h-5 w-5" />
+                        <div className="h-9 w-9 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 text-gray-400">
+                          <Package className="h-4 w-4" />
                         </div>
                       )}
-                      <span className="font-medium text-gray-900 line-clamp-2 max-w-[300px]">
+                      <span className="font-medium text-gray-900 line-clamp-2 max-w-[280px]">
                         {product.name}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                  <td className="px-3 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                     {formattedPrice}
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-400">
+                  <td className="px-3 py-3 text-right text-gray-400 whitespace-nowrap">
                     {formattedOriginal}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 py-3 text-center whitespace-nowrap">
                     {product.discount_pct ? (
                       <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
                         -{product.discount_pct}%
@@ -204,15 +204,15 @@ export function ProductTable({
                       <span className="text-gray-300">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right font-bold text-emerald-600">
+                  <td className="px-3 py-3 text-right font-bold text-emerald-600 whitespace-nowrap">
                     +{formattedProfit}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 py-3 text-center whitespace-nowrap">
                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 border border-blue-200">
                       {marginPct}%
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 py-3 text-center whitespace-nowrap">
                     {product.rating ? (
                       <div className="flex items-center justify-center gap-1">
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -222,16 +222,16 @@ export function ProductTable({
                       <span className="text-gray-300">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-600">
+                  <td className="px-3 py-3 text-right text-gray-600 whitespace-nowrap">
                     {product.reviews_count ? product.reviews_count.toLocaleString() : "-"}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 py-3 text-center whitespace-nowrap">
                     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${srcInfo.style}`}>
                       {srcInfo.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{product.category}</td>
-                  <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{product.category}</td>
+                  <td className="px-3 py-3 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <a
                       href={getAutoEnglishUrl(product.url)}
                       target="_blank"

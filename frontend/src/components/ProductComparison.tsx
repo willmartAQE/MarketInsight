@@ -194,7 +194,7 @@ export function ProductComparison({
     <div className="min-h-screen bg-gray-50 pb-16">
       {/* Top Bar */}
       <header className="border-b border-gray-200 bg-white sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
@@ -224,7 +224,7 @@ export function ProductComparison({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Product Group Selector Tabs */}
         {productGroups.length > 1 && (
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
