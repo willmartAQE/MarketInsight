@@ -1,14 +1,8 @@
 import { getDb, upsertProduct } from "./db.js";
-import { FALLBACK_TARGET_PRODUCTS } from "./scrapers/target.js";
-import { FALLBACK_AMAZON_JP_PRODUCTS } from "./scrapers/amazon-jp.js";
-import { FALLBACK_SEPHORA_PRODUCTS } from "./scrapers/sephora.js";
-import { FALLBACK_LEGO_PRODUCTS } from "./scrapers/lego.js";
-import { FALLBACK_INTERFLORA_PRODUCTS } from "./scrapers/interflora.js";
 
 const db = getDb();
 
 console.log("Seeding / Updating products in database...");
-
 
 const HOMEDEPOT_PRODUCTS = [
   {
@@ -109,21 +103,10 @@ const HOMEDEPOT_PRODUCTS = [
   },
 ];
 
-const allToSeed = [
-  ...HOMEDEPOT_PRODUCTS,
-  ...FALLBACK_TARGET_PRODUCTS,
-  ...FALLBACK_AMAZON_JP_PRODUCTS,
-  ...FALLBACK_SEPHORA_PRODUCTS,
-  ...FALLBACK_LEGO_PRODUCTS,
-  ...FALLBACK_INTERFLORA_PRODUCTS,
-];
-
-
 let insertedCount = 0;
-for (const p of allToSeed) {
+for (const p of HOMEDEPOT_PRODUCTS) {
   upsertProduct(p);
   insertedCount++;
 }
 
 console.log(`Seeded/Updated ${insertedCount} products in database.`);
-

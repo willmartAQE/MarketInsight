@@ -23,7 +23,7 @@ async function saveProducts(source, products) {
   return saved;
 }
 
-async function runScrape(sources) {
+export async function runScrape(sources) {
   console.log(`Scraping started at ${new Date().toISOString()}`);
 
   const scrapers = {
