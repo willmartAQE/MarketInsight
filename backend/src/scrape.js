@@ -4,7 +4,7 @@ import { scrapeAmazonEU } from "./scrapers/amazon-eu.js";
 import { scrapeEbayEU } from "./scrapers/ebay-eu.js";
 import { scrapeTarget } from "./scrapers/target.js";
 import { scrapeAmazonJP } from "./scrapers/amazon-jp.js";
-import { scrapeSephora } from "./scrapers/sephora.js";
+import { scrapeSephora, scrapeSephoraLocalized } from "./scrapers/sephora.js";
 import { scrapeLego } from "./scrapers/lego.js";
 import { scrapeInterflora } from "./scrapers/interflora.js";
 import { upsertProduct, addPriceHistory, logScrape } from "./db.js";
@@ -71,7 +71,15 @@ export async function runScrape(sources) {
     amazon: scrapeAmazon,
     target: scrapeTarget,
     "amazon-jp": scrapeAmazonJP,
-    sephora: scrapeSephora,
+    sephora: () => scrapeSephoraLocalized("US"),
+    "sephora-us": () => scrapeSephoraLocalized("US"),
+    "sephora-ca": () => scrapeSephoraLocalized("CA"),
+    "sephora-fr": () => scrapeSephoraLocalized("FR"),
+    "sephora-it": () => scrapeSephoraLocalized("IT"),
+    "sephora-de": () => scrapeSephoraLocalized("DE"),
+    "sephora-es": () => scrapeSephoraLocalized("ES"),
+    "sephora-uk": () => scrapeSephoraLocalized("UK"),
+    "sephora-pl": () => scrapeSephoraLocalized("PL"),
     lego: scrapeLego,
     interflora: scrapeInterflora,
   };
