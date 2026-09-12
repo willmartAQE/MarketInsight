@@ -14,8 +14,10 @@ async function saveProducts(source, products) {
   for (const product of products) {
     try {
       const productId = upsertProduct(product);
-      addPriceHistory(productId, product.price);
-      saved++;
+      if (productId) {
+        addPriceHistory(productId, product.price);
+        saved++;
+      }
     } catch (err) {
       console.error(`  [save] Error saving product: ${err.message}`);
     }

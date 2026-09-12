@@ -41,6 +41,7 @@ import { scrapeAmazonJP } from "./scrapers/amazon-jp.js";
 import { scrapeSephora } from "./scrapers/sephora.js";
 import { scrapeLego } from "./scrapers/lego.js";
 import { scrapeInterflora } from "./scrapers/interflora.js";
+import { runScrape } from "./scrape.js";
 import { getGoogleTrendsInterest } from "./scrapers/google-trends.js";
 import {
   extractAmazonAsin,
@@ -278,9 +279,9 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.get("/api/products", (req, res) => {
+app.get("/api/products", async (req, res) => {
   const { source, category, country, sort_by, order, min_price, max_price, limit, offset, ids } = req.query;
-  const products = getProducts({
+  let products = getProducts({
     source, category, country, sort_by, order,
     min_price: min_price ? parseFloat(min_price) : null,
     max_price: max_price ? parseFloat(max_price) : null,
@@ -288,6 +289,21 @@ app.get("/api/products", (req, res) => {
     offset: offset ? parseInt(offset) : 0,
     ids: ids || null,
   });
+
+  if (source && products.length === 0 && !category && !min_price && !max_price) {
+    console.log(`[api/products] 0 products in DB for source '${source}'. Triggering live scrape...`);
+    try {
+      await runScrape([String(source)]);
+      products = getProducts({
+        source, category, country, sort_by, order,
+        limit: limit ? parseInt(limit) : 200,
+        offset: offset ? parseInt(offset) : 0,
+      });
+    } catch (err) {
+      console.error(`[api/products] Live scrape for '${source}' failed:`, err.message);
+    }
+  }
+
   res.json(products);
 });
 
@@ -551,5 +567,26 @@ app.get("/api/keepa/:productId", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`MarketInsight API running on http://localhost:${PORT}`);
+
+  // Auto-scrape any enabled store that currently has 0 products in SQLite DB on startup
+  setTimeout(() => {
+    try {
+      const db = getDb();
+      const checkStmt = db.prepare("SELECT COUNT(*) as count FROM products WHERE source = ?");
+      const emptySources = allSources.filter((s) => {
+        const row = checkStmt.get(s);
+        return !row || row.count === 0;
+      });
+
+      if (emptySources.length > 0) {
+        console.log(`[startup] Auto-scraping empty stores on startup: ${emptySources.join(", ")}`);
+        runScrape(emptySources).catch((err) =>
+          console.error("[startup] Auto-scrape error:", err.message)
+        );
+      }
+    } catch (err) {
+      console.error("[startup] Failed to check empty stores:", err.message);
+    }
+  }, 2000);
 });
 
