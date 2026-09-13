@@ -14,7 +14,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "$",
     domain: "www.sephora.com",
     seller: "Sephora US",
-    urls: ["https://www.sephora.com"]
+    urls: ["https://www.sephora.com/beauty/beauty-offers"]
   },
   CA: {
     source: "sephora-ca",
@@ -22,7 +22,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "$",
     domain: "www.sephora.com",
     seller: "Sephora Canada",
-    urls: ["https://www.sephora.com/?country_switch=ca&lang=en"]
+    urls: ["https://www.sephora.com/ca/en/sale"]
   },
   FR: {
     source: "sephora-fr",
@@ -30,7 +30,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "€",
     domain: "www.sephora.fr",
     seller: "Sephora France",
-    urls: ["https://www.sephora.fr/best-seller/", "https://www.sephora.fr/promotions/"]
+    urls: ["https://www.sephora.fr/best-seller/?prefn1=discountRange&prefv1=20%7C25%7C40"]
   },
   IT: {
     source: "sephora-it",
@@ -38,7 +38,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "€",
     domain: "www.sephora.it",
     seller: "Sephora Italia",
-    urls: ["https://www.sephora.it/bestseller/", "https://www.sephora.it/promozioni/"]
+    urls: ["https://www.sephora.it/marche/dalla-a-alla-z/sephora-collection-sepho/?prefn1=discountRange&prefv1=20%7C30%7C35%7C40%7C45%7C55%7C50%7C60"]
   },
   DE: {
     source: "sephora-de",
@@ -46,7 +46,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "€",
     domain: "www.sephora.de",
     seller: "Sephora Germany",
-    urls: ["https://www.sephora.de/bestseller/", "https://www.sephora.de/angebote/"]
+    urls: ["https://www.sephora.de/sale/?prefn1=discountRange&prefv1=25%7C30%7C35%7C40"]
   },
   ES: {
     source: "sephora-es",
@@ -54,7 +54,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "€",
     domain: "www.sephora.es",
     seller: "Sephora España",
-    urls: ["https://www.sephora.es/best-sellers/", "https://www.sephora.es/promociones/"]
+    urls: ["https://www.sephora.es/marcas/marcas-de-a-z/sephora-collection-sepho/?srule=Sorting+option+-+Low+to+High"]
   },
   UK: {
     source: "sephora-uk",
@@ -62,7 +62,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "£",
     domain: "www.sephora.co.uk",
     seller: "Sephora UK",
-    urls: ["https://www.sephora.co.uk/bestsellers", "https://www.sephora.co.uk/offers"]
+    urls: ["https://www.sephora.co.uk/brands/sephora-collection?filter=fh_location=//c1/en_GB/brand={a5189}/!exclude_countries%3E{gb}/%26site_area=brand%26device=desktop%26fh_sort_by=-%24rc_popularity#inline-facets"]
   },
   PL: {
     source: "sephora-pl",
@@ -70,7 +70,7 @@ const SEPHORA_JS_CONFIG = {
     currency: "zł",
     domain: "www.sephora.pl",
     seller: "Sephora Polska",
-    urls: ["https://www.sephora.pl/bestseller/", "https://www.sephora.pl/promocje/"]
+    urls: ["https://www.sephora.pl/marki/od-a-do-z/sephora-collection-sepho/"]
   },
 };
 
@@ -264,16 +264,22 @@ async function scrapeSephoraWithPuppeteer(code, cfg) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     
-    const targetUrl = `https://${cfg.domain}`;
-    console.log(`[sephora-js] Navigating Puppeteer to ${targetUrl}...`);
-    await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 35000 });
+    const rootUrl = `https://${cfg.domain}`;
+    const targetUrl = (cfg.urls && cfg.urls[0]) ? cfg.urls[0] : rootUrl;
+    console.log(`[sephora-js] Navigating Puppeteer to root ${rootUrl}...`);
+    await page.goto(rootUrl, { waitUntil: "domcontentloaded", timeout: 35000 });
     await new Promise(r => setTimeout(r, 4500));
+    if (targetUrl !== rootUrl) {
+      console.log(`[sephora-js] Navigating Puppeteer to target ${targetUrl}...`);
+      await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 35000 });
+      await new Promise(r => setTimeout(r, 4500));
+    }
 
     // 1. Direct DOM Evaluation
     const domProducts = await page.evaluate((cfg) => {
       const items = [];
       const seen = new Set();
-      const anchors = Array.from(document.querySelectorAll("a[href*='/p/']"));
+      const anchors = Array.from(document.querySelectorAll("a[href*='/p/'], a[href*='/product/'], a[href*='/p-']"));
 
       for (const a of anchors) {
         const href = a.getAttribute("href");
@@ -376,7 +382,9 @@ import json, sys
 sys.path.append("${projectRoot}/scraper")
 from scrapers.scrapling_scrapers import scrape_sephora_scrapling
 res = scrape_sephora_scrapling("${code}")
+print("___JSON_START___")
 print(json.dumps(res))
+print("___JSON_END___")
 `;
 
       exec(`${pythonPath} -c '${pythonCode.replace(/'/g, "'\\''")}'`, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
@@ -385,7 +393,9 @@ print(json.dumps(res))
           return resolve(null);
         }
         try {
-          const parsed = JSON.parse(stdout.trim());
+          const jsonMatch = stdout.match(/___JSON_START___([\s\S]*?)___JSON_END___/);
+          const jsonStr = jsonMatch ? jsonMatch[1].trim() : (stdout.trim().split("\n").filter(l => l.trim().startsWith("{")).pop() || stdout.trim());
+          const parsed = JSON.parse(jsonStr);
           if (parsed && Array.isArray(parsed.products) && parsed.products.length > 0) {
             return resolve(parsed);
           }

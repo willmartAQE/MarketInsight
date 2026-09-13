@@ -174,14 +174,78 @@ def scrape_amazon_jp_scrapling():
 
 
 SEPHORA_CONFIG = {
-    "US": {"domain": "www.sephora.com", "country": "US", "currency": "$", "source": "sephora", "seller": "Sephora US", "bestseller_path": "/shop/bestselling-beauty-products", "urls": ["https://www.sephora.com"]},
-    "CA": {"domain": "www.sephora.com", "country": "CA", "currency": "$", "source": "sephora-ca", "seller": "Sephora Canada", "bestseller_path": "/shop/bestselling-beauty-products?country_switch=ca&lang=en", "urls": ["https://www.sephora.com/?country_switch=ca&lang=en"]},
-    "FR": {"domain": "www.sephora.fr", "country": "FR", "currency": "€", "source": "sephora-fr", "seller": "Sephora France", "bestseller_path": "/best-seller/", "urls": ["https://www.sephora.fr/best-seller/"]},
-    "IT": {"domain": "www.sephora.it", "country": "IT", "currency": "€", "source": "sephora-it", "seller": "Sephora Italia", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.it/bestseller/"]},
-    "DE": {"domain": "www.sephora.de", "country": "DE", "currency": "€", "source": "sephora-de", "seller": "Sephora Germany", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.de/bestseller/"]},
-    "ES": {"domain": "www.sephora.es", "country": "ES", "currency": "€", "source": "sephora-es", "seller": "Sephora España", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.es/bestseller/"]},
-    "UK": {"domain": "www.sephora.co.uk", "country": "UK", "currency": "£", "source": "sephora-uk", "seller": "Sephora UK", "bestseller_path": "/bestsellers", "urls": ["https://www.sephora.co.uk/bestsellers"]},
-    "PL": {"domain": "www.sephora.pl", "country": "PL", "currency": "zł", "source": "sephora-pl", "seller": "Sephora Polska", "bestseller_path": "/bestseller/", "urls": ["https://www.sephora.pl/bestseller/"]},
+    "IT": {
+        "domain": "www.sephora.it",
+        "country": "IT",
+        "currency": "€",
+        "source": "sephora-it",
+        "seller": "Sephora Italia",
+        "target_url": "https://www.sephora.it/marche/dalla-a-alla-z/sephora-collection-sepho/?prefn1=discountRange&prefv1=20%7C30%7C35%7C40%7C45%7C55%7C50%7C60",
+        "urls": ["https://www.sephora.it/marche/dalla-a-alla-z/sephora-collection-sepho/?prefn1=discountRange&prefv1=20%7C30%7C35%7C40%7C45%7C55%7C50%7C60"]
+    },
+    "US": {
+        "domain": "www.sephora.com",
+        "country": "US",
+        "currency": "$",
+        "source": "sephora",
+        "seller": "Sephora US",
+        "target_url": "https://www.sephora.com/beauty/beauty-offers",
+        "urls": ["https://www.sephora.com/beauty/beauty-offers"]
+    },
+    "UK": {
+        "domain": "www.sephora.co.uk",
+        "country": "UK",
+        "currency": "£",
+        "source": "sephora-uk",
+        "seller": "Sephora UK",
+        "target_url": "https://www.sephora.co.uk/brands/sephora-collection?filter=fh_location=//c1/en_GB/brand={a5189}/!exclude_countries%3E{gb}/%26site_area=brand%26device=desktop%26fh_sort_by=-%24rc_popularity#inline-facets",
+        "urls": ["https://www.sephora.co.uk/brands/sephora-collection?filter=fh_location=//c1/en_GB/brand={a5189}/!exclude_countries%3E{gb}/%26site_area=brand%26device=desktop%26fh_sort_by=-%24rc_popularity#inline-facets"]
+    },
+    "FR": {
+        "domain": "www.sephora.fr",
+        "country": "FR",
+        "currency": "€",
+        "source": "sephora-fr",
+        "seller": "Sephora France",
+        "target_url": "https://www.sephora.fr/best-seller/?prefn1=discountRange&prefv1=20%7C25%7C40",
+        "urls": ["https://www.sephora.fr/best-seller/?prefn1=discountRange&prefv1=20%7C25%7C40"]
+    },
+    "ES": {
+        "domain": "www.sephora.es",
+        "country": "ES",
+        "currency": "€",
+        "source": "sephora-es",
+        "seller": "Sephora España",
+        "target_url": "https://www.sephora.es/marcas/marcas-de-a-z/sephora-collection-sepho/?srule=Sorting+option+-+Low+to+High",
+        "urls": ["https://www.sephora.es/marcas/marcas-de-a-z/sephora-collection-sepho/?srule=Sorting+option+-+Low+to+High"]
+    },
+    "DE": {
+        "domain": "www.sephora.de",
+        "country": "DE",
+        "currency": "€",
+        "source": "sephora-de",
+        "seller": "Sephora Germany",
+        "target_url": "https://www.sephora.de/sale/?prefn1=discountRange&prefv1=25%7C30%7C35%7C40",
+        "urls": ["https://www.sephora.de/sale/?prefn1=discountRange&prefv1=25%7C30%7C35%7C40"]
+    },
+    "CA": {
+        "domain": "www.sephora.com",
+        "country": "CA",
+        "currency": "$",
+        "source": "sephora-ca",
+        "seller": "Sephora Canada",
+        "target_url": "https://www.sephora.com/ca/en/sale",
+        "urls": ["https://www.sephora.com/ca/en/sale"]
+    },
+    "PL": {
+        "domain": "www.sephora.pl",
+        "country": "PL",
+        "currency": "zł",
+        "source": "sephora-pl",
+        "seller": "Sephora Polska",
+        "target_url": "https://www.sephora.pl/marki/od-a-do-z/sephora-collection-sepho/",
+        "urls": ["https://www.sephora.pl/marki/od-a-do-z/sephora-collection-sepho/"]
+    }
 }
 
 
@@ -201,7 +265,9 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
     cfg = SEPHORA_CONFIG.get(cc, SEPHORA_CONFIG["IT"])
     domain_str = cfg["domain"]
     source_id = cfg["source"]
-    base_path = cfg.get("bestseller_path", "/bestseller/")
+    seller_name = cfg["seller"]
+    currency_str = cfg["currency"]
+    target_url = cfg.get("target_url", f"https://{domain_str}/bestseller/")
 
     options = uc.ChromeOptions()
     options.add_argument("--no-sandbox")
@@ -215,15 +281,21 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
         driver.get(f"https://{domain_str}")
         time.sleep(4)
 
-        if "?" in base_path:
-            page_urls = [f"https://{domain_str}{base_path}&start={i*24}&sz=24" for i in range(5)]
+        base_target = target_url
+        anchor_part = ""
+        if "#" in base_target:
+            base_target, anchor_part = base_target.split("#", 1)
+            anchor_part = "#" + anchor_part
+
+        if "?" in base_target:
+            page_urls = [f"{base_target}&start={i*24}&sz=24{anchor_part}" for i in range(5)]
         else:
             page_urls = [
-                f"https://{domain_str}{base_path}",
-                f"https://{domain_str}{base_path}?start=24&sz=24",
-                f"https://{domain_str}{base_path}?start=48&sz=24",
-                f"https://{domain_str}{base_path}?start=72&sz=24",
-                f"https://{domain_str}{base_path}?start=96&sz=24"
+                f"{base_target}{anchor_part}",
+                f"{base_target}?start=24&sz=24{anchor_part}",
+                f"{base_target}?start=48&sz=24{anchor_part}",
+                f"{base_target}?start=72&sz=24{anchor_part}",
+                f"{base_target}?start=96&sz=24{anchor_part}"
             ]
 
         for p_idx, p_url in enumerate(page_urls):
@@ -237,13 +309,13 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 time.sleep(1.5)
 
-                items = driver.execute_script("""
+                items = driver.execute_script(f"""
                     const products = [];
                     const anchors = Array.from(document.querySelectorAll("a[href*='/p/'], a[href*='/product/']"));
 
-                    for (const a of anchors) {
+                    for (const a of anchors) {{
                         const href = a.getAttribute("href");
-                        if (!href || href.includes("gift-card") || href.includes("servizi")) continue;
+                        if (!href || href.includes("gift-card") || href.includes("servizi") || href.includes("basket") || href.includes("cart")) continue;
                         const fullUrl = href.startsWith("http") ? href : "https://" + window.location.host + href;
 
                         const card = a.closest(".product-tile, [data-product-id], .card, [class*='product']") || a.parentElement.parentElement;
@@ -252,74 +324,85 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
                         const cardText = card.innerText || "";
                         const rawLines = cardText.split("\\n").map(l => l.trim()).filter(Boolean);
 
-                        const BADGES = ["OFFERTA FEDELTÀ", "HOT ON SOCIAL", "ESCLUSIVO", "CLEAN AT SEPHORA", "NOVITÀ", "OFFERTA FEDELTA", "BESTSELLER", "MEILLEURES VENTES", "MAS VENDIDOS", "SHOWING 40 OF 13163"];
+                        const BADGES = ["OFFERTA FEDELTÀ", "HOT ON SOCIAL", "ESCLUSIVO", "CLEAN AT SEPHORA", "NOVITÀ", "OFFERTA FEDELTA", "BESTSELLER", "MEILLEURES VENTES", "MAS VENDIDOS", "EXCLUSIVE", "QUICKLOOK"];
                         const lines = rawLines.filter(l => !BADGES.includes(l.toUpperCase()) && !l.toUpperCase().startsWith("SHOWING"));
 
                         let brand = "";
                         let titleLines = [];
 
-                        for (const line of lines) {
-                            if (line.includes("€") || line.includes("£") || line.includes("zł") || line.includes("$") || line.includes("Recensioni") || line.includes("reviews") || line.includes("avis") || line.includes("reseñas") || line.includes("Aggiungi") || line.includes("Disponibile") || line.includes("Prezzo più basso") || line.startsWith("-")) {
+                        for (const line of lines) {{
+                            if (line.includes("€") || line.includes("£") || line.includes("zł") || line.includes("$") || line.includes("Recensioni") || line.includes("reviews") || line.includes("avis") || line.includes("reseñas") || line.includes("Aggiungi") || line.includes("Disponibile") || line.includes("Prezzo più basso") || line.startsWith("-")) {{
                                 break;
-                            }
-                            if (!brand && line === line.toUpperCase() && line.length >= 2 && !/\\d/.test(line)) {
+                            }}
+                            if (!brand && line === line.toUpperCase() && line.length >= 2 && !/\\d/.test(line)) {{
                                 brand = line;
-                            } else {
+                            }} else {{
                                 titleLines.push(line);
-                            }
-                        }
+                            }}
+                        }}
 
-                        if (!brand && titleLines.length > 0) {
+                        if (!brand && titleLines.length > 0) {{
                             brand = titleLines[0];
                             titleLines = titleLines.slice(1);
-                        }
+                        }}
 
                         let rawTitle = titleLines.join(" ").trim();
                         if (rawTitle.endsWith(" Da")) rawTitle = rawTitle.slice(0, -3).trim();
                         if (rawTitle.endsWith(" From")) rawTitle = rawTitle.slice(0, -5).trim();
+                        if (rawTitle.endsWith(" Ab")) rawTitle = rawTitle.slice(0, -3).trim();
+                        if (!rawTitle) rawTitle = brand || "Sephora Product";
 
                         let fullName = rawTitle;
-                        if (brand && !fullName.toLowerCase().includes(brand.toLowerCase())) {
+                        if (brand && !fullName.toLowerCase().includes(brand.toLowerCase())) {{
                             fullName = brand + " " + rawTitle;
-                        }
+                        }}
 
                         let price = 0;
                         let lowestPrice = 0;
                         let discountPct = 0;
 
-                        const priceM = cardText.match(/(?:Da\\s*|From\\s*|Dès\\s*)?([\\d\\.,]+)\\s*[€£zł$]|[$€£zł]\\s*([\\d\\.,]+)/i);
-                        if (priceM) {
+                        const priceEl = card.querySelector(".price, [class*='price'], .product-price");
+                        const priceText = priceEl ? priceEl.innerText : cardText;
+
+                        const priceM = priceText.match(/(?:Da\\s*|From\\s*|Dès\\s*|Ab\\s*)?([\\d\\.,]+)\\s*[€£zł$]|[$€£zł]\\s*([\\d\\.,]+)/i);
+                        if (priceM) {{
                             const rawP = (priceM[1] || priceM[2]).replace(",", ".");
-                            price = parseFloat(rawP);
-                        }
+                            const valP = parseFloat(rawP);
+                            if (!isNaN(valP) && valP > 0 && valP < 1500) {{
+                                price = valP;
+                            }}
+                        }}
 
                         const lowestM = cardText.match(/(?:Prezzo più basso|Lowest price|Prix le plus bas)\\s*:\\s*([\\d\\.,]+)\\s*[€£zł$]|[$€£zł]\\s*([\\d\\.,]+)/i);
-                        if (lowestM) {
+                        if (lowestM) {{
                             const rawL = (lowestM[1] || lowestM[2]).replace(",", ".");
-                            lowestPrice = parseFloat(rawL);
-                        }
+                            const valL = parseFloat(rawL);
+                            if (!isNaN(valL) && valL > 0 && valL < 1500) {{
+                                lowestPrice = valL;
+                            }}
+                        }}
 
                         const discountM = cardText.match(/-(\\d+)%/);
-                        if (discountM) {
+                        if (discountM) {{
                             discountPct = parseInt(discountM[1], 10);
-                        }
+                        }}
 
                         const reviewsM = cardText.match(/(\\d+)\\s*(?:Recensioni|reviews|avis|reseñas|opinie)/i);
                         const reviewsCount = reviewsM ? parseInt(reviewsM[1], 10) : 0;
 
                         const img = card.querySelector("img");
                         let imgUrl = "";
-                        if (img) {
+                        if (img) {{
                             imgUrl = img.src || img.getAttribute("data-src") || img.getAttribute("srcset")?.split(" ")[0] || "";
-                        }
+                        }}
 
-                        if (price > 0 && fullName) {
+                        if (price > 0 && fullName) {{
                             if (lowestPrice === 0) lowestPrice = price;
-                            if (discountPct === 0 && lowestPrice > price) {
+                            if (discountPct === 0 && lowestPrice > price) {{
                                 discountPct = Math.round(((lowestPrice - price) / lowestPrice) * 100);
-                            }
+                            }}
 
-                            products.push({
+                            products.push({{
                                 brand,
                                 name: fullName,
                                 price,
@@ -330,14 +413,14 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
                                 url: fullUrl,
                                 image_url: imgUrl,
                                 category: "Beauty",
-                                seller: cfg.seller || "Sephora",
-                                source: source_id,
-                                country: cc,
-                                currency: cfg.currency || "€",
+                                seller: "{seller_name}",
+                                source: "{source_id}",
+                                country: "{cc}",
+                                currency: "{currency_str}",
                                 availability: "In Stock"
-                            });
-                        }
-                    }
+                            }});
+                        }}
+                    }}
 
                     return products;
                 """)
@@ -349,10 +432,10 @@ def scrape_sephora_bestseller_uc(country_code="IT"):
             except Exception as e:
                 logger.error(f"[scrapling] Error on {p_url}: {e}")
 
-        logger.info(f"[scrapling] Sephora Bestseller ({cc}): successfully scraped {len(all_products)} real items")
+        logger.info(f"[scrapling] Sephora ({cc}): successfully scraped {len(all_products)} real items from target URL")
         return {"source": source_id, "products": all_products, "status": "success"}
     except Exception as err:
-        logger.error(f"[scrapling] Sephora Bestseller UC error for {cc}: {err}")
+        logger.error(f"[scrapling] Sephora UC error for {cc}: {err}")
         return {"source": source_id, "products": [], "status": "success"}
     finally:
         driver.quit()
